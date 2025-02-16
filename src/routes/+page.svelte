@@ -1,0 +1,202 @@
+<script lang="ts">
+    import { AppShell, TabGroup, Tab } from '@skeletonlabs/skeleton';
+    
+    let tabSet = 0;
+    
+    function navigateTo(path: string) {
+          if (path) {
+            window.location.href = path;
+          } else {
+            console.log('No link assigned yet.');
+          }
+        }
+
+    const event = {
+      title: 'Tech Talks 2024',
+      date: 'April 16-18, 2024 | 8:00 AM - 6:00 PM',
+      location: 'USTP Gymnasium, Cagayan de Oro City',
+      url: 'https://techtalks2024.veent.co',
+      stats: {
+        guests: 250,
+        income: 32550
+      }
+    };
+  
+    const guests = [
+      { type: 'REG', name: 'Aaron Dave Tagalimot', email: 'aaron@gmail.com', phone: '0956 879 9087', date: '10 Jan 2024, 10:05 AM' },
+      { type: 'VIP', name: 'Ericke Gallardo', email: 'ericke@veent.io', phone: '0967 908 7890', date: '12 Jan 2024, 11:00 PM' },
+      { type: 'REG', name: 'John Ramirez', email: 'john_ramirez@gmail.com', phone: '0965 763 2398', date: '25 Jan 2024, 8:16 PM' },
+      { type: 'REG', name: 'Sierra Madrigal', email: 'sierra456@gmail.com', phone: '0969 765 4321', date: '01 Feb 2024, 5:15 AM' }
+    ];
+</script>
+
+<AppShell>
+  <!-- Header -->
+  <header class="bg-primary text-black p-4 shadow-md">
+    <div class="container mx-auto flex justify-between items-center">
+      <!-- Logo and Title -->
+      <div class="flex items-center space-x-6">
+        <img src="/logo.png" alt="Tech Talks Logo" class="h-10 w-10"> 
+
+        <div class="flex items-center space-x-4">
+          <div class="flex items-center space-x-2">
+            <img src="/tech-icon.png" alt="Tech Icon" class="h-6 w-6">
+            <a href="tech.html" class="text-2xl font-bold text-black">Tech</a>
+          </div>
+
+          <div class="flex items-center space-x-2">
+            <img src="/talks-icon.png" alt="Talks Icon" class="h-6 w-6">
+            <a href="talks.html" class="text-2xl font-bold text-yellow-300">Talks 2024</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Icons: Search, Notifications, Profile -->
+      <div class="flex items-center space-x-6">
+        <a href="/search" aria-label="Search">
+          <img src="/search-icon.png" alt="Search" class="h-8 w-8 cursor-pointer">
+        </a>
+        <a href="/notifications" aria-label="Notifications">
+          <img src="/bell-icon.png" alt="Notifications" class="h-8 w-8 cursor-pointer">
+        </a>
+        <a href="/profile" aria-label="User Profile">
+          <img src="/profile-icon.png" alt="Profile" class="h-8 w-8 cursor-pointer">
+        </a>
+      </div>
+      
+    </div>
+  </header>      
+
+  <!-- Main Content -->
+  <main class="container mx-auto p-4">
+    <div class="space-y-4">
+        <style>
+            :root {
+              --event-left-margin: -225px; /* Set your default left margin here */
+            }
+          </style>
+        <!--Event Title Row-->
+        <div class="flex justify-between max-w-screen-md mx-auto space-x-8">
+            <!--Event Title Padding-->
+            <div class="p-4 bg-white rounded-lg shadow flex items-start space-x-4 relative px-101 w-0"style="margin-left: var(--event-left-margin);">
+                Event</div>
+            <!---New Padding-->
+            <div class="p-4 bg-white rounded-lg shadow flex flex-col space-y-2 relative px-37 w-1/2">Summary</div></div>
+      <!-- Event Header -->
+      <div class="card p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Left Section (Title, Date, Location, URL) -->
+        <div class="col-span-2 pr-12 p-4 space-y-2 bg-white rounded-lg shadow flex items-start space-x- relative">
+            <!-- Edit Icon as Image Inside Padding -->
+            <a href="/edit-event" class="absolute top-4 right-4">
+                <img src="/edit-icon.png" alt="Edit" class="h-6 w-6 cursor-pointer">
+              </a>              
+            <img src="/event-image.jpg" alt="Event Image" class="h-20 w-20 rounded-lg object-cover">
+            <div class="space-y-2">
+              <h2 class="h2">{event.title}</h2>
+              <div class="flex flex-col space-y-2">
+                <span class="flex items-center space-x-2">
+                  <img src="/calendar-icon.png" alt="Calendar" class="h-6 w-6">
+                  <span>{event.date}</span>
+                </span>
+                <span class="flex items-center space-x-2">
+                  <img src="/location-icon.png" alt="Location" class="h-6 w-6">
+                  <span>{event.location}</span>
+                </span>
+                <span class="flex items-center space-x-2">
+                  <img src="/link-icon.png" alt="Link" class="h-6 w-6">
+                  <a href={event.url} class="anchor">{event.url}</a>
+                </span>
+              </div>              
+            </div>
+          </div>          
+          
+
+        <!-- Right Section (Guests & Income) -->
+        <div class="card variant-ghost p-4 w-full md:w-auto">
+          <div class="flex flex-col space-y-4">
+            <div class="p-4 bg-white rounded-lg shadow flex flex-col space-y-2 relative">
+                <a href="/guests" class="absolute top-2 right-2 text-blue-600 underline text-sm">See full list</a>
+                <div class="flex items-center space-x-2">
+                  <img src="/search-icon.png" alt="Search" class="h-8 w-8">
+                  <h3 class="h3">Guests</h3>
+                </div>
+                <p class="text-2xl font-bold">{event.stats.guests}</p>
+              </div>
+              
+              <div class="p-4 bg-white rounded-lg shadow flex flex-col space-y-2 relative">
+                <a href="/guests" class="absolute top-2 right-2 text-blue-600 underline text-sm">View Breakdown</a>
+                <div class="flex items-center space-x-2">
+                  <img src="/search-icon.png" alt="Search" class="h-8 w-8">
+                  <h3 class="h3">Income</h3>
+                </div>
+                <p class="text-2xl font-bold">₱{event.stats.income.toLocaleString()}</p>
+              </div>         
+          </div>
+        </div>
+      </div>
+      
+      <!-- Navigation Tabs -->
+      <div class="card p-4 mb-8">
+        <div class="flex gap-4">
+          <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100" on:click={() => navigateTo('')}>Guests</button>
+          <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100" on:click={() => navigateTo('')}>Registration</button>
+          <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100" on:click={() => navigateTo('')}>Emails</button>
+          <button class="px-4 py-2 border border-gray-300 rounded-lg bg-blue-500 text-white" on:click={() => navigateTo('')}>Staffs</button>
+          <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100" on:click={() => navigateTo('')}>Website</button>
+        </div>
+      </div>
+ 
+      <!-- Tab Content -->
+      <div class="p-4 bg-gray-100 rounded-lg shadow-md flex justify-between items-center">
+        <!-- Left Section: Guest List Title & Description -->
+        <div>
+          <h3 class="text-xl font-bold">Guest List</h3>
+          <p class="text-gray-600">Your Guest History</p>
+        </div>
+      
+        <!-- Right Section: Invite Staff Button -->
+        <button class="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+          <img src="/invite-icon.png" alt="Invite" class="h-5 w-5">
+          Invite Staff
+        </button>
+      </div>
+
+        {#if tabSet === 0}
+            <div class="card p-4">
+              <!-- Table with Spaced Rows, No Borders, and Icons Before Names -->
+<div class="overflow-x-auto bg-white rounded-lg shadow-md p-4">
+    <table class="w-full border-collapse">
+      <!-- Table Header -->
+      <thead>
+        <tr>
+          <th class="px-4 py-2 text-left font-bold">Name</th>
+          <th class="px-4 py-2 text-left font-bold">Email</th>
+          <th class="px-4 py-2 text-left font-bold">Phone</th>
+          <th class="px-4 py-2 text-left font-bold">Date</th>
+        </tr>
+      </thead>
+  
+      <!-- Table Body -->
+      <tbody>
+        {#each guests as guest}
+          <tr class="hover:bg-gray-100">
+            <td class="px-4 py-3 flex items-center space-x-2">
+              <img src="/user-icon.png" alt="User" class="h-6 w-6">
+              <span>{guest.name}</span>
+            </td>
+            <td class="px-4 py-3">{guest.email}</td>
+            <td class="px-4 py-3">{guest.phone}</td>
+            <td class="px-4 py-3">{guest.date}</td>
+          </tr>
+        {/each}
+      </tbody>
+    </table>
+  </div>
+  
+            </div>
+        {:else}
+            <p>Content for other tabs coming soon...</p>
+        {/if}
+    </div>
+  </main>
+</AppShell>
