@@ -141,7 +141,7 @@
           <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100" on:click={() => navigateTo('')}>Guests</button>
           <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100" on:click={() => navigateTo('')}>Registration</button>
           <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100" on:click={() => navigateTo('')}>Emails</button>
-          <button class="px-4 py-2 border border-gray-300 rounded-lg bg-blue-500 text-white" on:click={() => navigateTo('')}>Staffs</button>
+          <button class="px-4 py-2 border border-gray-300 rounded-lg bg-blue-500 text-white" on:click={() => window.location.href = '/stafs'}>Staffs</button>
           <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100" on:click={() => navigateTo('')}>Website</button>
         </div>
       </div>
