@@ -1,6 +1,6 @@
 <script lang="ts">
     import { AppShell, TabGroup, Tab } from '@skeletonlabs/skeleton';
-    
+    //add sorting script for the pending , search staff, responsiveness (only headers)
     let tabSet = 0;
 
     function navigateTo(path: string) {
@@ -31,19 +31,19 @@
 </script>
 
 <AppShell>
+
   <!-- Header -->
   <header class="bg-primary text-black p-4 shadow-md">
     <div class="container mx-auto flex justify-between items-center">
+
       <!-- Logo and Title -->
       <div class="flex items-center space-x-12">
         <img src="/logo/Veent-red-logo.png" alt="Veent Logo" class="h-6.6 w-12"> 
-
         <div class="flex items-center space-x-7">
           <div class="flex items-center space-x-2">
             <img src="/icons/home-icon.png" alt="Home Icon" class="h-5 w-5">
             <a href="tech.html" class="text-sm font-bold text-red-500">Home</a>
           </div>
-
           <div class="flex items-center space-x-2">
             <img src="/icons/wallet-icon.png" alt="Wallet Icon" class="h-4 w-4">
             <a href="talks.html" class="text-sm font-bold text-black">Wallet</a>
@@ -54,7 +54,7 @@
       <!-- Icons: Search, Notifications, Profile -->
       <div class="flex items-center space-x-5">
         <a href="/search" aria-label="Search">
-          <img src="/icons/search-icon.png" alt="Search-Icon" class="h-5 w-5 cursor-pointer">
+          <img src="/icons/search-icon.png" alt="Search Icon" class="h-5 w-5 cursor-pointer">
         </a>
         <a href="/notifications" aria-label="Notifications">
           <img src="/icons/notification-icon.png" alt="Notification-Icon" class="h-5 w-5 cursor-pointer">
@@ -63,7 +63,6 @@
           <img src="/Group 9968.png" alt="Profile-Icon" class="h-8 w-8 cursor-pointer">
         </a>
       </div>
-      
     </div>
   </header>      
 
@@ -72,61 +71,65 @@
     <div class="space-y-4">
         <style>
             :root {
-              --event-left-margin: -225px; /* Set your default left margin here */
+              --event-left-margin: -225px; 
             }
           </style>
+
         <!--Event Title Row-->
         <div class="flex justify-between max-w-screen-md mx-auto space-x-8">
+
             <!--Event Title Padding-->
             <div class="p-4 bg-white rounded-lg shadow flex items-start space-x-4 relative px-101 w-0"style="margin-left: var(--event-left-margin);">
                 Event</div>
+                
             <!---New Padding-->
             <div class="p-4 bg-white rounded-lg shadow flex flex-col space-y-2 relative px-37 w-1/2">Summary</div></div>
+
       <!-- Event Header -->
       <div class="card p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+
         <!-- Left Section (Title, Date, Location, URL) -->
         <div class="col-span-2 pr-12 p-4 space-y-2 bg-white rounded-lg shadow flex items-start space-x- relative">
+
             <!-- Edit Icon as Image Inside Padding -->
             <a href="/edit-event" class="absolute top-4 right-4">
-                <img src="/edit-icon.png" alt="Edit" class="h-6 w-6 cursor-pointer">
+                <img src="/icons/edit-icon.png" alt="Edit" class="h-7 w-11 cursor-pointer">
               </a>              
-            <img src="/event-image.jpg" alt="Event Image" class="h-20 w-20 rounded-lg object-cover">
+            <img src="/event-photo.png" alt="Event Image" class="h-20 w-20 rounded-lg object-cover">
             <div class="space-y-2">
-              <h2 class="h2">{event.title}</h2>
+              <h2 class="text-3xl font-bold">{event.title}</h2>
               <div class="flex flex-col space-y-2">
                 <span class="flex items-center space-x-2">
-                  <img src="/calendar-icon.png" alt="Calendar" class="h-6 w-6">
+                  <img src="/icons/date-icon.png" alt="Calendar" class="h-6 w-6">
                   <span>{event.date}</span>
                 </span>
                 <span class="flex items-center space-x-2">
-                  <img src="/location-icon.png" alt="Location" class="h-6 w-6">
+                  <img src="/icons/pin-icon.png" alt="Location" class="h-6 w-6">
                   <span>{event.location}</span>
                 </span>
                 <span class="flex items-center space-x-2">
-                  <img src="/link-icon.png" alt="Link" class="h-6 w-6">
+                  <img src="/icons/Copy-icon.png" alt="Link" class="h-6 w-6">
                   <a href={event.url} class="anchor">{event.url}</a>
                 </span>
               </div>              
             </div>
           </div>          
           
-
         <!-- Right Section (Guests & Income) -->
         <div class="card variant-ghost p-4 w-full md:w-auto">
           <div class="flex flex-col space-y-4">
             <div class="p-4 bg-white rounded-lg shadow flex flex-col space-y-2 relative">
-                <a href="/guests" class="absolute top-2 right-2 text-blue-600 underline text-sm">See full list</a>
+                <a href="/guests" class="absolute top-2 right-2 text-black underline text-sm">See full list</a>
                 <div class="flex items-center space-x-2">
-                  <img src="/search-icon.png" alt="Search" class="h-8 w-8">
+                  <img src="/icons/group-icon.png" alt="Guest" class="h-8 w-8">
                   <h3 class="h3">Guests</h3>
                 </div>
                 <p class="text-2xl font-bold">{event.stats.guests}</p>
               </div>
-              
               <div class="p-4 bg-white rounded-lg shadow flex flex-col space-y-2 relative">
-                <a href="/guests" class="absolute top-2 right-2 text-blue-600 underline text-sm">View Breakdown</a>
+                <a href="/guests" class="absolute top-2 right-2 text-black underline text-sm">View Breakdown</a>
                 <div class="flex items-center space-x-2">
-                  <img src="/search-icon.png" alt="Search" class="h-8 w-8">
+                  <img src="/icons/cash-icon.png" alt="Money" class="h-8 w-8">
                   <h3 class="h3">Income</h3>
                 </div>
                 <p class="text-2xl font-bold">₱{event.stats.income.toLocaleString()}</p>
@@ -137,17 +140,18 @@
       
       <!-- Navigation Tabs -->
       <div class="card p-4 mb-8">
-        <div class="flex gap-4">
-          <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100" on:click={() => navigateTo('')}>Guests</button>
-          <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100" on:click={() => navigateTo('')}>Registration</button>
-          <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100" on:click={() => navigateTo('')}>Emails</button>
-          <button class="px-4 py-2 border border-gray-300 rounded-lg bg-blue-500 text-white" on:click={() => window.location.href = '/stafs'}>Staffs</button>
-          <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100" on:click={() => navigateTo('')}>Website</button>
+        <div class="flex gap-4 ">
+          <button class="px-20 py-2 border border-gray-300 rounded-lg hover:bg-red-500 hover:text-white cursor-pointer" on:click={() => navigateTo('')}>Guests</button>
+          <button class="px-15 py-2 border border-gray-300 rounded-lg hover:bg-red-500 hover:text-white cursor-pointer" on:click={() => navigateTo('')}>Registration</button>
+          <button class="px-20 py-2 border border-gray-300 rounded-lg hover:bg-red-500 hover:text-white cursor-pointer" on:click={() => navigateTo('')}>Emails</button>
+          <button class="px-20 py-2 border border-gray-300 rounded-lg hover:bg-red-500 hover:text-white cursor-pointer" on:click={() => window.location.href = '/stafs'}>Staffs</button>
+          <button class="px-20 py-2 border border-gray-300 rounded-lg hover:bg-red-500 hover:text-white cursor-pointer" on:click={() => navigateTo('')}>Website</button>
         </div>
       </div>
  
       <!-- Tab Content -->
-      <div class="p-4 bg-gray-100 rounded-lg shadow-md flex justify-between items-center">
+      <div class="p-4 bg-white rounded-lg shadow-md flex justify-between items-center">
+
         <!-- Left Section: Guest List Title & Description -->
         <div>
           <h3 class="text-xl font-bold">Guest List</h3>
@@ -155,18 +159,24 @@
         </div>
       
         <!-- Right Section: Invite Staff Button -->
-        <button class="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2">
-          <img src="/invite-icon.png" alt="Invite" class="h-5 w-5">
-          Invite Staff
+        <div style="display: flex; gap: 10px;">
+          <button class="bg-gray-200 text-gray px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-gray-300 cursor-pointer">
+          <img src="/icons/arrow-icon (1).png" alt="FullList" class="h-5 w-5">
+          See Full List
         </button>
+        <button class="bg-red-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-red-600 cursor-pointer">
+          <img src="/icons/download-icon.png" alt="Download" class="h-5 w-5">
+          Download CSV
+        </button></div>
       </div>
-
         {#if tabSet === 0}
             <div class="card p-4">
+
               <!-- Table with Spaced Rows, No Borders, and Icons Before Names -->
 <div class="overflow-x-auto bg-white rounded-lg shadow-md p-4">
     <table class="w-full border-collapse">
-      <!-- Table Header -->
+
+      <!-- Table Header
       <thead>
         <tr>
           <th class="px-4 py-2 text-left font-bold">Name</th>
@@ -174,7 +184,7 @@
           <th class="px-4 py-2 text-left font-bold">Phone</th>
           <th class="px-4 py-2 text-left font-bold">Date</th>
         </tr>
-      </thead>
+      </thead> -->
   
       <!-- Table Body -->
       <tbody>
@@ -192,7 +202,6 @@
       </tbody>
     </table>
   </div>
-  
             </div>
         {:else}
             <p>Content for other tabs coming soon...</p>

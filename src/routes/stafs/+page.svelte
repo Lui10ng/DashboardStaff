@@ -44,16 +44,15 @@
       <!-- Header -->
   <header class="bg-primary text-black p-4 shadow-md">
     <div class="container mx-auto flex justify-between items-center">
+
       <!-- Logo and Title -->
       <div class="flex items-center space-x-10">
         <img src="/logo/Veent-red-logo.png" alt="Veent Logo" class="h-6.6 w-12"> 
-
         <div class="flex items-center space-x-5">
           <div class="flex items-center space-x-2">
             <img src="/icons/ticket-icon.png" alt="Ticket-Icon" class="h-4 w-5">
             <a href="tech.html" class="text-sm font-bold text-red-500">Events</a>
           </div>
-
           <div class="flex items-center space-x-2">
             <img src="/icons/wallet-icon.png" alt="Wallet-Icon" class="h-5 w-5">
             <a href="talks.html" class="text-sm font-bold text-black">Wallet</a>
@@ -81,12 +80,12 @@
   </header> 
   
   <main class="container mx-auto p-4">
+
     <!-- Events Title with Icon -->
     <div class="flex items-center space-x-2 mb-4">
         <h2 class="text-lg font-bold">Events</h2>
         <img src="/icons/Arrow-icon.png" alt="Arrow-Icon" class="h-5 w-5">
     </div>
-
 
     <!-- Staff List -->
     <div class="space-y-4">
@@ -94,6 +93,7 @@
 <!-- Event Header -->
 <div class="card p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
     <div class="col-span-2 pr-12 p-4 space-y-2 bg-white rounded-lg flex items-start gap-x-6"> 
+
         <!-- Event Image -->
         <img src="/event-photo.png" alt="Event" class="h-40 w-40 rounded-lg object-cover">
     
@@ -116,10 +116,8 @@
             </div>
         </div>
     </div>
-    
-
     <div class="relative p-4 bg-white rounded-lg">
-        <button class="absolute top-4 left-4 bg-red-500 text-white px-6 py-3 rounded-lg flex items-center gap-2 shadow-md hover:bg-blue-600 transition">
+        <button class="absolute top-4 left-4 bg-red-500 text-white px-6 py-3 rounded-lg flex items-center gap-2 shadow-md hover:bg-red-600 transition cursor-pointer">
             <img src="/icons/add-date-icon.png" alt="AddCalendar" class="h-6 w-6">
             Add to Calendar
         </button>
@@ -129,11 +127,11 @@
 <!-- Navigation Tabs Added Below Event Section -->
 <div class="card p-4 mb-8 mt-4">
     <div class="flex gap-4">
-        <button class="px-20 py-2 border border-gray-300 rounded-lg hover:bg-gray-100" on:click={() => navigateTo('')}>Guests</button>
-        <button class="px-17 py-2 border border-gray-300 rounded-lg hover:bg-gray-100" on:click={() => navigateTo('')}>Registration</button>
-        <button class="px-20 py-2 border border-gray-300 rounded-lg hover:bg-gray-100" on:click={() => navigateTo('')}>Emails</button>
-        <button class="px-20 py-2 border border-gray-300 rounded-lg bg-red-500 text-white" on:click={() => window.location.href = '/stafs'}>Staffs</button>
-        <button class="px-20 py-2 border border-gray-300 rounded-lg hover:bg-gray-100" on:click={() => navigateTo('')}>Website</button>
+        <button class="px-20 py-2 border border-gray-300 rounded-lg hover:bg-red-500 hover:text-white cursor-pointer" on:click={() => navigateTo('')}>Guests</button>
+        <button class="px-17 py-2 border border-gray-300 rounded-lg hover:bg-red-500 hover:text-white cursor-pointer" on:click={() => navigateTo('')}>Registration</button>
+        <button class="px-20 py-2 border border-gray-300 rounded-lg hover:bg-red-500 hover:text-white cursor-pointer" on:click={() => navigateTo('')}>Emails</button>
+        <button class="px-20 py-2 border border-gray-300 rounded-lg bg-red-500 text-white cursor-pointer hover:bg-red-600" on:click={() => window.location.href = '/stafs'}>Staffs</button>
+        <button class="px-20 py-2 border border-gray-300 rounded-lg hover:bg-red-500 hover:text-white cursor-pointer" on:click={() => navigateTo('')}>Website</button>
     </div>
 </div>
 
@@ -142,6 +140,7 @@
 
 <!-- Search Bar & Invite Staff Button Row -->
 <div class="flex justify-between items-center mt-4 p-4 bg-white rounded-lg">
+
     <!-- Search Bar -->
     <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2 w-1/2">
         <img src="/icons/search-icon.png" alt="Search" class="h-5 w-5 mr-2">
@@ -149,8 +148,7 @@
             type="text" 
             placeholder="Search staff..." 
             bind:value={searchQuery} 
-            class="w-full outline-none"
-        >
+            class="w-full outline-none">
     </div>
 
     <!-- Invite Staff Button -->
@@ -162,6 +160,7 @@
 
 <!-- Dropdown Buttons Row -->
 <div class="flex justify-between items-center mt-2 p-4 bg-white rounded-lg">
+
     <!-- "All Staffs" Dropdown -->
     <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2 w-1/3">
         <img src="/icons/filter-icon.png" alt="Staff Icon" class="h-4 w-4 mr-2">
@@ -185,10 +184,9 @@
 
         <!-- Pending Staff Approvals Table -->
         <div class="space-y-4 mt-8">
-
-
             {#each pendingStaffMembers as staff}
             <div class="p-4 border rounded-lg shadow flex justify-between items-center">
+
                 <!-- Left Section: Name, Role, Email, Phone -->
                 <div>
                     <div class="flex items-center space-x-2">
@@ -197,7 +195,6 @@
                             {staff.role}
                         </span>
                     </div>
-
                     <div class="flex items-center space-x-4 text-sm text-gray-600 mt-1">
                         <span>{staff.email}</span>
                         <span>|</span>
@@ -217,15 +214,16 @@
             </div>
             {/each}
         </div>
-
         <hr class="border-t border-gray-300 my-5">
 
 <!-- Staff List -->
 <div class="space-y-4">
     {#each staffMembers as staff}
     <div class="p-4 border rounded-lg shadow flex justify-between items-center">
+
         <!-- Left Section: Name, Role, Email, Phone -->
         <div>
+
             <!-- Name and Role in the Same Row -->
             <div class="flex items-center space-x-2">
                 <h3 class="font-semibold">{staff.name}</h3>
