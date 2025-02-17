@@ -2,7 +2,7 @@
     import { AppShell, TabGroup, Tab } from '@skeletonlabs/skeleton';
     
     let tabSet = 0;
-    
+
     function navigateTo(path: string) {
           if (path) {
             window.location.href = path;
@@ -35,32 +35,32 @@
   <header class="bg-primary text-black p-4 shadow-md">
     <div class="container mx-auto flex justify-between items-center">
       <!-- Logo and Title -->
-      <div class="flex items-center space-x-6">
-        <img src="/logo.png" alt="Tech Talks Logo" class="h-10 w-10"> 
+      <div class="flex items-center space-x-12">
+        <img src="/logo/Veent-red-logo.png" alt="Veent Logo" class="h-6.6 w-12"> 
 
-        <div class="flex items-center space-x-4">
+        <div class="flex items-center space-x-7">
           <div class="flex items-center space-x-2">
-            <img src="/tech-icon.png" alt="Tech Icon" class="h-6 w-6">
-            <a href="tech.html" class="text-2xl font-bold text-black">Tech</a>
+            <img src="/icons/home-icon.png" alt="Home Icon" class="h-5 w-5">
+            <a href="tech.html" class="text-sm font-bold text-red-500">Home</a>
           </div>
 
           <div class="flex items-center space-x-2">
-            <img src="/talks-icon.png" alt="Talks Icon" class="h-6 w-6">
-            <a href="talks.html" class="text-2xl font-bold text-yellow-300">Talks 2024</a>
+            <img src="/icons/wallet-icon.png" alt="Wallet Icon" class="h-4 w-4">
+            <a href="talks.html" class="text-sm font-bold text-black">Wallet</a>
           </div>
         </div>
       </div>
 
       <!-- Icons: Search, Notifications, Profile -->
-      <div class="flex items-center space-x-6">
+      <div class="flex items-center space-x-5">
         <a href="/search" aria-label="Search">
-          <img src="/search-icon.png" alt="Search" class="h-8 w-8 cursor-pointer">
+          <img src="/icons/search-icon.png" alt="Search-Icon" class="h-5 w-5 cursor-pointer">
         </a>
         <a href="/notifications" aria-label="Notifications">
-          <img src="/bell-icon.png" alt="Notifications" class="h-8 w-8 cursor-pointer">
+          <img src="/icons/notification-icon.png" alt="Notification-Icon" class="h-5 w-5 cursor-pointer">
         </a>
         <a href="/profile" aria-label="User Profile">
-          <img src="/profile-icon.png" alt="Profile" class="h-8 w-8 cursor-pointer">
+          <img src="/Group 9968.png" alt="Profile-Icon" class="h-8 w-8 cursor-pointer">
         </a>
       </div>
       
