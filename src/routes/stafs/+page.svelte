@@ -42,38 +42,41 @@
 
 <AppShell>
       <!-- Header -->
-  <header class="bg-primary text-black p-4 shadow-md">
-    <div class="container mx-auto flex justify-between items-center">
-
-      <!-- Logo and Title -->
-      <div class="flex items-center space-x-12">
-        <img src="/logo/Veent-red-logo.png" alt="Veent Logo" class="h-6.6 w-12"> 
-        <div class="flex items-center space-x-7">
-          <div class="flex items-center space-x-2">
-            <img src="/icons/home-icon.png" alt="Home Icon" class="h-5 w-5">
-            <a href="tech.html" class="text-sm font-bold text-red-500">Home</a>
+      <header class="bg-primary text-black p-4 shadow-md">
+        <div class="container mx-auto flex flex-wrap justify-between items-center">
+      
+          <!-- Left Section: Logo and Navigation -->
+          <div class="flex items-center space-x-6 md:space-x-12">
+            <img src="/logo/Veent-red-logo.png" alt="Veent Logo" class="h-6.6 w-12">
+      
+            <div class="flex items-center space-x-6 md:space-x-7">
+              <div class="flex items-center space-x-2">
+                <img src="/icons/home-icon.png" alt="Home Icon" class="h-5 w-5">
+                <a href="tech.html" class="text-sm font-bold text-red-500">Home</a>
+              </div>
+              <div class="flex items-center space-x-2">
+                <img src="/icons/wallet-icon.png" alt="Wallet Icon" class="h-4 w-4">
+                <a href="talks.html" class="text-sm font-bold text-black">Wallet</a>
+              </div>
+            </div>
           </div>
-          <div class="flex items-center space-x-2">
-            <img src="/icons/wallet-icon.png" alt="Wallet Icon" class="h-4 w-4">
-            <a href="talks.html" class="text-sm font-bold text-black">Wallet</a>
+      
+          <!-- Right Section: Search, Notifications, Profile -->
+          <div class="flex items-center space-x-4 sm:space-x-6 mt-4 sm:mt-0">
+            <a href="/search" aria-label="Search">
+              <img src="/icons/search-icon.png" alt="Search-Icon" class="h-5 w-5 cursor-pointer">
+            </a>
+            <a href="/notifications" aria-label="Notifications">
+              <img src="/icons/notification-icon.png" alt="Notification-Icon" class="h-5 w-5 cursor-pointer">
+            </a>
+            <a href="/profile" aria-label="User Profile">
+              <img src="/Group 9968.png" alt="Profile-Icon" class="h-8 w-8 cursor-pointer">
+            </a>
           </div>
+      
         </div>
-      </div>
-
-      <!-- Icons: Search, Notifications, Profile -->
-      <div class="flex items-center space-x-6">
-        <a href="/search" aria-label="Search">
-            <img src="/icons/search-icon.png" alt="Search-Icon" class="h-5 w-5 cursor-pointer">
-        </a>
-        <a href="/notifications" aria-label="Notifications">
-            <img src="/icons/notification-icon.png" alt="Notification-Icon" class="h-5 w-5 cursor-pointer">
-        </a>
-        <a href="/profile" aria-label="User Profile">
-            <img src="/Group 9968.png" alt="Profile-Icon" class="h-8 w-8 cursor-pointer">
-        </a>
-      </div>
-    </div>
-  </header> 
+      </header>
+      
   
   <main class="container mx-auto p-4">
 
@@ -122,15 +125,34 @@
 
 <!-- Navigation Tabs Added Below Event Section -->
 <div class="card p-4 mb-8 mt-4">
-    <div class="flex gap-4">
-        <button class="px-20 py-2 border border-gray-300 rounded-lg hover:bg-red-500 hover:text-white cursor-pointer" on:click={() => navigateTo('')}>Registrants</button>
-        <button class="px-17 py-2 border border-gray-300 rounded-lg hover:bg-red-500 hover:text-white cursor-pointer" on:click={() => navigateTo('')}>Posts</button>
-        <button class="px-20 py-2 border border-gray-300 rounded-lg hover:bg-red-500 hover:text-white cursor-pointer" on:click={() => navigateTo('')}>Emails</button>
-        <button class="px-20 py-2 border border-gray-300 rounded-lg hover:bg-red-500 hover:text-white cursor-pointer" on:click={() => window.location.href = '/Registration instruction'}>Form</button>
-        <button class="px-20 py-2 border border-gray-300 rounded-lg bg-red-500 text-white cursor-pointer hover:bg-red-600" on:click={() => window.location.href = '/stafs'}>Staffs</button>
-        <button class="px-20 py-2 border border-gray-300 rounded-lg hover:bg-red-500 hover:text-white cursor-pointer" on:click={() => navigateTo('')}>Emails</button>
+    <div class="flex flex-wrap justify-center gap-4">
+      <button class="w-full sm:w-auto px-10 py-2 border border-gray-300 rounded-lg hover:bg-red-500 hover:text-white cursor-pointer" 
+        on:click={() => navigateTo('')}>
+        Registrants
+      </button>
+      <button class="w-full sm:w-auto px-10 py-2 border border-gray-300 rounded-lg hover:bg-red-500 hover:text-white cursor-pointer" 
+        on:click={() => navigateTo('')}>
+        Posts
+      </button>
+      <button class="w-full sm:w-auto px-10 py-2 border border-gray-300 rounded-lg hover:bg-red-500 hover:text-white cursor-pointer" 
+        on:click={() => navigateTo('')}>
+        Emails
+      </button>
+      <button class="w-full sm:w-auto px-10 py-2 border border-gray-300 rounded-lg hover:bg-red-500 hover:text-white cursor-pointer" 
+        on:click={() => window.location.href = '/Registration instruction'}>
+        Form
+      </button>
+      <button class="w-full sm:w-auto px-10 py-2 border border-gray-300 rounded-lg bg-red-500 text-white cursor-pointer hover:bg-red-600" 
+        on:click={() => window.location.href = '/stafs'}>
+        Staffs
+      </button>
+      <button class="w-full sm:w-auto px-10 py-2 border border-gray-300 rounded-lg hover:bg-red-500 hover:text-white cursor-pointer" 
+        on:click={() => navigateTo('')}>
+        Emails
+      </button>
     </div>
-</div>
+  </div>
+  
 
 <!-- "Staff Management" Title -->
 <h2 class="text-2xl font-bold mt-8">Management Staff</h2>
