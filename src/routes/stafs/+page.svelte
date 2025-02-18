@@ -129,7 +129,7 @@
     <div class="flex gap-4">
         <button class="px-20 py-2 border border-gray-300 rounded-lg hover:bg-red-500 hover:text-white cursor-pointer" on:click={() => navigateTo('')}>Guests</button>
         <button class="px-17 py-2 border border-gray-300 rounded-lg hover:bg-red-500 hover:text-white cursor-pointer" on:click={() => navigateTo('')}>Registration</button>
-        <button class="px-20 py-2 border border-gray-300 rounded-lg hover:bg-red-500 hover:text-white cursor-pointer" on:click={() => navigateTo('')}>Emails</button>
+        <button class="px-20 py-2 border border-gray-300 rounded-lg hover:bg-red-500 hover:text-white cursor-pointer" on:click={() => window.location.href = '/Registration instruction'}>Emails</button>
         <button class="px-20 py-2 border border-gray-300 rounded-lg bg-red-500 text-white cursor-pointer hover:bg-red-600" on:click={() => window.location.href = '/stafs'}>Staffs</button>
         <button class="px-20 py-2 border border-gray-300 rounded-lg hover:bg-red-500 hover:text-white cursor-pointer" on:click={() => navigateTo('')}>Website</button>
     </div>
@@ -204,10 +204,10 @@
 
                 <!-- Accept & Decline Buttons -->
                 <div class="flex items-center space-x-4">
-                    <button class="bg-white text-red-500 border border-red-500 px-4 py-2 rounded-lg shadow-md hover:bg-red-600 hover:text-white hover:border-red-600 transition">
+                    <button class="bg-white text-red-500 border border-red-500 px-4 py-2 rounded-lg shadow-md hover:bg-red-600 hover:text-white hover:border-red-600 transition cursor-pointer">
                         Decline
                     </button>                    
-                    <button class="bg-red-500 text-white border border-white px-4 py-2 rounded-lg shadow-md hover:bg-white hover:text-red-500 hover:border-white transition">
+                    <button class="bg-red-500 text-white border border-white px-4 py-2 rounded-lg shadow-md hover:bg-white hover:text-red-500 hover:border-white transition cursor-pointer">
                         Accept
                     </button>  
                 </div>

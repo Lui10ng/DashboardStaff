@@ -143,7 +143,7 @@
         <div class="flex gap-4 ">
           <button class="px-20 py-2 border border-gray-300 rounded-lg hover:bg-red-500 hover:text-white cursor-pointer" on:click={() => navigateTo('')}>Guests</button>
           <button class="px-15 py-2 border border-gray-300 rounded-lg hover:bg-red-500 hover:text-white cursor-pointer" on:click={() => navigateTo('')}>Registration</button>
-          <button class="px-20 py-2 border border-gray-300 rounded-lg hover:bg-red-500 hover:text-white cursor-pointer" on:click={() => navigateTo('')}>Emails</button>
+          <button class="px-20 py-2 border border-gray-300 rounded-lg hover:bg-red-500 hover:text-white cursor-pointer" on:click={() => window.location.href = '/Registration instruction'}>Emails</button>
           <button class="px-20 py-2 border border-gray-300 rounded-lg hover:bg-red-500 hover:text-white cursor-pointer" on:click={() => window.location.href = '/stafs'}>Staffs</button>
           <button class="px-20 py-2 border border-gray-300 rounded-lg hover:bg-red-500 hover:text-white cursor-pointer" on:click={() => navigateTo('')}>Website</button>
         </div>
