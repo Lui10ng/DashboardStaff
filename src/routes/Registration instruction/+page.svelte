@@ -1,6 +1,15 @@
 <script lang="ts">
   import { X } from 'lucide-svelte';
   let isModalOpen = false;
+  let selectedImage: string | null = null;
+
+  function handleFileUpload(event: Event) {
+    const fileInput = event.target as HTMLInputElement;
+    if (fileInput.files && fileInput.files.length > 0) {
+      const file = fileInput.files[0];
+      selectedImage = URL.createObjectURL(file);
+    }
+  }
 </script>
 
 <div class="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -46,10 +55,15 @@
               </div>
 
               <div>
-                <h3 class="font-medium mb-2">Images</h3>
-                <div class="rounded-lg p-8 text-center bg-gray-50">
-                  <p class="text-gray-500" >Select image</p>
-                </div>
+                <h3 class="font-medium mb-2">Image</h3>
+                <label class="rounded-lg p-8 text-center bg-gray-50 cursor-pointer block" for="imageUpload">
+                  {#if selectedImage}
+                    <img src={selectedImage} alt="Uploaded Image" class="w-full h-auto rounded-lg" />
+                  {:else}
+                    <p class="text-gray-500">Select image</p>
+                  {/if}
+                </label>
+                <input id="imageUpload" type="file" accept="image/*" class="hidden" on:change={handleFileUpload} />
               </div>
             </div>
 
