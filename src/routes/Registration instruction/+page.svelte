@@ -21,7 +21,7 @@
   </button>
 
   {#if isModalOpen}
-    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 overflow-y-auto">
+  <div class="fixed inset-0 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
       <div class="bg-white rounded-lg w-full max-w-4xl">
         <!-- Modal Header -->
         <div class="flex flex-wrap gap-4 p-4 mt-3 justify-start">
@@ -103,7 +103,7 @@
                 </div>
                 <!-- Editor Content -->
                 <div class="p-4 min-h-[300px] bg-white">
-                  <textarea class="w-full min-h-[300px] p-4 bg-white border rounded-lg resize-none" placeholder="Add text here..."></textarea>
+                  <textarea class="w-full min-h-[300px] p-4 bg-white rounded-lg resize-none" placeholder="Add text here..."></textarea>
                 </div>
               </div>
             </div>
@@ -111,7 +111,7 @@
         </div>
 
         <!-- Modal Footer -->
-        <div class="flex justify-end gap-3 p-4 border-t">
+        <div class="flex justify-end gap-3 p-4 ">
           <button
             on:click={() => isModalOpen = false}
             class="px-4 py-2 text-gray-600 hover:text-gray-800"
