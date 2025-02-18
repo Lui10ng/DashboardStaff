@@ -89,31 +89,30 @@
       <div class="card p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
 
         <!-- Left Section (Title, Date, Location, URL) -->
-        <div class="col-span-2 pr-12 p-4 space-y-2 bg-white rounded-lg shadow flex items-start space-x- relative">
+        <div class="col-span-2 pr-12 p-4 space-y-2 bg-white rounded-lg flex items-start gap-x-6"> 
 
-            <!-- Edit Icon as Image Inside Padding -->
-            <a href="/edit-event" class="absolute top-4 right-4">
-                <img src="/icons/edit-icon.png" alt="Edit" class="h-7 w-11 cursor-pointer">
-              </a>              
-            <img src="/event-photo.png" alt="Event Image" class="h-20 w-20 rounded-lg object-cover">
-            <div class="space-y-2">
+          <!-- Event Image -->
+          <img src="/event-photo.png" alt="Event" class="h-40 w-40 rounded-lg object-cover">
+      
+          <!-- Event Details (Title, Date, Location, URL) -->
+          <div class="space-y-2">
               <h2 class="text-3xl font-bold">{event.title}</h2>
               <div class="flex flex-col space-y-2">
-                <span class="flex items-center space-x-2">
-                  <img src="/icons/date-icon.png" alt="Calendar" class="h-6 w-6">
-                  <span>{event.date}</span>
-                </span>
-                <span class="flex items-center space-x-2">
-                  <img src="/icons/pin-icon.png" alt="Location" class="h-6 w-6">
-                  <span>{event.location}</span>
-                </span>
-                <span class="flex items-center space-x-2">
-                  <img src="/icons/Copy-icon.png" alt="Link" class="h-6 w-6">
-                  <a href={event.url} class="anchor">{event.url}</a>
-                </span>
-              </div>              
-            </div>
-          </div>          
+                  <span class="flex items-center space-x-2">
+                      <img src="/icons/date-icon.png" alt="Calendar" class="h-6 w-6">
+                      <span>{event.date}</span>
+                  </span>
+                  <span class="flex items-center space-x-2">
+                      <img src="/icons/pin-icon.png" alt="Location" class="h-6 w-6">
+                      <span>{event.location}</span>
+                  </span>
+                  <span class="flex items-center space-x-2">
+                      <img src="/icons/Copy-icon.png" alt="Link" class="h-6 w-6">
+                      <a href={event.url} class="anchor">{event.url}</a>
+                  </span>
+              </div>
+          </div>
+      </div>     
           
         <!-- Right Section (Guests & Income) -->
         <div class="card variant-ghost p-4 w-full md:w-auto">

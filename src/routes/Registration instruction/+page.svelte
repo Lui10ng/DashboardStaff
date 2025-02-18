@@ -10,9 +10,20 @@
       selectedImage = URL.createObjectURL(file);
     }
   }
+
+  function navigateTo(path: string) {
+          if (path) {
+            window.location.href = path;
+          } else {
+            console.log('No link assigned yet.');
+          }
+        }
 </script>
 
-<div class="min-h-screen bg-gray-100 flex items-center justify-center">
+<div class="min-h-screen flex items-center justify-center" 
+     style="background-image: url('/testimg.jpg'); background-size: cover; background-position: center;">
+
+     
   <button
     on:click={() => isModalOpen = true}
     class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-md transition-colors"
@@ -28,7 +39,7 @@
           <button class="bg-white hover:bg-red-500 hover:text-white text-black font-semibold py-2 px-4 rounded-md transition-colors sm:w-auto border border-gray-400 cursor-pointer h-10 text-xs">
             Edit Details
           </button>
-          <button class="bg-white hover:bg-red-500 hover:text-white text-black font-semibold py-2 px-4 rounded-md transition-colors sm:w-auto border border-gray-400 cursor-pointer h-10 text-xs">
+          <button class="bg-white hover:bg-red-500 hover:text-white text-black font-semibold py-2 px-4 rounded-md transition-colors sm:w-auto border border-gray-400 cursor-pointer h-10 text-xs"on:click={() => window.location.href = '/visualizer'}>
             Visual
           </button>
           <button class="bg-white hover:bg-red-500 hover:text-white text-black font-semibold py-2 px-4 rounded-md transition-colors sm:w-auto border border-gray-400 cursor-pointer h-10 text-xs">

@@ -46,20 +46,16 @@
     <div class="container mx-auto flex justify-between items-center">
 
       <!-- Logo and Title -->
-      <div class="flex items-center space-x-10">
+      <div class="flex items-center space-x-12">
         <img src="/logo/Veent-red-logo.png" alt="Veent Logo" class="h-6.6 w-12"> 
-        <div class="flex items-center space-x-5">
+        <div class="flex items-center space-x-7">
           <div class="flex items-center space-x-2">
-            <img src="/icons/ticket-icon.png" alt="Ticket-Icon" class="h-4 w-5">
-            <a href="tech.html" class="text-sm font-bold text-red-500">Events</a>
+            <img src="/icons/home-icon.png" alt="Home Icon" class="h-5 w-5">
+            <a href="tech.html" class="text-sm font-bold text-red-500">Home</a>
           </div>
           <div class="flex items-center space-x-2">
-            <img src="/icons/wallet-icon.png" alt="Wallet-Icon" class="h-5 w-5">
+            <img src="/icons/wallet-icon.png" alt="Wallet Icon" class="h-4 w-4">
             <a href="talks.html" class="text-sm font-bold text-black">Wallet</a>
-          </div>
-          <div class="flex items-center space-x-2">
-            <img src="/icons/scan-icon.png" alt="Scanner-Icon" class="h-5 w-5">
-            <a href="talks.html" class="text-sm font-bold text-black">Scanner</a>
           </div>
         </div>
       </div>
@@ -111,7 +107,7 @@
                 </span>
                 <span class="flex items-center space-x-2">
                     <img src="/icons/Copy-icon.png" alt="Link" class="h-6 w-6">
-                    <a href={event.url} class="anchor">{event.url}</a>
+                    <a href={event.url} class="anchor bg-gray-100">{event.url}</a>
                 </span>
             </div>
         </div>
@@ -127,11 +123,12 @@
 <!-- Navigation Tabs Added Below Event Section -->
 <div class="card p-4 mb-8 mt-4">
     <div class="flex gap-4">
-        <button class="px-20 py-2 border border-gray-300 rounded-lg hover:bg-red-500 hover:text-white cursor-pointer" on:click={() => navigateTo('')}>Guests</button>
-        <button class="px-17 py-2 border border-gray-300 rounded-lg hover:bg-red-500 hover:text-white cursor-pointer" on:click={() => navigateTo('')}>Registration</button>
-        <button class="px-20 py-2 border border-gray-300 rounded-lg hover:bg-red-500 hover:text-white cursor-pointer" on:click={() => window.location.href = '/Registration instruction'}>Emails</button>
+        <button class="px-20 py-2 border border-gray-300 rounded-lg hover:bg-red-500 hover:text-white cursor-pointer" on:click={() => navigateTo('')}>Registrants</button>
+        <button class="px-17 py-2 border border-gray-300 rounded-lg hover:bg-red-500 hover:text-white cursor-pointer" on:click={() => navigateTo('')}>Posts</button>
+        <button class="px-20 py-2 border border-gray-300 rounded-lg hover:bg-red-500 hover:text-white cursor-pointer" on:click={() => navigateTo('')}>Emails</button>
+        <button class="px-20 py-2 border border-gray-300 rounded-lg hover:bg-red-500 hover:text-white cursor-pointer" on:click={() => window.location.href = '/Registration instruction'}>Form</button>
         <button class="px-20 py-2 border border-gray-300 rounded-lg bg-red-500 text-white cursor-pointer hover:bg-red-600" on:click={() => window.location.href = '/stafs'}>Staffs</button>
-        <button class="px-20 py-2 border border-gray-300 rounded-lg hover:bg-red-500 hover:text-white cursor-pointer" on:click={() => navigateTo('')}>Website</button>
+        <button class="px-20 py-2 border border-gray-300 rounded-lg hover:bg-red-500 hover:text-white cursor-pointer" on:click={() => navigateTo('')}>Emails</button>
     </div>
 </div>
 
