@@ -41,11 +41,12 @@
   </button>
 
   {#if isModalOpen}
-  <div class="fixed inset-0 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
-      <div class="bg-white rounded-lg w-full max-w-4xl min-h-screen overflow-y-auto">
+  <div class="fixed inset-0 backdrop-blur-md flex items-center justify-center p-4 overflow-auto">
+      <div class="bg-white rounded-lg w-full max-w-4xl min-h-[50vh] max-h-[70vh] flex flex-col overflow-auto">
 
         <!-- Modal Header -->
-        <div class="flex flex-wrap gap-4 p-4 mt-3 justify-start">
+        <div class="flex flex-wrap gap-4 p-4 mt-3 justify-start self-start w-full overflow-visible">
+          
           <button class="bg-white hover:bg-red-500 hover:text-white text-black font-semibold py-2 px-4 rounded-md transition-colors sm:w-auto border border-gray-400 cursor-pointer h-10 text-xs">
             Edit Details
           </button>
@@ -61,7 +62,7 @@
         </div>
 
         <!-- Modal Content -->
-        <div class="p-6 overflow-y-auto max-h-[70vh]">
+        <div class="p-6 overflow-y-auto max-h-[50vh]">
           <h2 class="text-xl font-semibold mb-4">Registration instruction</h2>
           <p class="text-gray-600 mb-4">
             Edit your registration instruction below. Changes update automatically on your website.
@@ -131,8 +132,8 @@
                   </div>
                 </div>
                 <!-- Editor Content -->
-                <div class="p-4 min-h-[300px] bg-white">
-                  <textarea class="w-full min-h-[300px] p-4 bg-white rounded-lg resize-none" placeholder="Add text here..."></textarea>
+                <div class="p-4 min-h-[125px] bg-white">
+                  <textarea class="w-full min-h-[125px] p-4 bg-white rounded-lg resize-none" placeholder="Add text here..."></textarea>
                 </div>
               </div>
             </div>
@@ -143,7 +144,7 @@
         <div class="flex justify-end gap-3 p-4 ">
           <button
             on:click={() => isModalOpen = false}
-            class="px-4 py-2 text-gray-600 hover:text-gray-800"
+            class="px-4 py-2 text-gray-600 hover:text-gray-800 border-gray-200 border-1 rounded"
           >
             Cancel
           </button>

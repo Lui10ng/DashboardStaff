@@ -36,7 +36,7 @@
                 <h3 class="font-medium mb-2">Heading</h3>
                 <input type="text" placeholder="Add heading" class="w-full p-2 rounded-lg bg-gray-50" />
               </div>
-
+<!--
               <div>
                 <h3 class="font-medium mb-2">Images</h3>
                 <label class="rounded-lg p-8 text-center bg-gray-50 cursor-pointer block" for="imageUpload">
@@ -47,15 +47,15 @@
                   {/if}
                 </label>
                 <input id="imageUpload" type="file" accept="image/*" class="hidden" on:change={handleFileUpload} />
-              </div>
+              </div> -->
             </div>
-
+<!--
             <div class="w-2/3">
               <h3 class="font-medium mb-2">Instructions</h3>
               <div class="border rounded-lg p-3 bg-gray-50 min-h-[200px]">
                 <p class="text-gray-500">Rich text editor goes here</p>
               </div>
-            </div>
+            </div> -->
           </div>
         </div>
 
