@@ -226,7 +226,7 @@
                     <button class="bg-white text-red-500 border border-red-500 px-4 py-2 rounded-lg shadow-md hover:bg-red-600 hover:text-white hover:border-red-600 transition cursor-pointer">
                         Decline
                     </button>                    
-                    <button class="bg-red-500 text-white border border-white px-4 py-2 rounded-lg shadow-md hover:bg-white hover:text-red-500 hover:border-white transition cursor-pointer">
+                    <button class="bg-red-500 text-white border border-white px-4 py-2 rounded-lg shadow-md hover:bg-green-500 hover:text-white hover:border-white transition cursor-pointer">
                         Accept
                     </button>  
                 </div>

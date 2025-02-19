@@ -2,12 +2,21 @@
   import { X } from 'lucide-svelte';
   let isModalOpen = false;
   let selectedImage: string | null = null;
+  let fileInput: HTMLInputElement | null = null;
 
   function handleFileUpload(event: Event) {
     const fileInput = event.target as HTMLInputElement;
     if (fileInput.files && fileInput.files.length > 0) {
       const file = fileInput.files[0];
       selectedImage = URL.createObjectURL(file);
+    }
+  }
+
+  function removeImage(event: Event) {
+    event.stopPropagation(); // Prevents any unintended click events
+    selectedImage = null; // Remove the selected image
+    if (fileInput) {
+      fileInput.value = ""; // Reset the file input field
     }
   }
 
@@ -33,7 +42,8 @@
 
   {#if isModalOpen}
   <div class="fixed inset-0 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
-      <div class="bg-white rounded-lg w-full max-w-4xl">
+      <div class="bg-white rounded-lg w-full max-w-4xl min-h-screen overflow-y-auto">
+
         <!-- Modal Header -->
         <div class="flex flex-wrap gap-4 p-4 mt-3 justify-start">
           <button class="bg-white hover:bg-red-500 hover:text-white text-black font-semibold py-2 px-4 rounded-md transition-colors sm:w-auto border border-gray-400 cursor-pointer h-10 text-xs">
@@ -51,7 +61,7 @@
         </div>
 
         <!-- Modal Content -->
-        <div class="p-6">
+        <div class="p-6 overflow-y-auto max-h-[70vh]">
           <h2 class="text-xl font-semibold mb-4">Registration instruction</h2>
           <p class="text-gray-600 mb-4">
             Edit your registration instruction below. Changes update automatically on your website.
@@ -67,20 +77,28 @@
 
               <div>
                 <h3 class="font-medium mb-2">Image</h3>
+
+              {#if selectedImage}
+                <div class="relative w-full">
+                  <img src={selectedImage} alt="Uploaded Image" class="w-full h-auto rounded-lg" />
+                  <!-- Remove Button (Placed Outside the Label) -->
+                  <button on:click={removeImage} class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600">
+                    <X size={16} />
+                  </button>
+                </div>
+              {:else}
                 <label class="rounded-lg p-8 text-center bg-gray-50 cursor-pointer block" for="imageUpload">
-                  {#if selectedImage}
-                    <img src={selectedImage} alt="Uploaded Image" class="w-full h-auto rounded-lg" />
-                  {:else}
-                    <p class="text-gray-500">Select image</p>
-                  {/if}
+                  <p class="text-gray-500">Select image</p>
                 </label>
-                <input id="imageUpload" type="file" accept="image/*" class="hidden" on:change={handleFileUpload} />
-              </div>
+              {/if}
+
+              <input bind:this={fileInput} id="imageUpload" type="file" accept="image/*" class="hidden" on:change={handleFileUpload} />
             </div>
+          </div>
 
             <!-- Right Column - Rich Text Editor -->
-            <div class="w-2/3">
-              <div class="border rounded-lg">
+            <div class="md:w-2/3 w-full">
+              <div class="border rounded-lg overflow-hidden">
                 <!-- Toolbar -->
                 <div class="flex items-center gap-2 p-2 border-b bg-gray-50">
                   <select class="border rounded px-2 py-1 text-sm">
