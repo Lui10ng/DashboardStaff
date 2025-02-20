@@ -1,0 +1,32 @@
+.redButton {
+    background-color: #D12F2B;
+    color: white;
+    font-family: 'Poppins',
+}
+
+.adminButton {
+    background-color: #F3EFC1;
+    color: #784D1E;
+    font-family: 'Poppins',
+}
+
+.scannerButton {
+    background-color: #DEE9FC;
+    color: #263FA9;
+    font-family: 'Poppins',
+}
+
+.declineButton {
+    stroke: #DF4D60;
+    stroke-width: 2px;
+    color: #DF4D60;
+    font-family: 'Poppins',
+}
+
+.normalButton {
+    background-color: white;
+    color: #121826;
+    stroke: #B7B7B7;
+    stroke-width: 2px;
+    font-family: 'Poppins',
+}

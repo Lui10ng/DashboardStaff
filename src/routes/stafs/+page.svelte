@@ -19,7 +19,7 @@
       title: 'Tech Talks 2024',
       date: 'April 16-18, 2024 | 8:00 AM - 6:00 PM',
       location: 'USTP Gymnasium, Cagayan de Oro City',
-      url: 'https://techtalks2024.veent.co',
+      url: 'https://bolt.new/?rid=j725i7',
       stats: {
           guests: 250,
           income: 32550
@@ -278,7 +278,7 @@
           </div>
 
           <!-- Staff Table -->
-          <div class="border border-gray-200 rounded-lg">
+          <div class="border border-gray-200 rounded-lg overflow-x-auto w-full">
               <div class="grid grid-cols-3 gap-4 p-4 border-b border-gray-200 font-medium text-poppins">
                   <div class="ml-8">Name</div>
                   <div class="ml-8">Role</div>
@@ -308,20 +308,21 @@
 
               <!-- Active Staff -->
               {#each staffMembers as staff}
-                  <div class="grid grid-cols-3 gap-4 p-4 border-gray-200 ml-8 mt-4">
-                      <div>{staff.name}</div>
-                      <div>
-                          <span class="px-3 py-1 mt-4 rounded-full text-sm text-white {staff.role === 'Admin' ? 'bg-yellow-500' : 'bg-blue-500'}">
-                              {staff.role}
-                          </span>
-                      </div>
-                      <div class="flex justify-between items-center">
-                          <!--<span class="text-gray-500 capitalize">{staff.status}</span>-->
-                          <button class="p-1 hover:bg-gray-100 rounded ml-80">
-                            <img src="/icons/menu-dots-icon.png" alt="More Options" class="h-5 w-5 text-gray-500">
-                        </button>
-                      </div>
-                  </div>
+              <div class="grid grid-cols-3 gap-4 p-4 border-gray-200 ml-8 mt-4">
+                <div>{staff.name}</div>
+                <div>
+                    <span class="px-3 py-1 mt-4 rounded-full text-sm text-white {staff.role === 'Admin' ? 'bg-yellow-500' : 'bg-blue-500'}">
+                        {staff.role}
+                    </span>
+                </div>
+                <div class="flex justify-end items-center pr-4"> 
+                    <!-- Aligns the button to the right -->
+                    <button class="p-1 hover:bg-gray-100 rounded ml-80">
+                        <img src="/icons/menu-dots-icon.png" alt="More Options" class="h-5 w-5 text-gray-500">
+                    </button>
+                </div>
+            </div>
+            
               {/each}
               
           </div>
