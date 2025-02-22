@@ -1,4 +1,3 @@
-<!-- filepath: /c:/Users/MLouie/Desktop/latest/DashboardStaff/src/routes/+page.svelte -->
 <script lang="ts">
   import { X } from 'lucide-svelte';
   import { pendingStaffMembers, staffMembers } from '$lib/data/dataList';
@@ -40,20 +39,20 @@
 
 <div class="min-h-screen">
   <!-- Header -->
-  <header class="shadow-sm">
+  <header class="header">
     <div class="container mx-auto px-4 py-3">
       <div class="flex justify-between items-center">
         <!-- Left Section -->
         <div class="flex items-center space-x-8">
           <img src="/logo/Veent-red-logo.png" alt="Veent Logo" class="h-6.6 w-12 cursor-pointer">
-          <nav class="hidden md:flex space-x-6">
-            <a href="#" class="flex items-center space-x-2 text-red-500">
-              <img src="/icons/home-icon.png" alt="Home Icon" class="h-5 w-5">
-              <span class="font-medium">Home</span>
+          <nav class="nav-links">
+            <a href="#" class="nav-link text-red-500">
+              <img src="/icons/home-icon.png" alt="Home Icon">
+              <span>Home</span>
             </a>
-            <a href="#" class="flex items-center space-x-2 text-gray-600">
-              <img src="/icons/wallet-icon.png" alt="Wallet Icon" class="h-4 w-4">
-              <span class="font-medium">Wallet</span>
+            <a href="#" class="nav-link text-gray-600">
+              <img src="/icons/wallet-icon.png" alt="Wallet Icon">
+              <span>Wallet</span>
             </a>
           </nav>
         </div>
