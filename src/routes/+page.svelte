@@ -1,8 +1,10 @@
+<!-- filepath: /c:/Users/MLouie/Desktop/latest/DashboardStaff/src/routes/+page.svelte -->
 <script lang="ts">
   import { X } from 'lucide-svelte';
   import { pendingStaffMembers, staffMembers } from '$lib/data/dataList';
   import EventCard from '$lib/components/EventCard.svelte';
   import NavigationTabs from '$lib/components/NavigationTabs.svelte';
+  import '../styles/staffTable.css'; // Corrected import path
 
   let searchQuery = '';
   let staffFilter = 'All Staffs';
@@ -101,18 +103,18 @@
 
         <!-- Pending Staff -->
         {#each pendingStaffMembers as staff}
-          <div class="grid grid-cols-3 gap-4 p-4 border-gray-200 ml-8 mt-4">
-            <div>{staff.name}</div>
-            <div>
+          <div class="staff-row">
+            <div class="staff-name">{staff.name}</div>
+            <div class="staff-role">
               <span class="px-3 py-1 mt-4 rounded-full text-sm text-white {staff.role === 'Admin' ? 'bg-yellow-500' : 'bg-blue-500'}">
                 {staff.role}
               </span>
             </div>
-            <div class="flex space-x-3 ml-40">
-              <button class="px-4 py-1 border border-red-500 text-red-500 rounded-lg hover:bg-red-50">
+            <div class="staff-actions">
+              <button class="decline">
                 Decline
               </button>
-              <button class="px-8 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600">
+              <button class="accept">
                 Accept
               </button>
             </div>
@@ -121,15 +123,15 @@
 
         <!-- Active Staff -->
         {#each staffMembers as staff}
-          <div class="grid grid-cols-3 gap-4 p-4 border-gray-200 ml-8 mt-4">
-            <div>{staff.name}</div>
-            <div>
+          <div class="staff-row">
+            <div class="staff-name">{staff.name}</div>
+            <div class="staff-role">
               <span class="px-3 py-1 mt-4 rounded-full text-sm text-white {staff.role === 'Admin' ? 'bg-yellow-500' : 'bg-blue-500'}">
                 {staff.role}
               </span>
             </div>
-            <div class="flex justify-between items-center">
-              <button class="p-1 hover:bg-gray-100 rounded ml-80">
+            <div class="more-options">
+              <button class="p-1 hover:bg-gray-100 rounded">
                 <img src="/icons/menu-dots-icon.png" alt="More Options" class="h-5 w-5 text-gray-500">
               </button>
             </div>
