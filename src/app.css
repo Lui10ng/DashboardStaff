@@ -1,1 +1,7 @@
 @import 'tailwindcss';
+
+.dark-background {
+    background-color: #1a1a1a; /* Dark background color */
+    color: white; /* Ensure text is white for better visibility */
+    min-height: 100vh; /* Ensure it covers the full viewport height */
+  }
