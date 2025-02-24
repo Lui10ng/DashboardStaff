@@ -21,7 +21,7 @@ export const tickets = writable<Ticket[]>([
   { id: 6, type: 'UPPER BOX', price: '₱ 750', status: 'AVAILABLE IN', timer: '23:59:50', color: 'bg-cyan-500', remainingTime: 86400 }, // 1 day in seconds
   { id: 7, type: 'STANDING A', price: '₱ 800', ticketLeft: '198/200', color: 'bg-red-500' },
   { id: 8, type: 'STANDING B', price: '₱ 800', ticketLeft: '198/200', color: 'bg-red-500' },
-  { id: 9, type: 'STANDING C', price: '₱ 800', status: 'ONLY AVAILABLE BETWEEN', date: '2/19/25 and 3/22/25', color: 'bg-red-700', remainingTime: 172800 }, // 2 days in seconds
+  { id: 9, type: 'STANDING C', price: '₱ 800', status: 'ONLY AVAILABLE BETWEEN', date: '2/25/25 and 3/22/25', color: 'bg-red-700', remainingTime: 172800 }, // 2 days in seconds
   { id: 10, type: 'STANDING D', price: '₱ 800', status: 'ONLY AVAILABLE BETWEEN', date: '2/19/25 and 3/22/25', color: 'bg-red-700', remainingTime: 172800 }, // 2 days in seconds
 ]);
 
@@ -31,7 +31,7 @@ export function toggleShowTicketCount() {
   showTicketCount.update(value => !value);
 }
 
-function formatTime(seconds: number): string {
+export function formatTime(seconds: number): string {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
   const secs = seconds % 60;

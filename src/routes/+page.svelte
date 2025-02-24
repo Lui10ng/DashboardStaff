@@ -2,15 +2,8 @@
   import { onMount } from 'svelte';
   import Header from '../components/Header.svelte';
   import TicketList from '../components/TicketList.svelte';
-  import { tickets, showTicketCount, toggleShowTicketCount } from '../stores/tickets';
+  import { tickets, showTicketCount, toggleShowTicketCount, formatTime } from '../stores/tickets';
   import { get } from 'svelte/store';
-
-  function formatTime(seconds: number): string {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-  }
 
   onMount(() => {
     const interval = setInterval(() => {
