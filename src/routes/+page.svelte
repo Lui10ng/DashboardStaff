@@ -2,18 +2,16 @@
   import { onMount } from 'svelte';
   import Header from '../components/Header.svelte';
   import TicketList from '../components/TicketList.svelte';
-  import { tickets, showTicketCount, toggleShowTicketCount, formatTime } from '../stores/tickets';
+  import { tickets, showTicketCount, toggleShowTicketCount, formatTime, updateTicketStatus } from '../stores/tickets';
   import { get } from 'svelte/store';
 
   onMount(() => {
     const interval = setInterval(() => {
       tickets.update(tickets => {
         tickets.forEach(ticket => {
+          updateTicketStatus(ticket);
           if (ticket.remainingTime !== undefined && ticket.remainingTime > 0) {
             ticket.remainingTime -= 1;
-            if (ticket.remainingTime <= 86400 && ticket.status === 'ONLY AVAILABLE BETWEEN') {
-              ticket.status = 'AVAILABLE IN';
-            }
             ticket.timer = formatTime(ticket.remainingTime);
           }
         });

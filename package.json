@@ -44,6 +44,7 @@
 	},
 	"dependencies": {
 		"@skeletonlabs/skeleton": "^2.11.0",
+		"date-fns": "^4.1.0",
 		"lucide-svelte": "^0.344.0"
 	}
 }
