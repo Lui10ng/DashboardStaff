@@ -1,4 +1,5 @@
 import { writable } from 'svelte/store';
+import { browser } from '$app/environment';
 import { differenceInSeconds, parseISO, format } from 'date-fns';
 
 export type Ticket = {
@@ -7,24 +8,59 @@ export type Ticket = {
   price: string;
   status?: string;
   color: string;
+  textColor: string;
   ticketLeft?: string;
   timer?: string;
   date?: string;
   remainingTime?: number;
 };
 
-export const tickets = writable<Ticket[]>([
-  { id: 1, type: 'VVIP', price: '₱ 5,500', status: 'SOLD OUT', color: 'bg-black' },
-  { id: 2, type: 'VIP', price: '₱ 3,500', ticketLeft: '8/25', color: 'bg-yellow-500' },
-  { id: 3, type: 'PATRON A', price: '₱ 2,000', ticketLeft: '198/200', color: 'bg-yellow-400' },
-  { id: 4, type: 'PATRON B', price: '₱ 1,500', ticketLeft: '198/200', color: 'bg-green-500' },
-  { id: 5, type: 'LOWER BOX', price: '₱ 1,000', status: 'AVAILABLE IN', timer: '23:59:50', color: 'bg-pink-500', remainingTime: 86400 }, // 1 day in seconds
-  { id: 6, type: 'UPPER BOX', price: '₱ 750', status: 'AVAILABLE IN', timer: '23:59:50', color: 'bg-cyan-500', remainingTime: 86400 }, // 1 day in seconds
-  { id: 7, type: 'STANDING A', price: '₱ 800', ticketLeft: '198/200', color: 'bg-red-500' },
-  { id: 8, type: 'STANDING B', price: '₱ 800', ticketLeft: '198/200', color: 'bg-red-500' },
-  { id: 9, type: 'STANDING C', price: '₱ 800', status: 'ONLY AVAILABLE BETWEEN', date: '2025-02-26', color: 'bg-red-700', remainingTime: 172800 }, // 2 days in seconds
-  { id: 10, type: 'STANDING D', price: '₱ 800', status: 'ONLY AVAILABLE BETWEEN', date: '2025-02-19', color: 'bg-red-700', remainingTime: 172800 }, // 2 days in seconds
-]);
+// Create an empty store initially
+export const tickets = writable<Ticket[]>([]);
+
+// Function to load tickets from server
+export async function loadTickets() {
+  if (browser) {
+    try {
+      const response = await fetch('/api/tickets');
+      const data = await response.json();
+      tickets.set(data);
+    } catch (error) {
+      console.error('Failed to load tickets:', error);
+    }
+  }
+}
+
+// Function to update a ticket
+export async function updateTicket(ticketId: number, newCount: number) {
+  if (browser) {
+    try {
+      const response = await fetch('/api/tickets', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ ticketId, newCount })
+      });
+      
+      const result = await response.json();
+      if (result.success) {
+        tickets.update(allTickets => {
+          const index = allTickets.findIndex(t => t.id === ticketId);
+          if (index !== -1) {
+            allTickets[index] = result.ticket;
+          }
+          return allTickets;
+        });
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Failed to update ticket:', error);
+      return { success: false, message: 'Network error' };
+    }
+  }
+}
 
 export const showTicketCount = writable(true);
 

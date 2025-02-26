@@ -1,0 +1,20 @@
+{
+  "tickets": [
+    {
+      "id": 1,
+      "type": "VVIP",
+      "price": "₱ 5,500",
+      "status": "SOLD OUT",
+      "color": "bg-black",
+      "textColor": "text-black"
+    },
+    {
+      "id": 2,
+      "type": "VIP",
+      "price": "₱ 3,500",
+      "color": "bg-yellow-500",
+      "textColor": "text-yellow-500",
+      "status": "SOLD OUT"
+    }
+  ]
+}

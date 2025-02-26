@@ -2,10 +2,17 @@
   import { onMount } from 'svelte';
   import Header from '../components/Header.svelte';
   import TicketList from '../components/TicketList.svelte';
-  import { tickets, showTicketCount, toggleShowTicketCount, formatTime, updateTicketStatus } from '../stores/tickets';
+  import { tickets, showTicketCount, toggleShowTicketCount, formatTime, updateTicketStatus, loadTickets } from '../stores/tickets';
   import { get } from 'svelte/store';
 
+  // Get the data passed from the server
+  export let data;
+  
   onMount(() => {
+    // Initialize the store with server data
+    tickets.set(data.tickets);
+    
+    // Set up the timer interval
     const interval = setInterval(() => {
       tickets.update(tickets => {
         tickets.forEach(ticket => {
