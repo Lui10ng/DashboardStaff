@@ -1,5 +1,11 @@
 <script lang="ts">
     import { AppShell, TabGroup, Tab } from '@skeletonlabs/skeleton';
+    import EditEventModal from '../lib/components/EditEventModal/EditEventModal.svelte';
+    import { writable } from 'svelte/store';
+    let isModalOpen = writable(false);
+
+
+
     //add sorting script for the pending , search staff, responsiveness (only headers)
     let tabSet = 0;
 
@@ -96,7 +102,21 @@
       
           <!-- Event Details (Title, Date, Location, URL) -->
           <div class="space-y-2">
-              <h2 class="text-3xl font-bold">{event.title}</h2>
+            <div class="relative w-140">
+              <h2 class="text-3xl font-bold inline-block">{event.title}</h2>
+              <button
+  on:click={() => isModalOpen.set(true)}
+  class="flex gap-2 text-red-500 hover:text-red-700 font-semibold inline-block absolute right-0"
+><div></div>
+  <span >Edit Event</span>
+  <svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-5m-3-9l4 4m-7 1l7-7"></path>
+  </svg>
+</button>
+
+<EditEventModal bind:isOpen={isModalOpen} />
+ 
+            </div>
               <div class="flex flex-col space-y-2">
                   <span class="flex items-center space-x-2">
                       <img src="/icons/date-icon.png" alt="Calendar" class="h-6 w-6">
