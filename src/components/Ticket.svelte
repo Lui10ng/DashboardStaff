@@ -55,7 +55,7 @@
       {:else if ticket.status === 'ONLY AVAILABLE BETWEEN'}
         <div class="text-right">
           <p class="font-bold text-gray-700">ONLY AVAILABLE BETWEEN</p>
-          <p class="text-sm text-gray-600">
+          <p class="text-sm text-black">
             2/19/25 and 3/22/25
           </p>
         </div>
