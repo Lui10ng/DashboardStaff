@@ -13,7 +13,7 @@
 
 <!-- Content -->
  <div class="mb-6">
-  <h2 class="text-xl font-semibold text-gray-900">Basic information</h2>
+  <h2 class="text-xl font-semibold text-gray-900 mb-2">Basic information</h2>
       <p class="text-sm text-gray-500">
           Edit your event details below. Changes update automatically on your website.
       </p>
