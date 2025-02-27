@@ -12,9 +12,9 @@
       "id": 2,
       "type": "VIP",
       "price": "₱ 3,500",
-      "ticketLeft": "8/25",
       "color": "bg-yellow-500",
-      "textColor": "text-yellow-500"
+      "textColor": "text-yellow-500",
+      "status": "SOLD OUT"
     },
     {
       "id": 3,
@@ -28,9 +28,9 @@
       "id": 4,
       "type": "VIP",
       "price": "₱ 3,500",
-      "ticketLeft": "5/25",
       "color": "bg-yellow-500",
-      "textColor": "text-yellow-500"
+      "textColor": "text-yellow-500",
+      "status": "SOLD OUT"
     },
     {
       "id": 5,
