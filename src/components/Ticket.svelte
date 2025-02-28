@@ -5,11 +5,11 @@
   export let ticket: Ticket;
   export let showTicketCount: boolean;
   
-  // Initialize isSelected to false (no check mark shown initially)
+  /
   let isSelected = false;
   
   async function handlePurchase(event) {
-    // Stop propagation to prevent the click from toggling the check mark
+    
     event.stopPropagation();
     
     if (!ticket.ticketLeft) return;
@@ -18,18 +18,17 @@
     const currentCount = parseInt(current);
     
     if (currentCount > 0) {
-      // Decrease ticket count by 1
+      
       const result = await updateTicket(ticket.id, currentCount - 1);
       if (result.success) {
-        // The store will be updated automatically
-        // You could show a success message here
+        
       }
     }
   }
   
-  // Toggle selection state when the ticket is clicked
+  
   function toggleSelection() {
-    // Only allow toggling if the ticket is available
+    
     if (!ticket.status && ticket.ticketLeft) {
       isSelected = !isSelected;
     }
@@ -81,7 +80,7 @@
       <span class="text-white text-xl poppin">{ticket.date}</span>
         </div>
       {:else if !ticket.status && ticket.ticketLeft}
-        <!-- Check mark container -->
+        
         <div class="text-right">
           {#if isSelected}
             <span class="text-green-500 text-2xl">✓</span>
