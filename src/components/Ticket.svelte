@@ -36,7 +36,7 @@
   }
 </script>
 
-<!-- Make the entire ticket clickable -->
+
 <div class="bg-white rounded-lg overflow-hidden flex h-full cursor-pointer" on:click={toggleSelection}>
   <div class={ticket.color + " w-5"} />
   <div class="p-6 flex-1 relative">
