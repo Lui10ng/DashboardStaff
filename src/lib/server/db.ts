@@ -15,7 +15,8 @@ if (!fs.existsSync(DB_PATH)) {
       { id: 4, type: 'VIP', price: '₱ 3,500', ticketLeft: '8/25', color: 'bg-yellow-500', textColor: 'text-yellow-500' },
       { id: 5, type: 'VIP', price: '₱ 3,500', ticketLeft: '8/25', color: 'bg-yellow-500', textColor: 'text-yellow-500' },
       { id: 6, type: 'UPPER BOX', price: '₱ 750', status: 'AVAILABLE IN', timer: '23:59:50', color: 'bg-cyan-500', textColor: 'text-black', remainingTime: 86400 },
-      { id: 10, type: 'STANDING D', price: '₱ 800', status: 'ONLY AVAILABLE BETWEEN', date: '2025-02-27', color: 'bg-red-700', textColor: 'text-black', remainingTime: 172800 },
+      { id: 10, type: 'STANDING D', price: '₱ 800', status: 'ONLY AVAILABLE BETWEEN', date: '2/30/25 and 3/22/25', color: 'bg-red-700', textColor: 'text-black', remainingTime: 172800 },
+      { id: 12, type: 'UPPER BOX', price: '₱ 750', status: 'AVAILABLE IN', timer: '23:59:50', color: 'bg-cyan-500', textColor: 'text-black', remainingTime: 86400 },
       // Add all your tickets here
     ]
   };

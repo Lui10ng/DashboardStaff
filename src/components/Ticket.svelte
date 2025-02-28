@@ -5,7 +5,13 @@
   export let ticket: Ticket;
   export let showTicketCount: boolean;
   
-  async function handlePurchase() {
+  // Initialize isSelected to false (no check mark shown initially)
+  let isSelected = false;
+  
+  async function handlePurchase(event) {
+    // Stop propagation to prevent the click from toggling the check mark
+    event.stopPropagation();
+    
     if (!ticket.ticketLeft) return;
     
     const [current, total] = ticket.ticketLeft.split('/');
@@ -20,15 +26,27 @@
       }
     }
   }
+  
+  // Toggle selection state when the ticket is clicked
+  function toggleSelection() {
+    // Only allow toggling if the ticket is available
+    if (!ticket.status && ticket.ticketLeft) {
+      isSelected = !isSelected;
+    }
+  }
 </script>
 
-<div class="bg-white rounded-lg overflow-hidden flex h-full">
+<!-- Make the entire ticket clickable -->
+<div class="bg-white rounded-lg overflow-hidden flex h-full cursor-pointer" on:click={toggleSelection}>
   <div class={ticket.color + " w-5"} />
   <div class="p-6 flex-1 relative">
     {#if ticket.status === 'SOLD OUT'}
-      <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-10">
-        <span class="text-white text-2xl font-bold">SOLD OUT</span>
-      </div>
+  <div 
+    class="absolute inset-0 flex items-center justify-center z-10"
+    style="background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);"
+  >
+    <span class="text-white text-2xl font-bold">SOLD OUT</span>
+  </div>
     {/if}
     
     <div class="flex justify-between items-start">
@@ -46,22 +64,28 @@
       </div>
       
       {#if ticket.status === 'AVAILABLE IN'}
-        <div class="text-right">
-          <p class="font-bold text-gray-700">{ticket.status}</p>
-          {#if ticket.timer}
-            <p class="text-xl text-gray-600">{ticket.timer}</p>
-          {/if}
+      <div 
+      class="absolute inset-0 flex flex-col items-center justify-center z-10"
+      style="background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);"
+    >
+    <span class="text-white text-2xl font-bold">{ticket.status}</span>
+    {#if ticket.timer}
+      <span class="text-white text-xl mt-2">{ticket.timer}</span>
+    {/if}
         </div>
       {:else if ticket.status === 'ONLY AVAILABLE BETWEEN'}
-        <div class="text-right">
-          <p class="font-bold text-gray-700">ONLY AVAILABLE BETWEEN</p>
-          <p class="text-sm text-black">
-            2/19/25 and 3/22/25
-          </p>
+        <div class="absolute inset-0 flex flex-col items-center justify-center z-10 text-center"
+        style="background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);"
+      >
+      <span class="text-white text-xl font-bold poppin">{ticket.status}</span>
+      <span class="text-white text-xl poppin">{ticket.date}</span>
         </div>
       {:else if !ticket.status && ticket.ticketLeft}
+        <!-- Check mark container -->
         <div class="text-right">
-          <span class="text-green-500 text-2xl">✓</span>
+          {#if isSelected}
+            <span class="text-green-500 text-2xl">✓</span>
+          {/if}
         </div>
       {/if}
     </div>
