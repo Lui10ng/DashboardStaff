@@ -1,6 +1,6 @@
 <script lang="ts">
 	import '../../app.css';
-	import Navigation from '$lib/StaffAndEditEvent/components/Navigation.svelte';
+	import Navigation from '$lib/components/layout/Navigation.svelte';
 	let { children } = $props();
 </script>
 

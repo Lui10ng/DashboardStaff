@@ -1,8 +1,8 @@
 <script lang="ts">
   import { X } from 'lucide-svelte';
-  import { pendingStaffMembers, staffMembers } from '$lib/StaffAndEditEvent/data/dataList';
-  import EventCard from '$lib/StaffAndEditEvent/components/EditEventModal/EventCard.svelte';
-  import NavigationTabs from '$lib/StaffAndEditEvent/components/NavigationTabs.svelte';
+  import { pendingStaffMembers, staffMembers } from '$lib/types/data/dataList';
+  import EventCard from '$lib/components/features/EditEventModal/EventCard.svelte';
+  import NavigationTabs from '$lib/components/features/NavigationTabs.svelte';
   import '../styles/staffTable.css';
 
   let searchQuery = '';

@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { event } from '$lib/StaffAndEditEvent/data/eventData';
-  import { eventDetails } from '$lib/StaffAndEditEvent/store';
+  import { event } from '$lib/types/data/eventData';
+  import { eventDetails } from '$lib/stores/store';
   import EditEventModal from './EditEventModal.svelte';
   import { writable } from 'svelte/store';
 // console.log("event",event);

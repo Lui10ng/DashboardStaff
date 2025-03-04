@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { eventDetails } from '$lib/StaffAndEditEvent/store';
+  import { eventDetails } from '$lib/stores/store';
 
   let eventUrl = "";
   let eventName = "";
