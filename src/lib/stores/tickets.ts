@@ -15,10 +15,10 @@ export type Ticket = {
   remainingTime?: number;
 };
 
-// Create an empty store initially
+
 export const tickets = writable([]);
 
-// Function to load tickets from server
+
 export async function loadTickets() {
   if (browser) {
     try {
@@ -31,7 +31,7 @@ export async function loadTickets() {
   }
 }
 
-// Function to update a ticket
+
 export async function updateTicket(ticketId: number, newCount: number) {
   if (browser) {
     try {

@@ -5,7 +5,7 @@
   export let ticket: Ticket;
   export let showTicketCount: boolean;
   
-  // Initialize isSelected to false (no check mark shown initially)
+
   let isSelected = false;
   
   async function handlePurchase(event: Event) {
@@ -19,7 +19,6 @@
     if (currentCount > 0) {
       const result = await updateTicket(ticket.id, currentCount - 1);
       if (result.success) {
-        // Handle successful ticket update
       }
     }
   }
@@ -85,6 +84,7 @@
       {/if}
     </div>
     
+    <!--make this a comment to disable 'Purchase Ticket Button'-->
     {#if ticket.ticketLeft && !ticket.status}
       <button 
         on:click={handlePurchase}

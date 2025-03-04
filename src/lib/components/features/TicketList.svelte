@@ -5,8 +5,9 @@
 
 <div class="max-w-2xl mx-auto">
   <div class="mb-4">
-    <h1 class="text-2xl text-white mb-4">Select Tickets</h1>
+    <h1 class="text-2xl text-white mb-8">Select Tickets</h1>
     <div class="mb-4">
+      <!--make this a comment to disable "Show Ticket Count Button"-->
       <button
         on:click={toggleShowTicketCount}
         class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
