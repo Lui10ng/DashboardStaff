@@ -1,5 +1,12 @@
 <script lang="ts">
 	import ContactInfo from '$lib/components/ContactInfo.svelte';
+	import { onMount } from 'svelte';
+
+	let mapLoaded = false;
+	
+	const handleMapLoad = () => {
+		mapLoaded = true;
+	};
 
 	export let data;
 </script>
@@ -18,7 +25,13 @@
 				{/each}
 			</div>
 
-			<div class="h-96 overflow-hidden rounded-lg lg:col-span-2 lg:h-auto">
+			<div class="h-96 overflow-hidden rounded-lg lg:col-span-2 lg:h-auto relative">
+				{#if !mapLoaded}
+					<div class="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-gray-100">
+						<div class="h-10 w-10 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600"></div>
+						<p class="text-gray-600 text-lg font-medium">Map will display here</p>
+					</div>
+				{/if}
 				<iframe
 					width="100%"
 					height="100%"
@@ -27,6 +40,7 @@
 					loading="lazy"
 					referrerpolicy="no-referrer-when-downgrade"
 					title="map"
+					on:load={handleMapLoad}
 				></iframe>
 			</div>
 		</div>
