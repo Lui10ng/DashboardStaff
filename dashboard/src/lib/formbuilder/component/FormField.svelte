@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import Icon from '@iconify/svelte';
-	import type {FormFieldTypes} from '../types';
+	import type { FormFieldTypes } from '../types';
 
 	export let field: FormFieldTypes;
 
@@ -34,9 +34,17 @@
 			});
 		}
 	}
+
+	function startDrag() {
+		dispatch('startdrag');
+	}
+
+	function stopDrag() {
+		dispatch('stopdrag');
+	}
 </script>
 
-<div class="cursor-move rounded-lg bg-white p-6 shadow-lg">
+<div class="rounded-lg border-2 border-gray-200 bg-white p-6">
 	<div class="mb-4 flex items-start justify-between">
 		<div class="flex-1">
 			<input
@@ -62,7 +70,6 @@
 					icon={field.required ? 'material-symbols:error' : 'material-symbols:error-outline'}
 					class={field.required ? 'text-red-500' : 'text-gray-400'}
 				/>
-				<span class="sr-only">{field.required ? 'Required field' : 'Optional field'}</span>
 			</button>
 			<button
 				class="cursor-pointer p-2 text-gray-500 hover:text-red-500"
@@ -70,6 +77,15 @@
 			>
 				<Icon icon="material-symbols:delete-outline" />
 			</button>
+			<div
+				class="cursor-grab p-2 text-gray-400 hover:text-gray-600"
+				on:mousedown={() => dispatch('startdrag')}
+				on:mouseup={() => dispatch('stopdrag')}
+				on:mouseleave={() => dispatch('stopdrag')}
+				data-dnd-handle
+			>
+				<Icon icon="material-symbols:drag-indicator" />
+			</div>
 		</div>
 	</div>
 
@@ -113,49 +129,49 @@
 				{#if field.type === 'shortText'}
 					<input
 						type="text"
-						class="w-full rounded-md border p-2"
+						class="w-full rounded-md p-2"
 						placeholder="Short answer text"
 						disabled
 					/>
 				{:else if field.type === 'longText'}
-					<textarea class="w-full rounded-md border p-2" placeholder="Long answer text" disabled
+					<textarea class="w-full rounded-md p-2" placeholder="Long answer text" disabled
 					></textarea>
 				{:else if field.type === 'email'}
-					<input type="email" class="w-full rounded-md border p-2" placeholder="Email" disabled />
+					<input type="email" class="w-full rounded-md p-2" placeholder="Email" disabled />
 				{:else if field.type === 'phone'}
-					<input
-						type="tel"
-						class="w-full rounded-md border p-2"
-						placeholder="Phone number"
-						disabled
-					/>
+					<input type="tel" class="w-full rounded-md p-2" placeholder="Phone number" disabled />
 				{:else if field.type === 'number'}
-					<input type="number" class="w-full rounded-md border p-2" placeholder="Number" disabled />
+					<input type="number" class="w-full rounded-md p-2" placeholder="Number" disabled />
 				{:else if field.type === 'date'}
-					<input type="date" class="w-full rounded-md border p-2" disabled />
+					<input type="date" class="w-full rounded-md p-2" disabled />
 				{:else if field.type === 'file'}
-					<input type="file" class="w-full rounded-md border p-2" disabled />
+					<input type="file" class="w-full rounded-md p-2" disabled />
 				{:else if field.type === 'name'}
 					<div class="grid grid-cols-2 gap-4">
-						<input type="text" class="rounded-md border p-2" placeholder="First name" disabled />
-						<input type="text" class="rounded-md border p-2" placeholder="Last name" disabled />
+						<input
+							type="text"
+							class="rounded-md border-2 border-gray-200 p-2"
+							placeholder="First name"
+							disabled
+						/>
+						<input
+							type="text"
+							class="rounded-md border-2 border-gray-200 p-2"
+							placeholder="Last name"
+							disabled
+						/>
 					</div>
 				{:else if field.type === 'price'}
 					<div class="relative">
 						<span class="absolute top-2 left-3">₱</span>
-						<input
-							type="number"
-							class="w-full rounded-md border p-2 pl-8"
-							placeholder="0.00"
-							disabled
-						/>
+						<input type="number" class="w-full rounded-md p-2 pl-8" placeholder="0.00" disabled />
 					</div>
 				{:else if field.type === 'region'}
-					<select class="w-full rounded-md border p-2" disabled>
+					<select class="w-full rounded-md p-2" disabled>
 						<option>Select Region</option>
 					</select>
 				{:else if field.type === 'city'}
-					<select class="w-full rounded-md border p-2" disabled>
+					<select class="w-full rounded-md p-2" disabled>
 						<option>Select City/Municipality</option>
 					</select>
 				{/if}
@@ -163,3 +179,5 @@
 		</div>
 	{/if}
 </div>
+
+<slot></slot>

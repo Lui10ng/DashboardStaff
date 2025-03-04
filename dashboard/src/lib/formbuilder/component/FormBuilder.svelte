@@ -8,8 +8,8 @@
 	let formResponses: Record<string, any> = {};
 
 	let formData: FormData = {
-		title: 'Registration Form',
-		description: 'Please fill out the form below',
+		title: 'Form Title',
+		description: 'Form Description',
 		fields: [
 			{
 				id: crypto.randomUUID(),
@@ -48,7 +48,7 @@
 		{ type: 'dropdown', label: 'Dropdown', icon: 'material-symbols:arrow-drop-down-circle' },
 		{ type: 'file', label: 'File Upload', icon: 'material-symbols:upload-file' },
 		{ type: 'name', label: 'Name', icon: 'material-symbols:person' },
-		// { type: 'price', label: 'Price', icon: 'material-symbols:payments' },
+
 		{ type: 'time', label: 'Time', icon: 'material-symbols:schedule' },
 		{ type: 'region', label: 'Region & City', icon: 'material-symbols:location-on' }
 	];
@@ -68,6 +68,9 @@
 	let regions: Region[] = [];
 	let cities: Record<string, City[]> = {};
 	let selectedRegion = '';
+
+	let dragging = false;
+	$: dragDisabled = !dragging;
 
 	async function fetchRegions() {
 		try {
@@ -134,6 +137,9 @@
 
 	function handleDnd(e: CustomEvent<{ items: FormFieldTypes[] }>) {
 		formData.fields = e.detail.items;
+		if (e.type === 'finalize') {
+			dragging = false;
+		}
 	}
 
 	function deleteField(id: string) {
@@ -185,22 +191,26 @@
 </script>
 
 <div class="mx-auto max-w-4xl p-4">
-	<div class="rounded-lg bg-white p-6 shadow-lg">
+	<div class="rounded-lg bg-[#f6f7fa] p-6 shadow-lg">
 		{#if !isPreviewMode}
 			<!-- Builder Mode -->
 			<input
-				class="mb-2 w-full border-b-2 border-transparent p-2 text-3xl font-bold focus:border-blue-500 focus:outline-none"
+				class="mb-2 w-full border-b-2 border-transparent p-2 text-3xl font-bold text-[#818692] focus:border-blue-500 focus:outline-none"
 				placeholder="Form Title"
 				bind:value={formData.title}
 			/>
 			<textarea
-				class="mb-6 w-full border-b-2 border-transparent p-2 focus:border-blue-500 focus:outline-none"
+				class="mb-6 w-full border-b-2 border-transparent p-2 text-[#818692] focus:border-blue-500 focus:outline-none"
 				placeholder="Form Description"
 				bind:value={formData.description}
 			></textarea>
 
 			<div
-				use:dndzone={{ items: formData.fields, flipDurationMs: 200 }}
+				use:dndzone={{ 
+					items: formData.fields, 
+					flipDurationMs: 200,
+					dragDisabled
+				}}
 				on:consider={handleDnd}
 				on:finalize={handleDnd}
 				class="mb-6 space-y-4"
@@ -210,6 +220,8 @@
 						{field}
 						on:delete={() => deleteField(field.id)}
 						on:update={(e) => updateField(e.detail)}
+						on:startdrag={() => dragging = true}
+						on:stopdrag={() => dragging = false}
 					/>
 				{/each}
 			</div>
@@ -404,10 +416,10 @@
 					</div>
 				{/each}
 
-				<div class="mt-6 flex justify-end space-x-4">
+				<div class="mt-6 flex justify-end space-x-4 bg-gray-500">
 					<button
 						type="submit"
-						class="cursor-pointer rounded-md bg-[#0ca777] px-4 py-2 text-white hover:bg-[#36c294]"
+						class="w-full cursor-pointer rounded-md bg-[#0ca777] px-4 py-2 text-white hover:bg-[#36c294]"
 					>
 						Submit
 					</button>
@@ -418,7 +430,7 @@
 		<!-- Toggle Button -->
 		<div class="mt-6 flex justify-end">
 			<button
-				class="cursor-pointer rounded-md bg-[#d12f2b] px-4 py-2 text-white hover:bg-[#a62421]"
+				class="w-full cursor-pointer rounded-md bg-[#6c727f] px-4 py-2 text-white hover:bg-[#a62421]"
 				on:click={togglePreview}
 			>
 				{isPreviewMode ? 'Back to Editor' : 'Preview Form'}
