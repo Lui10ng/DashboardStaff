@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import gsap from 'gsap';
-	import { blobShapes } from '../data';
-
+	import { blobShapes } from '$lib/types/data';
 	let blobContainer: SVGGElement;
 
 	function animateBlob() {

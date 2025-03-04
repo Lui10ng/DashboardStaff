@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { sections } from './data';
-	import BackgroundPatterns from './components/BackgroundPatterns.svelte';
-	import FloatingElements from './components/FloatingElements.svelte';
-	import BlobAnimation from './components/BlobAnimation.svelte';
-	import SectionContent from './components/SectionContent.svelte';
+	import { sections } from '../../lib/types/data';
+	import BackgroundPatterns from '../../lib/components/BackgroundPatterns.svelte';
+	import FloatingElements from '$lib/components/FloatingElements.svelte';
+	import BlobAnimation from '$lib/components/BlobAnimation.svelte';
+	import SectionContent from '$lib/components/SectionContent.svelte';
+	
 
 	let mounted = false;
 	let currentSection = 0;

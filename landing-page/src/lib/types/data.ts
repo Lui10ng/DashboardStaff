@@ -1,4 +1,4 @@
-import type { Section } from './types';
+import type { Section } from '../../routes/about-us/types';
 
 export const sections: Section[] = [
 	{
