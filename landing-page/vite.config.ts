@@ -33,4 +33,8 @@ export default defineConfig({
 			}
 		]
 	}
+	// server: {
+	// 	port: 4001,
+	// 	host: '192.168.1.51'
+	// }
 });
