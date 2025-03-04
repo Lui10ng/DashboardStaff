@@ -1,0 +1,1 @@
+# Layout components (headers, footers, etc.)

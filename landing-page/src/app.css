@@ -1,2 +1,159 @@
 @import 'tailwindcss';
-@plugin '@tailwindcss/typography';
+@import '@fontsource/roboto';
+@import 'animate.css';
+
+body {
+	font-family: 'Inter', sans-serif;
+}
+
+@keyframes mainBlobAnimation {
+	0%,
+	100% {
+		transform: translate(-50%, -50%) scale(1);
+		border-radius: 55% 45% 70% 35% / 45% 65% 35% 55%;
+		filter: blur(40px);
+	}
+	25% {
+		transform: translate(-50%, -50%) scale(1.02);
+		border-radius: 40% 60% 35% 65% / 60% 35% 65% 40%;
+		filter: blur(42px);
+	}
+	50% {
+		transform: translate(-50%, -50%) scale(0.98);
+		border-radius: 65% 35% 45% 55% / 35% 55% 45% 65%;
+		filter: blur(38px);
+	}
+	75% {
+		transform: translate(-50%, -50%) scale(1.01);
+		border-radius: 45% 55% 65% 35% / 55% 45% 35% 65%;
+		filter: blur(44px);
+	}
+}
+
+@keyframes pulseOpacity {
+	0%,
+	100% {
+		opacity: 0.85;
+	}
+	50% {
+		opacity: 0.7;
+	}
+}
+
+@keyframes floatAnimation1 {
+	0% {
+		transform: translate(0, 0);
+	}
+	50% {
+		transform: translate(-20px, -15px);
+	}
+	100% {
+		transform: translate(0, 0);
+	}
+}
+
+@keyframes floatAnimation2 {
+	0% {
+		transform: translate(0, 0);
+	}
+	50% {
+		transform: translate(15px, -20px);
+	}
+	100% {
+		transform: translate(0, 0);
+	}
+}
+
+@keyframes floatAnimation3 {
+	0% {
+		transform: translate(0, 0);
+	}
+	50% {
+		transform: translate(-15px, 20px);
+	}
+	100% {
+		transform: translate(0, 0);
+	}
+}
+
+@keyframes floatAnimation4 {
+	0% {
+		transform: translate(0, 0);
+	}
+	50% {
+		transform: translate(20px, 15px);
+	}
+	100% {
+		transform: translate(0, 0);
+	}
+}
+
+.ethereal-blob {
+	will-change: transform, border-radius, filter;
+	animation:
+		mainBlobAnimation 20s ease-in-out infinite,
+		pulseOpacity 8s ease-in-out infinite;
+	background: radial-gradient(
+		circle at 30% 40%,
+		rgba(255, 228, 230, 0.6) 0%,
+		rgba(253, 164, 175, 0.5) 25%,
+		rgba(244, 114, 182, 0.4) 50%,
+		rgba(219, 39, 119, 0.3) 75%
+	);
+	backdrop-filter: blur(8px);
+	mix-blend-mode: soft-light;
+}
+
+.float-1 {
+	animation: floatAnimation1 12s ease-in-out infinite;
+}
+
+.float-2 {
+	animation: floatAnimation2 15s ease-in-out infinite;
+}
+
+.float-3 {
+	animation: floatAnimation3 18s ease-in-out infinite;
+}
+
+.float-4 {
+	animation: floatAnimation4 14s ease-in-out infinite;
+}
+
+.animated-border-button {
+	position: relative;
+	color: white;
+	background: #e11d48;
+	border: 2px solid #e11d48;
+	overflow: hidden;
+	isolation: isolate;
+	transition:
+		color 0.4s ease,
+		background-color 0.4s ease;
+}
+
+.animated-border-button::before {
+	content: '';
+	position: absolute;
+	top: var(--y, 50%);
+	left: var(--x, 50%);
+	width: 0;
+	height: 0;
+	background: white;
+	border-radius: 50%;
+	transform: translate(-50%, -50%);
+	transition:
+		width 0.5s ease,
+		height 0.5s ease;
+	z-index: -1;
+}
+
+.animated-border-button:hover {
+	color: #e11d48;
+	background: transparent;
+}
+
+.animated-border-button:hover::before {
+	width: 300%;
+	height: 300%;
+}
