@@ -5,7 +5,7 @@
   export let ticket: Ticket;
   export let showTicketCount: boolean;
   
-  /
+  // Initialize isSelected to false (no check mark shown initially)
   let isSelected = false;
   
   async function handlePurchase(event) {
