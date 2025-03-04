@@ -2,7 +2,7 @@
   import { X } from 'lucide-svelte';
   import { pendingStaffMembers, staffMembers } from '$lib/types/data/dataList';
   import EventCard from '$lib/components/features/EditEventModal/EventCard.svelte';
-  import NavigationTabs from '$lib/components/features/NavigationTabs.svelte';
+  import NavigationTabs from '$lib/components/layout/NavigationTabs.svelte';
   import '../styles/staffTable.css';
 
   let searchQuery = '';

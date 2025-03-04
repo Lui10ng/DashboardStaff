@@ -1,5 +1,5 @@
 <script>
-//   import StaffDashboard from '$lib/StaffAndEditEvent/+page.svelte';
+ 
 </script>
 
 <div class="flex h-screen flex-col items-center justify-center">
