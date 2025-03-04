@@ -191,11 +191,12 @@
 			<input
 				class="mb-2 w-full border-b-2 border-transparent p-2 text-3xl font-bold focus:border-blue-500 focus:outline-none"
 				placeholder="Form Title"
-				
+				bind:value={formData.title}
 			/>
 			<textarea
 				class="mb-6 w-full border-b-2 border-transparent p-2 focus:border-blue-500 focus:outline-none"
 				placeholder="Form Description"
+				bind:value={formData.description}
 			></textarea>
 
 			<div
@@ -355,22 +356,45 @@
 									<option value={city}>{city}</option>
 								{/each}
 							</select>
+						{:else if field.type === 'shortText'}
+							<input
+								id={field.id}
+								type="text"
+								maxlength="50"
+								class="w-full rounded-md border p-2"
+								required={field.required}
+								bind:value={formResponses[field.id]}
+								placeholder={field.description}
+							/>
+						{:else if field.type === 'longText'}
+							<textarea
+								id={field.id}
+								class="w-full rounded-md border p-2"
+								required={field.required}
+								bind:value={formResponses[field.id]}
+								placeholder={field.description}
+								rows="4"
+							></textarea>
+						{:else if field.type === 'time'}
+							<input
+								id={field.id}
+								type="time"
+								class="w-full rounded-md border p-2"
+								required={field.required}
+								bind:value={formResponses[field.id]}
+							/>
 						{:else}
 							<input
 								id={field.id}
-								type={field.type === 'shortText'
-									? 'text'
-									: field.type === 'email'
-										? 'email'
-										: field.type === 'number'
-											? 'number'
-											: field.type === 'date'
-												? 'date'
-												: field.type === 'time'
-													? 'time'
-													: field.type === 'file'
-														? 'file'
-														: 'text'}
+								type={field.type === 'email'
+									? 'email'
+									: field.type === 'number'
+										? 'number'
+										: field.type === 'date'
+											? 'date'
+											: field.type === 'file'
+												? 'file'
+												: 'text'}
 								class="w-full rounded-md border p-2"
 								required={field.required}
 								bind:value={formResponses[field.id]}
