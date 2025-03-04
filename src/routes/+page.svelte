@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import Header from '../components/Header.svelte';
-  import TicketList from '../components/TicketList.svelte';
-  import { tickets, showTicketCount, toggleShowTicketCount, formatTime, updateTicketStatus, loadTickets } from '../stores/tickets';
+  import Header from '$lib/components/layout/Header.svelte';
+  import TicketList from '$lib/components/features/TicketList.svelte';
+  import { tickets, showTicketCount, toggleShowTicketCount, formatTime, updateTicketStatus, loadTickets } from '$lib/stores/tickets';
   import { get } from 'svelte/store';
 
   // Get the data passed from the server

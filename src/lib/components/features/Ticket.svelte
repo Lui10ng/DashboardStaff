@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { Ticket } from '../stores/tickets';
-  import { updateTicket } from '../stores/tickets';
+  import type { Ticket } from '$lib/stores/tickets';
+  import { updateTicket } from '$lib/stores/tickets';
 
   export let ticket: Ticket;
   export let showTicketCount: boolean;
@@ -8,8 +8,7 @@
   // Initialize isSelected to false (no check mark shown initially)
   let isSelected = false;
   
-  async function handlePurchase(event) {
-    
+  async function handlePurchase(event: Event) {
     event.stopPropagation();
     
     if (!ticket.ticketLeft) return;
@@ -18,17 +17,14 @@
     const currentCount = parseInt(current);
     
     if (currentCount > 0) {
-      
       const result = await updateTicket(ticket.id, currentCount - 1);
       if (result.success) {
-        
+        // Handle successful ticket update
       }
     }
   }
   
-  
   function toggleSelection() {
-    
     if (!ticket.status && ticket.ticketLeft) {
       isSelected = !isSelected;
     }
@@ -36,16 +32,17 @@
 </script>
 
 
+
 <div class="bg-white rounded-lg overflow-hidden flex h-full cursor-pointer" on:click={toggleSelection}>
   <div class={ticket.color + " w-5"} />
   <div class="p-6 flex-1 relative">
     {#if ticket.status === 'SOLD OUT'}
-  <div 
-    class="absolute inset-0 flex items-center justify-center z-10"
-    style="background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);"
-  >
-    <span class="text-white text-2xl font-bold">SOLD OUT</span>
-  </div>
+      <div 
+        class="absolute inset-0 flex items-center justify-center z-10"
+        style="background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);"
+      >
+        <span class="text-white text-2xl font-bold">SOLD OUT</span>
+      </div>
     {/if}
     
     <div class="flex justify-between items-start">
@@ -63,24 +60,23 @@
       </div>
       
       {#if ticket.status === 'AVAILABLE IN'}
-      <div 
-      class="absolute inset-0 flex flex-col items-center justify-center z-10"
-      style="background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);"
-    >
-    <span class="text-white text-2xl font-bold">{ticket.status}</span>
-    {#if ticket.timer}
-      <span class="text-white text-xl mt-2">{ticket.timer}</span>
-    {/if}
+        <div 
+          class="absolute inset-0 flex flex-col items-center justify-center z-10"
+          style="background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);"
+        >
+          <span class="text-white text-2xl font-bold">{ticket.status}</span>
+          {#if ticket.timer}
+            <span class="text-white text-xl mt-2">{ticket.timer}</span>
+          {/if}
         </div>
       {:else if ticket.status === 'ONLY AVAILABLE BETWEEN'}
         <div class="absolute inset-0 flex flex-col items-center justify-center z-10 text-center"
-        style="background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);"
-      >
-      <span class="text-white text-xl font-bold poppin">{ticket.status}</span>
-      <span class="text-white text-xl poppin">{ticket.date}</span>
+          style="background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);"
+        >
+          <span class="text-white text-xl font-bold poppin">{ticket.status}</span>
+          <span class="text-white text-xl poppin">{ticket.date}</span>
         </div>
       {:else if !ticket.status && ticket.ticketLeft}
-        
         <div class="text-right">
           {#if isSelected}
             <span class="text-green-500 text-2xl">✓</span>

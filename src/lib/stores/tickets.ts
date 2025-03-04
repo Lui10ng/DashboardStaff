@@ -16,7 +16,7 @@ export type Ticket = {
 };
 
 // Create an empty store initially
-export const tickets = writable<Ticket[]>([]);
+export const tickets = writable([]);
 
 // Function to load tickets from server
 export async function loadTickets() {
@@ -62,7 +62,7 @@ export async function updateTicket(ticketId: number, newCount: number) {
   }
 }
 
-export const showTicketCount = writable(true);
+export const showTicketCount = writable(false);
 
 export function toggleShowTicketCount() {
   showTicketCount.update(value => !value);
@@ -71,11 +71,11 @@ export function toggleShowTicketCount() {
 export function formatTime(seconds: number): string {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
-  const secs = seconds % 60;
-  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  const remainingSeconds = seconds % 60;
+  return `${hours}:${minutes < 10 ? '0' : ''}${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
 }
 
-export function updateTicketStatus(ticket: Ticket) {
+export function updateTicketStatus(ticket: any) {
   if (ticket.date) {
     const eventDate = parseISO(ticket.date);
     const now = new Date();
@@ -86,7 +86,7 @@ export function updateTicketStatus(ticket: Ticket) {
       ticket.remainingTime = remainingSeconds;
     }
 
-    if (ticket.remainingTime !== undefined && ticket.remainingTime > 0) {
+    if (ticket.remainingTime !== undefined && ticket.remainingTime > 0 && remainingSeconds <= 86400) {
       ticket.timer = formatTime(ticket.remainingTime);
     }
   }
