@@ -403,14 +403,14 @@ import { DEFAULT_DATE_FORMAT } from '$lib/utils/datetime';
 						<label for="startDate" class="text-sm font-medium text-gray-700">Start</label>
 					</div>
 					<div class="grid grid-cols-2 gap-4">
-						<!-- <div class="relative">
+						<div class="relative">
 							<input
 								id="start-date"
 								type="text"
 								placeholder="Select start date"
 								class="w-full appearance-none rounded-[12px] border border-gray-200 px-4 py-4 text-gray-500 focus:outline-none"
 							/>
-						</div> -->
+						</div>
 						<div class="relative">
 							<label for="startTime" class="sr-only">Start Time</label>
 
@@ -432,14 +432,14 @@ import { DEFAULT_DATE_FORMAT } from '$lib/utils/datetime';
 						<label for="endDate" class="text-sm font-medium text-gray-700">End</label>
 					</div>
 					<div class="grid grid-cols-2 gap-4">
-						<!-- <div class="relative">
+						<div class="relative">
 							<input
 								id="end-date"
 								type="text"
 								placeholder="Select end date"
 								class="w-full appearance-none rounded-[12px] border border-gray-200 px-4 py-4 text-gray-500 focus:outline-none"
 							/>
-						</div> -->
+						</div>
 						<div class="relative">
 							<label for="endTime" class="sr-only">End Time</label>
 
