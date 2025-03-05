@@ -215,9 +215,32 @@ import { DEFAULT_DATE_FORMAT } from '$lib/utils/datetime';
 		const commonOptions: AirDatepickerOptions = {
 			locale: localeEn,
 			dateFormat: DEFAULT_DATE_FORMAT,
+			isMobile: true,
+			autoClose: true,
 			position: 'bottom left' as AirDatepickerPosition,
 			classes: 'custom-datepicker',
-			autoClose: true,
+			buttons: [
+				{
+					content: 'Today',
+					onClick: (dp) => {
+						const today = new Date();
+						dp.selectDate(today);
+						dp.setViewDate(today);
+					}
+				},
+				{
+					content: 'Clear',
+					onClick: (dp) => {
+						dp.clear();
+						if (dp.$el.id === 'start-date') {
+							startDate = '';
+						} else if (dp.$el.id === 'end-date') {
+							endDate = '';
+						}
+						dp.hide();
+					}
+				}
+			],
 			minDate: new Date(),
 			onSelect: ({ date }) => {
 				if (!date) return;
@@ -866,13 +889,77 @@ import { DEFAULT_DATE_FORMAT } from '$lib/utils/datetime';
 <style>
 	:global(.custom-datepicker) {
 		--adp-background-color: #fff;
-		--adp-accent-color: #4a90e2;
+		--adp-accent-color: #ef4444;
 		--adp-color: #333;
+		--adp-day-name-color: #9ca3af;
+		--adp-current-date-color: #ef4444;
+		--adp-transition-duration: 0.3s;
+		--adp-cell-background-color-selected: #ef4444;
+		--adp-cell-background-color-selected-hover: #dc2626;
+		--adp-cell-background-color-in-range: #fee2e2;
+		--adp-btn-background-color-hover: #f3f4f6;
+		--adp-btn-background-color-active: #ef4444;
+		--adp-btn-color-active: #fff;
+		--adp-btn-color: #374151;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-		border-radius: 4px;
+		border-radius: 12px;
 		padding: 1rem;
-		z-index: 9999; /* Add this line */
-		position: relative; /* Add this line */
+		z-index: 9999;
+		position: fixed;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 90%;
+		max-width: 320px;
+	}
+
+	:global(.air-datepicker-overlay) {
+		background: rgba(0, 0, 0, 0.3);
+		backdrop-filter: blur(2px);
+	}
+
+	:global(.air-datepicker-body--day-name) {
+		color: var(--adp-day-name-color);
+		font-size: 0.875rem;
+	}
+
+	:global(.air-datepicker-cell.-current-) {
+		color: var(--adp-current-date-color);
+		font-weight: 500;
+	}
+
+	:global(.air-datepicker-cell.-selected-) {
+		background: var(--adp-cell-background-color-selected);
+	}
+
+	:global(.air-datepicker-cell.-selected-.-focus-) {
+		background: var(--adp-cell-background-color-selected-hover);
+	}
+
+	:global(.air-datepicker-cell.-in-range-) {
+		background: var(--adp-cell-background-color-in-range);
+	}
+
+	:global(.air-datepicker-buttons) {
+		padding-top: 1rem;
+		border-top: 1px solid #e5e7eb;
+	}
+
+	:global(.air-datepicker-button) {
+		color: var(--adp-btn-color);
+		font-size: 0.875rem;
+		padding: 0.5rem 1rem;
+		border-radius: 0.375rem;
+		transition: all 0.2s;
+	}
+
+	:global(.air-datepicker-button:hover) {
+		background: var(--adp-btn-background-color-hover);
+	}
+
+	:global(.air-datepicker-button.active) {
+		background: var(--adp-btn-background-color-active);
+		color: var(--adp-btn-color-active);
 	}
 
 	:global(.custom-datepicker .air-datepicker-cell.-disabled-) {
