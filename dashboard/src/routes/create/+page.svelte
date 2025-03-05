@@ -30,6 +30,11 @@ import { DEFAULT_DATE_FORMAT } from '$lib/utils/datetime';
 	let selectedLocation = '';
 	let description = '';
 	let saveAsDraft = false;
+	let locationSuggestions: any[] = [];
+	let searchProvider: any;
+	let isLoadingSuggestions = false;
+	let L: any;
+	let searchTimeout: ReturnType<typeof setTimeout>;
 
 	// errors for form validation
 	let errors = {
@@ -193,67 +198,20 @@ import { DEFAULT_DATE_FORMAT } from '$lib/utils/datetime';
 	}
 
 	onMount(async () => {
-		const L = await import('leaflet');
-		const { OpenStreetMapProvider, GeoSearchControl } = await import('leaflet-geosearch');
-
-		const commonConfig: AirDatepickerOptions<HTMLElement> = {
-			dateFormat: DEFAULT_DATE_FORMAT,
-			minDate: new Date(),
-			autoClose: true,
-			isMobile: true,
-			classes: 'custom-datepicker',
-			locale: localeEn
-		};
-
-		startDatePicker = new AirDatepicker('#start-date', {
-			...commonConfig,
-			onSelect: ({ date, formattedDate }) => {
-				startDate = formattedDate as string;
-				handleStartDateSelect({ date });
-			}
-		});
-
-		endDatePicker = new AirDatepicker('#end-date', {
-			...commonConfig,
-			onSelect: ({ formattedDate }) => {
-				endDate = formattedDate as string;
-			}
-		});
-
+		const leaflet = await import('leaflet');
+		L = leaflet.default;
+		const { OpenStreetMapProvider } = await import('leaflet-geosearch');
+		
+		searchProvider = new OpenStreetMapProvider();
+		
 		map = L.map('map').setView([12.8797, 121.774], 6);
 
 		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 			attribution: '© OpenStreetMap contributors'
 		}).addTo(map);
 
-		const searchControl = new GeoSearchControl({
-			provider: new OpenStreetMapProvider(),
-			style: 'bar',
-			autoComplete: true,
-			autoCompleteDelay: 250,
-			showMarker: true,
-			searchLabel: 'Enter location...',
-			notFoundMessage: 'Sorry, that address could not be found.'
-		});
-
-		map.addControl(searchControl);
-
-		map.on('geosearch/showlocation', (event: { location: any }) => {
-			selectedLocation = `${event.location.label}`;
-
-			// Log all location data
-			// console.log('Selected Location Full Data:', {
-			// 	label: event.location.label,
-			// 	x: event.location.x, // longitude
-			// 	y: event.location.y, // latitude
-			// 	bounds: event.location.bounds,
-			// 	raw: event.location.raw // Contains all raw data from the geocoding service
-			// });
-		});
-
 		return () => {
-			startDatePicker?.destroy();
-			endDatePicker?.destroy();
+			map.remove();
 		};
 	});
 
@@ -335,6 +293,67 @@ import { DEFAULT_DATE_FORMAT } from '$lib/utils/datetime';
 			}
 		}
 	}
+
+	const handleLocationInput = async (event: Event) => {
+		const input = (event.target as HTMLInputElement).value;
+		selectedLocation = input;
+		
+		if (!input.trim()) {
+			locationSuggestions = [];
+			return;
+		}
+
+		// Clear any existing timeout
+		if (searchTimeout) {
+			clearTimeout(searchTimeout);
+		}
+
+		// Set loading state immediately for better UX
+		isLoadingSuggestions = true;
+
+		// Debounce the search
+		searchTimeout = setTimeout(async () => {
+			try {
+				const results = await searchProvider.search({ query: input });
+				locationSuggestions = results.slice(0, 5); // Limit to 5 suggestions
+			} catch (error) {
+				console.error('Error fetching location suggestions:', error);
+				locationSuggestions = [];
+			} finally {
+				isLoadingSuggestions = false;
+			}
+		}, 300); // Wait 300ms after user stops typing
+	};
+
+	const handleLocationSelect = (location: any) => {
+		selectedLocation = location.label;
+		locationSuggestions = [];
+		
+		// Update map view
+		if (map) {
+			const { x, y } = location;
+			map.setView([y, x], 15);
+			
+			// Clear existing markers
+			map.eachLayer((layer: any) => {
+				if (layer instanceof L.Marker) {
+					map.removeLayer(layer);
+				}
+			});
+			
+			// Add new marker
+			L.marker([y, x]).addTo(map);
+		}
+	};
+
+	// Make sure to clear timeout on component destroy
+	onMount(() => {
+		return () => {
+			if (searchTimeout) {
+				clearTimeout(searchTimeout);
+			}
+		};
+	});
 </script>
 
 <div class="mx-auto max-w-[1200px] p-4 md:p-8">
@@ -446,39 +465,65 @@ import { DEFAULT_DATE_FORMAT } from '$lib/utils/datetime';
 							<i class="ri-map-pin-line text-lg text-gray-400"></i>
 							<label for="location" class="text-sm font-medium text-gray-700">Location</label>
 						</div>
+						<!-- Search container with fixed positioning context -->
 						<div class="relative">
-							<input
-								type="text"
-								placeholder="Add event location"
-								value={selectedLocation}
-								readonly
-								class="w-full cursor-pointer rounded-lg border border-gray-200 bg-white px-4 py-3 pr-10"
-							/>
-							{#if selectedLocation}
-								<button
-									aria-labelledby="clear-location"
-									class="absolute top-1/2 right-2 -translate-y-1/2 rounded-full p-1 text-gray-500 transition-all duration-200 hover:bg-gray-100 hover:text-gray-700"
-									on:click={handleClearLocation}
-								>
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										class="h-5 w-5"
-										viewBox="0 0 20 20"
-										fill="currentColor"
+							<!-- Input and suggestions wrapper -->
+							<div class="relative z-50">
+								<input
+									type="text"
+									placeholder="Search for a location..."
+									bind:value={selectedLocation}
+									on:input={handleLocationInput}
+									class="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 pr-10"
+								/>
+								{#if selectedLocation}
+									<button
+										aria-label="Clear location"
+										class="absolute top-1/2 right-2 -translate-y-1/2 rounded-full p-1 text-gray-500 transition-all duration-200 hover:bg-gray-100 hover:text-gray-700"
+										on:click={handleClearLocation}
 									>
-										<path
-											fill-rule="evenodd"
-											d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-											clip-rule="evenodd"
-										/>
-									</svg>
-								</button>
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											class="h-5 w-5"
+											viewBox="0 0 20 20"
+											fill="currentColor"
+										>
+											<path
+												fill-rule="evenodd"
+												d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+												clip-rule="evenodd"
+											/>
+										</svg>
+									</button>
+								{/if}
+								
+								<!-- Location Suggestions Dropdown -->
+								{#if locationSuggestions.length > 0}
+									<div class="absolute left-0 right-0 z-50 mt-1 rounded-lg border border-gray-200 bg-white shadow-lg">
+										{#each locationSuggestions as suggestion}
+											<button
+												class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+												on:click={() => handleLocationSelect(suggestion)}
+											>
+												{suggestion.label}
+											</button>
+										{/each}
+									</div>
+								{/if}
+								
+								{#if isLoadingSuggestions}
+									<div class="absolute right-10 top-1/2 -translate-y-1/2">
+										<div class="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-red-500"></div>
+									</div>
+								{/if}
+							</div>
+							
+							{#if errors.location}
+								<p class="text-sm text-red-500">{errors.location}</p>
 							{/if}
 						</div>
-						{#if errors.location}
-							<p class="text-sm text-red-500">{errors.location}</p>
-						{/if}
-						<div id="map" class="h-64 w-full rounded-lg border border-gray-200"></div>
+						
+						<div id="map" class="relative z-0 h-64 w-full rounded-lg border border-gray-200"></div>
 					</div>
 				</div>
 
