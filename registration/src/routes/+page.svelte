@@ -1,2 +1,7 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
+<script>
+ 
+</script>
+
+<div class="flex h-screen flex-col items-center justify-center">
+	<a href="/seat-visualizer">Seat Visualizer</a>
+</div>
