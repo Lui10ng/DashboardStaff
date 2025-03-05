@@ -5,6 +5,9 @@
 	import FloatingElements from '$lib/components/FloatingElements.svelte';
 	import BlobAnimation from '$lib/components/BlobAnimation.svelte';
 	import SectionContent from '$lib/components/SectionContent.svelte';
+	import { page } from '$app/state';
+
+
 	
 
 	let mounted = false;
@@ -16,6 +19,7 @@
 
 	onMount(() => {
 		mounted = true;
+		console.log(page.error);
 	});
 </script>
 
