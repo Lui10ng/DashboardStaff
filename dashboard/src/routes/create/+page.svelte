@@ -462,40 +462,50 @@ import { DEFAULT_DATE_FORMAT } from '$lib/utils/datetime';
 					<!-- Location -->
 					<div class="space-y-2">
 						<div class="flex items-center gap-2">
-							<i class="ri-map-pin-line text-lg text-gray-400"></i>
 							<label for="location" class="text-sm font-medium text-gray-700">Location</label>
 						</div>
 						<!-- Search container with fixed positioning context -->
 						<div class="relative">
 							<!-- Input and suggestions wrapper -->
 							<div class="relative z-50">
-								<input
-									type="text"
-									placeholder="Search for a location..."
-									bind:value={selectedLocation}
-									on:input={handleLocationInput}
-									class="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 pr-10"
-								/>
-								{#if selectedLocation}
-									<button
-										aria-label="Clear location"
-										class="absolute top-1/2 right-2 -translate-y-1/2 rounded-full p-1 text-gray-500 transition-all duration-200 hover:bg-gray-100 hover:text-gray-700"
-										on:click={handleClearLocation}
-									>
-										<svg
-											xmlns="http://www.w3.org/2000/svg"
-											class="h-5 w-5"
-											viewBox="0 0 20 20"
-											fill="currentColor"
+								<div class="relative flex items-center">
+									<span class="absolute left-3 text-gray-400">
+										<i class="ri-map-pin-line text-lg"></i>
+									</span>
+									<input
+										type="text"
+										placeholder="Search for a location..."
+										bind:value={selectedLocation}
+										on:input={handleLocationInput}
+										class="w-full rounded-lg border border-gray-200 bg-white pl-10 pr-10 py-3"
+									/>
+									{#if selectedLocation}
+										<button
+											aria-label="Clear location"
+											class="absolute right-2 rounded-full p-1 text-gray-500 transition-all duration-200 hover:bg-gray-100 hover:text-gray-700"
+											on:click={handleClearLocation}
 										>
-											<path
-												fill-rule="evenodd"
-												d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-												clip-rule="evenodd"
-											/>
-										</svg>
-									</button>
-								{/if}
+											<svg
+												xmlns="http://www.w3.org/2000/svg"
+												class="h-5 w-5"
+												viewBox="0 0 20 20"
+												fill="currentColor"
+											>
+												<path
+													fill-rule="evenodd"
+													d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+													clip-rule="evenodd"
+												/>
+											</svg>
+										</button>
+									{/if}
+									
+									{#if isLoadingSuggestions}
+										<div class="absolute right-10">
+											<div class="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-red-500"></div>
+										</div>
+									{/if}
+								</div>
 								
 								<!-- Location Suggestions Dropdown -->
 								{#if locationSuggestions.length > 0}
@@ -508,12 +518,6 @@ import { DEFAULT_DATE_FORMAT } from '$lib/utils/datetime';
 												{suggestion.label}
 											</button>
 										{/each}
-									</div>
-								{/if}
-								
-								{#if isLoadingSuggestions}
-									<div class="absolute right-10 top-1/2 -translate-y-1/2">
-										<div class="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-red-500"></div>
 									</div>
 								{/if}
 							</div>
