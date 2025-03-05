@@ -198,6 +198,7 @@ import { DEFAULT_DATE_FORMAT } from '$lib/utils/datetime';
 	}
 
 	onMount(async () => {
+		// Initialize map
 		const leaflet = await import('leaflet');
 		L = leaflet.default;
 		const { OpenStreetMapProvider } = await import('leaflet-geosearch');
@@ -210,8 +211,74 @@ import { DEFAULT_DATE_FORMAT } from '$lib/utils/datetime';
 			attribution: '© OpenStreetMap contributors'
 		}).addTo(map);
 
+		// Initialize datepickers
+		const commonOptions: AirDatepickerOptions = {
+			locale: localeEn,
+			dateFormat: DEFAULT_DATE_FORMAT,
+			position: 'bottom left' as AirDatepickerPosition,
+			classes: 'custom-datepicker',
+			autoClose: true,
+			minDate: new Date(),
+			onSelect: ({ date }) => {
+				if (!date) return;
+				const formattedDate = date instanceof Date ? date.toISOString().split('T')[0] : '';
+				if (startDatePicker && date === startDatePicker.selectedDates[0]) {
+					startDate = formattedDate;
+				} else if (endDatePicker && date === endDatePicker.selectedDates[0]) {
+					endDate = formattedDate;
+				}
+			}
+		};
+
+		// Initialize start date picker
+		startDatePicker = new AirDatepicker('#start-date', {
+			...commonOptions,
+			onSelect: ({ date }) => {
+				if (!date) return;
+				const selectedDate = date instanceof Date ? date : date[0];
+				startDate = selectedDate.toISOString().split('T')[0];
+				
+				// Update end date picker min date
+				if (endDatePicker) {
+					endDatePicker.update({
+						minDate: selectedDate
+					});
+					
+					// If end date is before start date, update it
+					const endSelectedDate = endDatePicker.selectedDates[0];
+					if (endSelectedDate && endSelectedDate < selectedDate) {
+						endDatePicker.selectDate(selectedDate);
+					}
+				}
+			}
+		});
+
+		// Initialize end date picker
+		endDatePicker = new AirDatepicker('#end-date', {
+			...commonOptions,
+			onSelect: ({ date }) => {
+				if (!date) return;
+				const selectedDate = date instanceof Date ? date : date[0];
+				endDate = selectedDate.toISOString().split('T')[0];
+			}
+		});
+
+		// Set initial dates if needed
+		if (startDate) {
+			startDatePicker.selectDate(new Date(startDate));
+		}
+		if (endDate) {
+			endDatePicker.selectDate(new Date(endDate));
+		}
+
 		return () => {
 			map.remove();
+			if (searchTimeout) {
+				clearTimeout(searchTimeout);
+			}
+			// Cleanup datepickers
+			startDatePicker?.destroy();
+			endDatePicker?.destroy();
 		};
 	});
 
@@ -407,8 +474,9 @@ import { DEFAULT_DATE_FORMAT } from '$lib/utils/datetime';
 							<input
 								id="start-date"
 								type="text"
+								readonly
 								placeholder="Select start date"
-								class="w-full appearance-none rounded-[12px] border border-gray-200 px-4 py-4 text-gray-500 focus:outline-none"
+								class="w-full appearance-none rounded-[12px] border border-gray-200 px-4 py-4 text-gray-500 focus:border-2 focus:border-red-500 focus:outline-none cursor-pointer bg-white"
 							/>
 						</div>
 						<div class="relative">
@@ -436,8 +504,9 @@ import { DEFAULT_DATE_FORMAT } from '$lib/utils/datetime';
 							<input
 								id="end-date"
 								type="text"
+								readonly
 								placeholder="Select end date"
-								class="w-full appearance-none rounded-[12px] border border-gray-200 px-4 py-4 text-gray-500 focus:outline-none"
+								class="w-full appearance-none rounded-[12px] border border-gray-200 px-4 py-4 text-gray-500 focus:border-2 focus:border-red-500 focus:outline-none cursor-pointer bg-white"
 							/>
 						</div>
 						<div class="relative">
