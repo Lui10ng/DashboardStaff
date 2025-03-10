@@ -44,6 +44,6 @@
 	},
 	"dependencies": {
 		"flatpickr": "^4.6.13",
-		"qrcode": "^1.5.4"
+		"qrcode": "^1.5.4",
 	}
 }
