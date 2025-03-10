@@ -50,6 +50,7 @@
 		"leaflet": "^1.9.4",
 		"leaflet-geosearch": "^4.2.0",
 		"lucide-svelte": "^0.477.0",
+		"panzoom": "^9.4.3",
 		"qrcode": "^1.5.4",
 		"remixicon": "^4.6.0",
 		"svelte-sonner": "^0.3.28"
