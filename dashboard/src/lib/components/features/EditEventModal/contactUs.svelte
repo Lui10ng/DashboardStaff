@@ -64,7 +64,7 @@
       <label class="pb-2 block text-sm text-black pb-2 font-small">Email Address</label>
       <div class="relative">
         <input type="email" placeholder="Enter email" class="w-full p-2 pl-10 rounded-md bg-[#F7F8FA] focus:outline-none focus:bg-[#e9ecf3]">
-        <img src="StaffAndEditEvent/icons/icons8-email-50.png" alt="Email" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500">
+        <img src="staff/icons/icons8-email-50.png" alt="Email" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500">
       </div>
     </div>
 
@@ -72,7 +72,7 @@
       <label class="pb-2 block text-sm text-black pb-2 font-small">Mobile Number</label>
       <div class="relative">
         <input type="tel" placeholder="Enter mobile number" class="w-full p-2 pl-10 rounded-md bg-[#F7F8FA] focus:outline-none focus:bg-[#e9ecf3]">
-        <img src="StaffAndEditEvent/icons/icons8-phone-50.png" alt="Phone" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500">
+        <img src="staff/icons/icons8-phone-50.png" alt="Phone" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500">
       </div>
     </div>
   </div>  
@@ -82,7 +82,7 @@
     <label class="pb-2 block text-sm text-black pb-2 font-small">Website URL</label>
     <div class="relative">
       <input type="url" placeholder="Enter website URL" class="w-full p-2 pl-10 rounded-md bg-[#F7F8FA] focus:outline-none focus:bg-[#e9ecf3]">
-      <img src="StaffAndEditEvent/icons/icons8-tab-50.png" alt="Website" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500">
+      <img src="staff/icons/icons8-tab-50.png" alt="Website" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500">
     </div>
   </div>
 </div>

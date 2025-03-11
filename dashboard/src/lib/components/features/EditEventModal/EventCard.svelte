@@ -34,26 +34,26 @@
 <div class="event-card">
   <button on:click={editThis} class="edit-button">
     <span class="text-red-500 font-medium text-sm md:text-base">Edit Event</span>
-    <img src="/StaffAndEditEvent/icons/edit-icon.png" alt="Edit" class="h-6 w-auto md:h-7">
+    <img src="/staff/icons/edit-icon.png" alt="Edit" class="h-6 w-auto md:h-7">
     
   </button>
   <EditEventModal isOpen={isModalOpen} />
 
   <div class="event-details">
-    <img src="/StaffAndEditEvent/event-photo.png" alt="Event" class="event-image">
+    <img src="/staff/event-photo.png" alt="Event" class="event-image">
     <div class="event-info">
       <h1>{event.title}</h1>
       <div class="space-y-2 text-gray-600">
         <p class="flex items-center space-x-2">
-          <img src="/StaffAndEditEvent/icons/date-icon.png" alt="Calendar">
+          <img src="/staff/icons/date-icon.png" alt="Calendar">
           <span>{event.date}</span>
         </p>
         <p class="flex items-center space-x-2">
-          <img src="/StaffAndEditEvent/icons/pin-icon.png" alt="Location">
+          <img src="/staff/icons/pin-icon.png" alt="Location">
           <span>{event.location}</span>
         </p>
         <p class="flex items-center space-x-2">
-          <img src="/StaffAndEditEvent/icons/Copy-icon.png" alt="Link">
+          <img src="/staff/icons/Copy-icon.png" alt="Link">
           <a href={event.url} class="text-gray-400 bg-gray-200">{event.url}</a>
         </p>
       </div>

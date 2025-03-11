@@ -179,7 +179,11 @@
 												class="h-12 w-12 rounded-lg object-cover"
 											/>
 											<div>
-												<h3 class="font-medium text-gray-900">{event.title}</h3>
+												<a href="/registrants">
+													<h3 class="font-medium text-gray-900">
+														{event.title}
+													</h3>
+												</a>
 												<p class="flex items-center gap-1 text-sm text-gray-600">
 													<i class="ri-map-pin-line"></i>
 													{event.location}
