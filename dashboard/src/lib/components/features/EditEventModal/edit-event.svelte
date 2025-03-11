@@ -53,7 +53,7 @@
         
         <!-- Wrapper that changes background on focus -->
         <div class="mt-1 flex items-center rounded-md bg-[#F7F8FA] px-3 py-2 group focus-within:bg-[#e9ecf3]">
-          <img src="/StaffAndEditEvent/icons/globe.png" alt="Globe Icon" class="h-4 w-4 text-gray-500" />
+          <img src="/staff/icons/globe.png" alt="Globe Icon" class="h-4 w-4 text-gray-500" />
           
           <!-- Input Field -->
           <input
@@ -153,22 +153,22 @@
       <label for="event-description" class="block text-sm font-medium text-gray-700 mb-2">Event description</label>
       <div class="mt-1 flex space-x-2 rounded-t-md border border-b-0 border-gray-300 bg-gray-50 p-2">
           <button class="p-1 hover:bg-gray-200 rounded">
-            <img src="/StaffAndEditEvent/icons/b-50.png" alt="Bold Icon" class="h-4 w-4 text-gray-500" />
+            <img src="/staff/icons/b-50.png" alt="Bold Icon" class="h-4 w-4 text-gray-500" />
           </button>
           <button class="p-1 hover:bg-gray-200 rounded">
-            <img src="/StaffAndEditEvent/icons/italic-24.png" alt="Italic Icon" class="h-4 w-4 text-gray-500" />
+            <img src="/staff/icons/italic-24.png" alt="Italic Icon" class="h-4 w-4 text-gray-500" />
           </button>
           <button class="p-1 hover:bg-gray-200 rounded">
-            <img src="/StaffAndEditEvent/icons/underline-50.png" alt="Underline Icon" class="h-4 w-4 text-gray-500" />
+            <img src="/staff/icons/underline-50.png" alt="Underline Icon" class="h-4 w-4 text-gray-500" />
           </button>
           <button class="p-1 hover:bg-gray-200 rounded">
-            <img src="/StaffAndEditEvent/icons/list-50.png" alt="number list Icon" class="h-4 w-4 text-gray-500" />
+            <img src="/staff/icons/list-50.png" alt="number list Icon" class="h-4 w-4 text-gray-500" />
           </button>
           <button class="p-1 hover:bg-gray-200 rounded">
-            <img src="/StaffAndEditEvent/icons/list-24.png" alt="bullet list Icon" class="h-4 w-4 text-gray-500" />
+            <img src="/staff/icons/list-24.png" alt="bullet list Icon" class="h-4 w-4 text-gray-500" />
           </button>
           <button class="p-1 hover:bg-gray-200 rounded">
-            <img src="/StaffAndEditEvent/icons/link-50.png" alt="Link Icon" class="h-4 w-4 text-gray-500" />
+            <img src="/staff/icons/link-50.png" alt="Link Icon" class="h-4 w-4 text-gray-500" />
           </button>
       </div>
       <textarea

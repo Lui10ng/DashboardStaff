@@ -57,7 +57,7 @@
           <p class="text-gray-600 text-sm">Your Staff History</p>
         </div>
         <button class="w-full md:w-auto bg-red-500 text-white px-4 py-2 rounded-lg flex items-center justify-center space-x-2 hover:bg-red-600 transition-colors">
-          <img src="/StaffAndEditEvent/icons/new-invite-icon.png" alt="FullList" class="h-5 w-5">
+          <img src="/staff/icons/new-invite-icon.png" alt="FullList" class="h-5 w-5">
           <span>Invite Staff</span>
         </button>
       </div>
@@ -111,7 +111,7 @@
                 <td class="p-4">
                   <div class="flex justify-end">
                     <button class="p-1 hover:bg-gray-100 rounded">
-                      <img src="/StaffAndEditEvent/icons/menu-dots-icon.png" alt="More Options" class="h-5 w-5 text-gray-500">
+                      <img src="/staff/icons/menu-dots-icon.png" alt="More Options" class="h-5 w-5 text-gray-500">
                     </button>
                   </div>
                 </td>
