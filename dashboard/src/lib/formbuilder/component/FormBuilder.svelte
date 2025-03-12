@@ -190,7 +190,7 @@
 	}
 </script>
 
-<div class="mx-auto max-w-4xl p-4">
+<div class="mx-auto mt-20 max-w-4xl p-4">
 	<div class="rounded-lg bg-[#f6f7fa] p-6 shadow-lg">
 		{#if !isPreviewMode}
 			<!-- Builder Mode -->
