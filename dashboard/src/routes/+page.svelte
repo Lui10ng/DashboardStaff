@@ -146,12 +146,12 @@
 				/>
 
 				<a
-				href="/create"
-				class="flex w-full items-center justify-center gap-2 rounded-lg bg-red-500 px-4 py-2 text-white transition-all duration-200 hover:bg-red-600 hover:shadow-md cursor-pointer md:w-auto"
-		>
-				<i class="ri-add-line"></i>
-				Create Event
-		</a>
+					href="/create"
+					class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-red-500 px-4 py-2 text-white transition-all duration-200 hover:bg-red-600 hover:shadow-md md:w-auto"
+				>
+					<i class="ri-add-line"></i>
+					Create Event
+				</a>
 			</div>
 
 			<!-- Events List -->
@@ -179,7 +179,12 @@
 												class="h-12 w-12 rounded-lg object-cover"
 											/>
 											<div>
-												<a href="/registrants">
+												<a
+													href="/registrants"
+													class="transition-colors duration-200 hover:text-red-500"
+													tabindex="0"
+													aria-label={`View registrants for ${event.title}`}
+												>
 													<h3 class="font-medium text-gray-900">
 														{event.title}
 													</h3>
@@ -217,26 +222,33 @@
 									</td>
 									<td class="px-6 py-4">
 										<div class="flex items-center justify-end gap-2">
+											<a
+												class="cursor-pointer p-2 text-gray-400 transition-colors hover:text-gray-600"
+												aria-label="Tickets"
+												href="/qr-scanner"
+											>
+												<i class="ri-qr-scan-2-line text-xl"></i>
+											</a>
 											<button
-												class="p-2 text-gray-400 transition-colors hover:text-gray-600"
+												class="cursor-pointer p-2 text-gray-400 transition-colors hover:text-gray-600"
 												aria-label="Tickets"
 											>
 												<i class="ri-coupon-2-line text-xl"></i>
 											</button>
 											<button
-												class="p-2 text-gray-400 transition-colors hover:text-gray-600"
+												class="cursor-pointer p-2 text-gray-400 transition-colors hover:text-gray-600"
 												aria-label="Copy link"
 											>
 												<i class="ri-links-line text-xl"></i>
 											</button>
 											<button
-												class="p-2 text-gray-400 transition-colors hover:text-gray-600"
+												class="cursor-pointer p-2 text-gray-400 transition-colors hover:text-gray-600"
 												aria-label="Share"
 											>
 												<i class="ri-share-line text-xl"></i>
 											</button>
 											<button
-												class="p-2 text-gray-400 transition-colors hover:text-gray-600"
+												class="cursor-pointer p-2 text-gray-400 transition-colors hover:text-gray-600"
 												aria-label="More options"
 											>
 												<i class="ri-more-2-fill text-xl"></i>
@@ -252,7 +264,12 @@
 				<!-- Mobile Card View -->
 				<div class="space-y-4 md:hidden">
 					{#each paginatedEvents as event (event.id)}
-						<div class="rounded-lg border border-gray-200 bg-white p-4">
+						<a
+							href="/registrants"
+							class="block rounded-lg border border-gray-200 bg-white p-4 transition-all duration-200 hover:border-red-200 hover:shadow-md"
+							tabindex="0"
+							aria-label={`View registrants for ${event.title}`}
+						>
 							<div class="flex gap-4">
 								<img
 									src={event.image}
@@ -294,7 +311,7 @@
 										<span class="text-sm">Tickets</span>
 										<div>{event.tickets.sold}/{event.tickets.total}</div>
 									</div>
-									<div class="flex items-center gap-2">
+									<div class="flex items-center gap-2" on:click|stopPropagation>
 										<button class="p-2 text-gray-400 hover:text-gray-600" aria-label="Tickets">
 											<i class="ri-coupon-2-line text-xl"></i>
 										</button>
@@ -310,7 +327,7 @@
 									</div>
 								</div>
 							</div>
-						</div>
+						</a>
 					{/each}
 				</div>
 
