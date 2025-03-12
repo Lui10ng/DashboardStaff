@@ -10,21 +10,16 @@
 	} from 'air-datepicker';
 	import 'air-datepicker/air-datepicker.css';
 	import localeEn from 'air-datepicker/locale/en';
-	
 
 	// font family poppins from fontsource
 	import '@fontsource/poppins/400.css';
 	import '@fontsource/poppins/500.css';
-	// remixicon
-	import 'remixicon/fonts/remixicon.css';
 
-	
-import { DEFAULT_DATE_FORMAT } from '$lib/utils/datetime';
+	import { DEFAULT_DATE_FORMAT } from '$lib/utils/datetime';
 
 	// toast sooner
 	import { Toaster, toast } from 'svelte-sonner';
 	import Navigation from '$lib/components/ui/Navigation.svelte';
-	
 
 	let map: any;
 	let eventName = '';
@@ -204,9 +199,9 @@ import { DEFAULT_DATE_FORMAT } from '$lib/utils/datetime';
 		const leaflet = await import('leaflet');
 		L = leaflet.default;
 		const { OpenStreetMapProvider } = await import('leaflet-geosearch');
-		
+
 		searchProvider = new OpenStreetMapProvider();
-		
+
 		map = L.map('map').setView([12.8797, 121.774], 6);
 
 		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -262,13 +257,13 @@ import { DEFAULT_DATE_FORMAT } from '$lib/utils/datetime';
 				if (!date) return;
 				const selectedDate = date instanceof Date ? date : date[0];
 				startDate = selectedDate.toISOString().split('T')[0];
-				
+
 				// Update end date picker min date
 				if (endDatePicker) {
 					endDatePicker.update({
 						minDate: selectedDate
 					});
-					
+
 					// If end date is before start date, update it
 					const endSelectedDate = endDatePicker.selectedDates[0];
 					if (endSelectedDate && endSelectedDate < selectedDate) {
@@ -309,19 +304,19 @@ import { DEFAULT_DATE_FORMAT } from '$lib/utils/datetime';
 
 	function handleClearLocation() {
 		selectedLocation = '';
-  locationSuggestions = [];
-  
-  if (map) {
-    // Clear existing markers
-    map.eachLayer((layer: any) => {
-      if (layer instanceof L.Marker) {
-        map.removeLayer(layer);
-      }
-    });
-    
-    // Reset map view to default
-    map.setView([12.8797, 121.774], 6);
-  }
+		locationSuggestions = [];
+
+		if (map) {
+			// Clear existing markers
+			map.eachLayer((layer: any) => {
+				if (layer instanceof L.Marker) {
+					map.removeLayer(layer);
+				}
+			});
+
+			// Reset map view to default
+			map.setView([12.8797, 121.774], 6);
+		}
 	}
 
 	function handleFileUpload(event: Event, type: 'logo' | 'poster' | 'background') {
@@ -399,7 +394,7 @@ import { DEFAULT_DATE_FORMAT } from '$lib/utils/datetime';
 	const handleLocationInput = async (event: Event) => {
 		const input = (event.target as HTMLInputElement).value;
 		selectedLocation = input;
-		
+
 		if (!input.trim()) {
 			locationSuggestions = [];
 			return;
@@ -430,19 +425,19 @@ import { DEFAULT_DATE_FORMAT } from '$lib/utils/datetime';
 	const handleLocationSelect = (location: any) => {
 		selectedLocation = location.label;
 		locationSuggestions = [];
-		
+
 		// Update map view
 		if (map) {
 			const { x, y } = location;
 			map.setView([y, x], 15);
-			
+
 			// Clear existing markers
 			map.eachLayer((layer: any) => {
 				if (layer instanceof L.Marker) {
 					map.removeLayer(layer);
 				}
 			});
-			
+
 			// Add new marker
 			L.marker([y, x]).addTo(map);
 		}
@@ -528,7 +523,7 @@ import { DEFAULT_DATE_FORMAT } from '$lib/utils/datetime';
 									type="text"
 									readonly
 									placeholder="Select start date"
-									class="w-full appearance-none rounded-[12px] border border-gray-200 px-4 py-4 text-gray-500 focus:border-2 focus:border-red-500 focus:outline-none cursor-pointer bg-white"
+									class="w-full cursor-pointer appearance-none rounded-[12px] border border-gray-200 bg-white px-4 py-4 text-gray-500 focus:border-2 focus:border-red-500 focus:outline-none"
 								/>
 							</div>
 							<div class="relative">
@@ -558,7 +553,7 @@ import { DEFAULT_DATE_FORMAT } from '$lib/utils/datetime';
 									type="text"
 									readonly
 									placeholder="Select end date"
-									class="w-full appearance-none rounded-[12px] border border-gray-200 px-4 py-4 text-gray-500 focus:border-2 focus:border-red-500 focus:outline-none cursor-pointer bg-white"
+									class="w-full cursor-pointer appearance-none rounded-[12px] border border-gray-200 bg-white px-4 py-4 text-gray-500 focus:border-2 focus:border-red-500 focus:outline-none"
 								/>
 							</div>
 							<div class="relative">
@@ -598,12 +593,12 @@ import { DEFAULT_DATE_FORMAT } from '$lib/utils/datetime';
 											placeholder="Search for a location..."
 											bind:value={selectedLocation}
 											on:input={handleLocationInput}
-											class="w-full rounded-lg border border-gray-200 bg-white pl-10 pr-10 py-3"
+											class="w-full rounded-lg border border-gray-200 bg-white py-3 pr-10 pl-10"
 										/>
 										{#if selectedLocation}
 											<button
 												aria-label="Clear location"
-												class="absolute right-2 rounded-full p-1 text-gray-500  transition-all duration-200 hover:bg-gray-100 hover:text-gray-700"
+												class="absolute right-2 rounded-full p-1 text-gray-500 transition-all duration-200 hover:bg-gray-100 hover:text-gray-700"
 												on:click={handleClearLocation}
 											>
 												<svg
@@ -620,17 +615,21 @@ import { DEFAULT_DATE_FORMAT } from '$lib/utils/datetime';
 												</svg>
 											</button>
 										{/if}
-										
+
 										{#if isLoadingSuggestions}
 											<div class="absolute right-10">
-												<div class="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-red-500"></div>
+												<div
+													class="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-red-500"
+												></div>
 											</div>
 										{/if}
 									</div>
-									
+
 									<!-- Location Suggestions Dropdown -->
 									{#if locationSuggestions.length > 0}
-										<div class="absolute left-0 right-0 z-[90] mt-1 rounded-lg border border-gray-200 bg-white shadow-lg">
+										<div
+											class="absolute right-0 left-0 z-[90] mt-1 rounded-lg border border-gray-200 bg-white shadow-lg"
+										>
 											{#each locationSuggestions as suggestion}
 												<button
 													class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
@@ -642,13 +641,16 @@ import { DEFAULT_DATE_FORMAT } from '$lib/utils/datetime';
 										</div>
 									{/if}
 								</div>
-								
+
 								{#if errors.location}
 									<p class="text-sm text-red-500">{errors.location}</p>
 								{/if}
 							</div>
-							
-							<div id="map" class="relative z-0 h-64 w-full rounded-lg border border-gray-200"></div>
+
+							<div
+								id="map"
+								class="relative z-0 h-64 w-full rounded-lg border border-gray-200"
+							></div>
 						</div>
 					</div>
 
@@ -702,7 +704,8 @@ import { DEFAULT_DATE_FORMAT } from '$lib/utils/datetime';
 
 					<!-- Company Logo -->
 					<div class="mb-2 space-y-2">
-						<label for="logo" class="mb-2 block text-sm font-medium text-gray-700">Company Logo</label
+						<label for="logo" class="mb-2 block text-sm font-medium text-gray-700"
+							>Company Logo</label
 						>
 						<div
 							role="button"
@@ -894,7 +897,8 @@ import { DEFAULT_DATE_FORMAT } from '$lib/utils/datetime';
 								bind:checked={saveAsDraft}
 								class="text-primary focus:ring-primary h-4 w-4 rounded border-gray-300"
 							/>
-							<label for="saveAsDraft" class="ml-2 block text-sm text-gray-700">Save as Draft</label>
+							<label for="saveAsDraft" class="ml-2 block text-sm text-gray-700">Save as Draft</label
+							>
 						</div>
 					</div>
 					<!-- Create Button -->

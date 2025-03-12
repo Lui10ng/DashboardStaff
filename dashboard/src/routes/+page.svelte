@@ -5,7 +5,6 @@
 
 	// Supports weights 100-900
 	import '@fontsource-variable/inter';
-	import 'remixicon/fonts/remixicon.css';
 	type EventStatus = 'Live' | 'Upcoming' | 'Past' | 'Draft';
 
 	type Event = {
@@ -232,11 +231,9 @@
 											<button
 												class="cursor-pointer p-2 text-gray-400 transition-colors hover:text-gray-600"
 												aria-label="Tickets"
-												href="/qr-scanner"
 											>
-												
 												<i class="ri-coupon-2-line text-xl"></i>
-											</a>
+											</button>
 											<button
 												class="cursor-pointer p-2 text-gray-400 transition-colors hover:text-gray-600"
 												aria-label="Copy link"
