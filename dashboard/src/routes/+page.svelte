@@ -232,9 +232,11 @@
 											<button
 												class="cursor-pointer p-2 text-gray-400 transition-colors hover:text-gray-600"
 												aria-label="Tickets"
+												href="/qr-scanner"
 											>
+												
 												<i class="ri-coupon-2-line text-xl"></i>
-											</button>
+											</a>
 											<button
 												class="cursor-pointer p-2 text-gray-400 transition-colors hover:text-gray-600"
 												aria-label="Copy link"
