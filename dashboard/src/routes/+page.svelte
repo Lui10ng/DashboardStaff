@@ -217,12 +217,14 @@
 									</td>
 									<td class="px-6 py-4">
 										<div class="flex items-center justify-end gap-2">
-											<button
+											<a
 												class="p-2 text-gray-400 transition-colors hover:text-gray-600"
 												aria-label="Tickets"
+												href="/qr-scanner"
 											>
+												
 												<i class="ri-coupon-2-line text-xl"></i>
-											</button>
+											</a>
 											<button
 												class="p-2 text-gray-400 transition-colors hover:text-gray-600"
 												aria-label="Copy link"
