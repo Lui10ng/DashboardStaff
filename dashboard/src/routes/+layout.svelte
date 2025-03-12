@@ -1,9 +1,10 @@
 <script lang="ts">
+	import Navigation from '$lib/components/ui/Navigation.svelte';
 	import '../app.css';
-	import Navigation from '$lib/components/layout/Navigation.svelte';
 	let { children } = $props();
 </script>
 
+<!-- Reusable Navigation -->
 <Navigation />
 
 {@render children()}
