@@ -1,0 +1,21 @@
+[
+  {
+    "eventId": "99f55d07-d820-4990-9936-511d24be3cc7",
+    "eventName": "12",
+    "subdomain": "sv",
+    "description": "fadsfs",
+    "saveAsDraft": false,
+    "dateTime": {
+      "startDate": "2025-03-16",
+      "startTime": "09:00",
+      "endDate": "2025-03-16",
+      "endTime": "17:00"
+    },
+    "location": "Línea F, Austria, La Isla, Recoleta, Buenos Aires, Comuna 2, Autonomous City of Buenos Aires, C1425AVL, Argentina",
+    "files": {
+      "logo": null,
+      "poster": null,
+      "background": null
+    }
+  }
+]
