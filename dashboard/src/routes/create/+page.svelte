@@ -352,6 +352,10 @@
 		}
 	}
 
+	let logoPreview: string | null = null;
+	let backgroundPreview: string | null = null;
+	let posterPreview: string | null = null;
+
 	function handleFileUpload(event: Event, type: 'logo' | 'poster' | 'background') {
 		const input = event.target as HTMLInputElement;
 		if (input.files && input.files[0]) {
@@ -359,12 +363,18 @@
 			switch (type) {
 				case 'logo':
 					logoFile = file;
+					logoPreview = URL.createObjectURL(file); // Create a preview URL
+
 					break;
 				case 'poster':
 					posterFile = file;
+					posterPreview = URL.createObjectURL(file); // Create a preview URL
+
 					break;
 				case 'background':
 					backgroundImageFile = file;
+					backgroundPreview = URL.createObjectURL(file); // Create a preview URL
+
 					break;
 			}
 		}
@@ -403,25 +413,35 @@
 	}
 
 	function handleDrop(event: DragEvent, type: 'logo' | 'poster' | 'background') {
-		event.preventDefault();
-		isDraggingLogo = false;
-		isDraggingPoster = false;
-		isDraggingBackgroundImage = false;
+	event.preventDefault();
+	isDraggingLogo = false;
+	isDraggingPoster = false;
+	isDraggingBackgroundImage = false;
 
-		const files = event.dataTransfer?.files;
-		if (files && files[0] && files[0].type.startsWith('image/')) {
-			switch (type) {
-				case 'logo':
-					logoFile = files[0];
-					break;
-				case 'poster':
-					posterFile = files[0];
-					break;
-				case 'background':
-					backgroundImageFile = files[0];
-					break;
-			}
+	const files = event.dataTransfer?.files;
+	if (files && files[0] && files[0].type.startsWith('image/')) {
+		const file = files[0];
+
+		switch (type) {
+			case 'logo':
+				logoFile = file;
+				logoPreview = URL.createObjectURL(file);
+				break;
+			case 'poster':
+				posterFile = file;
+				posterPreview = URL.createObjectURL(file);
+				break;
+			case 'background':
+				backgroundImageFile = file;
+				backgroundPreview = URL.createObjectURL(file);
+				break;
 		}
+	}
+}
+
+function removeLogo() {
+		logoFile = null;
+		logoPreview = null;
 	}
 
 	const handleLocationInput = async (event: Event) => {
@@ -515,7 +535,7 @@
 						placeholder="Enter your event name"
 						bind:value={eventName}
 						on:focus={() => touched.eventName = true}  
-						class="w-full rounded-[12px] border border-gray-200 px-4 py-4 text-[16px] text-gray-500 placeholder-gray-500 transition-colors focus:border-2 focus:border-red-500 focus:outline-none"
+						class="w-full rounded-[12px] border border-gray-200 px-4 py-4 text-[16px] text-gray-500 placeholder-gray-500 transition-colors focus:border-2 focus:border-blue-500 focus:outline-none"
 					/>
 					{#if touched.eventName && errors.eventName} <!-- Show error if touched -->
 						<p class="text-sm text-red-500">{errors.eventName}</p>
@@ -534,7 +554,7 @@
 							placeholder="your-event"
 							bind:value={subdomain}
 							on:focus={() => touched.subdomain = true}
-							class="flex-1 px-2 py-4 text-[16px] text-gray-500 transition-colors focus:border-2 focus:border-red-500 focus:outline-none"
+							class="flex-1 px-2 py-4 text-[16px] text-gray-500 transition-colors focus:border-2 focus:border-blue-500 focus:outline-none"
 						/>
 						<span class="p-4 text-gray-500">.veent.co</span>
 					</div>
@@ -558,7 +578,7 @@
 									type="text"
 									readonly
 									placeholder="Select start date"
-									class="w-full cursor-pointer appearance-none rounded-[12px] border border-gray-200 bg-white px-4 py-4 text-gray-500 focus:border-2 focus:border-red-500 focus:outline-none"
+									class="w-full cursor-pointer appearance-none rounded-[12px] border border-gray-200 bg-white px-4 py-4 text-gray-500 focus:border-2 focus:border-blue-500 focus:outline-none"
 								/>
 							</div>
 							<div class="relative">
@@ -589,7 +609,7 @@
 									type="text"
 									readonly
 									placeholder="Select end date"
-									class="w-full cursor-pointer appearance-none rounded-[12px] border border-gray-200 bg-white px-4 py-4 text-gray-500 focus:border-2 focus:border-red-500 focus:outline-none"
+									class="w-full cursor-pointer appearance-none rounded-[12px] border border-gray-200 bg-white px-4 py-4 text-gray-500 focus:border-2 focus:border-blue-500 focus:outline-none"
 								/>
 							</div>
 							<div class="relative">
@@ -759,14 +779,16 @@
 						>
 							<div class="flex flex-col items-center">
 								{#if logoFile}
-									<div class="flex items-center gap-2">
-										<i class="ri-check-line text-green-500"></i>
-										<span class="text-sm text-gray-600">{logoFile.name}</span>
-										<!-- remove logo -->
+									<div class="flex items-center">
+										<img src="{logoPreview}" alt="Logo Preview" class="h-24 w-24 object-cover rounded-lg" />
+										<div class="flex items-center gap-2 mt-2"></div>
+										<span class="text-sm text-gray-600 m-2 max-w-[30px] sm:max-w-[350px]  truncate overflow-hidden whitespace-nowrap block">
+											{logoFile.name}
+										</span>										<!-- remove logo -->
 										<button
 											aria-labelledby="remove-logo"
 											class="text-red-500 hover:text-red-700"
-											on:click={() => (logoFile = null)}
+											on:click={() => (logoFile = null, logoPreview = '')}
 										>
 											<i class="ri-close-line"></i>
 										</button>
@@ -822,14 +844,16 @@
 						>
 							<div class="flex flex-col items-center">
 								{#if posterFile}
-									<div class="flex items-center gap-2">
-										<i class="ri-check-line text-green-500"></i>
-										<span class="text-sm text-gray-600">{posterFile.name}</span>
-										<!-- remove poster -->
+									<div class="flex items-center">
+										<img src="{posterPreview}" alt="Logo Preview" class="h-24 w-24 object-cover rounded-lg" />
+										<div class="flex items-center gap-2 mt-2"></div>
+										<span class="text-sm text-gray-600 m-2 max-w-[30px] sm:max-w-[350px]  truncate overflow-hidden whitespace-nowrap block">
+											{posterFile.name}
+										</span>										<!-- remove poster -->
 										<button
 											aria-labelledby="remove-poster"
 											class="text-red-500 hover:text-red-700"
-											on:click={() => (posterFile = null)}
+											on:click={() => (posterFile = null, posterPreview = '')}
 										>
 											<i class="ri-close-line"></i>
 										</button>
@@ -875,7 +899,7 @@
 												role="button"
 												tabindex="0"
 												data-type="background"
-												class="rounded-lg border-2 border-dashed {isDraggingBackgroundImage
+												class="rounded-lg border-2 border-dashed relative {isDraggingBackgroundImage
 													? 'border-red-500 bg-red-50'
 													: 'border-gray-200'} p-8 transition-colors hover:border-gray-500"
 												on:dragover={handleDragOver}
@@ -884,13 +908,16 @@
 											>
 												<div class="flex flex-col items-center">
 													{#if backgroundImageFile}
-														<div class="flex items-center gap-2">
-															<i class="ri-check-line text-green-500"></i>
-															<span class="text-sm text-gray-600">{backgroundImageFile.name}</span>
-															<button
+														<div class="flex items-center">
+															<img src="{backgroundPreview}" alt="Logo Preview" class=" h-24 w-24 object-cover rounded-lg" />
+															<div class="flex items-center gap-2 mt-2"></div>
+															
+															<span class="text-sm text-gray-600 m-2 max-w-[30px] sm:max-w-[350px]  truncate overflow-hidden whitespace-nowrap block">
+																{backgroundImageFile.name}
+															</span>															<button
 																aria-labelledby="remove-background"
 																class="text-red-500 hover:text-red-700"
-																on:click={() => (backgroundImageFile = null)}
+																on:click={() => (backgroundImageFile = null, backgroundPreview = '')} 
 															>
 																<i class="ri-close-line"></i>
 															</button>
