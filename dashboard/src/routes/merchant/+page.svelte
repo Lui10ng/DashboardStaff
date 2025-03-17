@@ -2,7 +2,12 @@
   import { activeRoute } from '$lib/stores/store'; // Ensure the path is correct
   import { goto } from '$app/navigation';
   import { currentEvent } from '$lib/types/data/event';
+  import EditEventModal from '$lib/components/features/EditEventModal/EditEventModal.svelte';
+	import { eventDetails } from '$lib/stores/store';
+	import { event } from '$lib/types/data/eventData';
+	import { writable } from 'svelte/store';
 
+	const isModalOpen = writable(false);
 
   // Set active route when component mounts
   $activeRoute = 'merchant';
@@ -108,6 +113,12 @@
     if (status === "Deactivated") return "text-gray-500";
     return "text-gray-400";
   }
+  $eventDetails = null;
+	function editThis() {
+		$eventDetails = event;
+		$isModalOpen = true;
+	}
+ 
 </script>
 
 
@@ -123,12 +134,13 @@
    <div class="flex-1 w-full">
      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">{currentEvent.title}</h1>
-       <button class="flex items-center gap-2 text-red-600 hover:text-red-700 transition-colors">
+       <button on:click={editThis} class="flex items-center gap-2 text-red-600 hover:text-red-700 transition-colors">
          Edit Event
          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-6 sm:h-10 sm:w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-4.036L9 12.964V15h2.036l7.732-7.732a1.5 1.5 0 00-2.036-2.036zM6 18h12" />
          </svg>
        </button>
+       <EditEventModal isOpen={isModalOpen} />
      </div>
      <div class="flex flex-col gap-2 text-gray-600">
        <div class="flex items-center gap-2">
