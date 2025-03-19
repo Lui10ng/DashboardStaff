@@ -44,7 +44,9 @@ docker compose down
 1. Open a terminal either in docker desktop or just a normal terminal
 2. Run the following command:
 ```bash
-docker exec -it veent-payload-db-1 psql -U payload -d payload
+docker exec -it 09b3ea95dbfd7735d9f87b946ba8a8d4ecd3f592b7e4b1732a554132c3d8df17 bash
+
+psql -U payload
 ```
 3. Confirm the connection by running:
 ```bash
