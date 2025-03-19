@@ -11,10 +11,11 @@ pnpm ^9
 
 ## Getting Started
 
-### 1. Pull main
+### 1. Pull main or go to my branch if it's not merged yet
 
 ```bash
 git pull origin main
+git checkout payload
 ```
 
 ### 2. Run the project
