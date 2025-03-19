@@ -108,10 +108,25 @@
 		// Optionally scroll to top of events list
 		window.scrollTo({ top: 0, behavior: 'smooth' });
 	};
+
+	fetch('http://localhost:3000/api/posts?limit=10')
+		.then((res) => res.json())
+		.then((data) => {
+			const text =
+				data?.docs?.[0]?.content?.root?.children?.[0]?.children?.[0]?.text ||
+				'No content available';
+
+			const titleElement = document.getElementById('post-title');
+			if (titleElement) {
+				titleElement.innerText = text;
+			}
+		})
+		.catch((err) => console.error('Error fetching posts:', err));
 </script>
 
 <div class="min-h-screen bg-gray-50">
 	<!-- Header -->
+	
 	<header class="fixed top-0 right-0 left-0 z-50 border-b border-gray-200 bg-white">
 		<div class="px-6 py-3">
 			<div class="flex items-center justify-between">
@@ -128,8 +143,10 @@
 
 	<!-- Main Content -->
 	<main class="mx-auto max-w-7xl px-6 pt-20">
+		
 		<div class="my-5">
 			<h1 class="text-2xl font-bold text-gray-900 md:text-3xl">Welcome back, Jie clark Terec!</h1>
+			<h1 id="post-title" class="text-2xl font-bold">Loading...</h1>
 			<p class="mt-2 text-gray-600">Manage your events and track their performance</p>
 		</div>
 
