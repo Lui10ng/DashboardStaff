@@ -787,7 +787,7 @@ function removeLogo() {
 										</span>										<!-- remove logo -->
 										<button
 											aria-labelledby="remove-logo"
-											class="text-red-500 hover:text-red-700"
+											class="text-red-500 hover:text-red-700 p-3 cursor-pointer"
 											on:click={() => (logoFile = null, logoPreview = '')}
 										>
 											<i class="ri-close-line"></i>
@@ -852,7 +852,7 @@ function removeLogo() {
 										</span>										<!-- remove poster -->
 										<button
 											aria-labelledby="remove-poster"
-											class="text-red-500 hover:text-red-700"
+											class="text-red-500 hover:text-red-700 p-3 cursor-pointer"
 											on:click={() => (posterFile = null, posterPreview = '')}
 										>
 											<i class="ri-close-line"></i>
@@ -916,7 +916,7 @@ function removeLogo() {
 																{backgroundImageFile.name}
 															</span>															<button
 																aria-labelledby="remove-background"
-																class="text-red-500 hover:text-red-700"
+																class="text-red-500 hover:text-red-700 p-3 cursor-pointer"
 																on:click={() => (backgroundImageFile = null, backgroundPreview = '')} 
 															>
 																<i class="ri-close-line"></i>
