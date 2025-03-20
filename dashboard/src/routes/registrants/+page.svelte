@@ -6,13 +6,10 @@
 	import { currentEvent } from '$lib/types/data/event';
 	import { guests, type Guest } from '$lib/types/data/guests';
 	import { paginate } from '$lib/types/data/pagination';
-	import EditEventModal from '$lib/components/features/EditEventModal/EditEventModal.svelte';
-	import { eventDetails } from '$lib/stores/store';
-	import { event } from '$lib/types/data/eventData';
-	import { writable } from 'svelte/store';
-
-	const isModalOpen = writable(false);
+	import QrCodeModal from '$lib/components/ui/QrCodeModal.svelte'; // Import the modal component
+  
 	$activeRoute = 'registrants';
+  
 	let searchQuery = '';
 	let currentPage = 1;
 	let itemsPerPage = 5;
@@ -30,6 +27,8 @@
 	  hasPrevPage: boolean;
 	};
 	let filterStatus = 'all';
+	let isQrCodeModalOpen = false;
+	let selectedGuestForQr: Guest | null = null;
   
 	function navigateTo(route: string) {
 	  activeRoute.set(route);
@@ -125,15 +124,24 @@
 	  goto('/merchant');
 	}
   
+	function openQrCodeModal(guest: Guest) {
+		selectedGuestForQr = guest;
+		isQrCodeModalOpen = true;
+	}
+
+	function closeQrCodeModal() {
+		isQrCodeModalOpen = false;
+		selectedGuestForQr = null;
+	}
+
+	async function resendQrCode() {
+		// Simulate a delay
+		await new Promise(resolve => setTimeout(resolve, 2000));
+	}
+
 	// Computed value to determine if pagination should be shown
 	$: showPagination = filteredGuests.length > itemsPerPage;
-	$eventDetails = null;
-	function editThis() {
-		$eventDetails = event;
-		$isModalOpen = true;
-	}
- 
- </script>
+  </script>
 	
 	
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
@@ -147,13 +155,12 @@
 	  <div class="flex-1 w-full">
 		<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
 		  <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">{currentEvent.title}</h1>
-		  <button on:click={editThis} class=" flex items-center gap-2 text-red-600 hover:text-red-700 transition-colors">
-			<span>Edit Event</span>
+		  <button class="flex items-center gap-2 text-red-600 hover:text-red-700 transition-colors">
+			Edit Event
 			<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-6 sm:h-10 sm:w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 			  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-4.036L9 12.964V15h2.036l7.732-7.732a1.5 1.5 0 00-2.036-2.036zM6 18h12" />
 			</svg>
 		  </button>
-		  <EditEventModal isOpen={isModalOpen} />
 		</div>
 		<div class="flex flex-col gap-2 text-gray-600">
 		  <div class="flex items-center gap-2">
@@ -297,6 +304,7 @@
 		  </svg>
 		</div>
 		<div class="flex flex-col sm:flex-row gap-2 sm:gap-4">
+
 		  <select 
 			class="bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base cursor-pointer"
 			on:change={handleFilterStatusChange}
@@ -313,105 +321,150 @@
 		</div>
 	  </div>
 	
-	  <div class="space-y-4">
-		{#each paginatedData.items as guest (guest.id)}
-		  <div 
-			class="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors gap-4 sm:gap-0 cursor-pointer"
-			on:click={() => openTicketModal(guest)}
-		  >
-			<div class="flex items-center gap-4">
-			  <img 
-				src={guest.avatar} 
-				alt={guest.name}
-				class="w-10 h-10 rounded-full"
-			  />
-			  <div>
-				<h3 class="font-medium text-gray-900">{guest.name}</h3>
-				<p class="text-sm text-gray-500">{guest.email}</p>
+	 	  <!-- Guest List Items -->
+		   <div class="space-y-4">
+			{#each paginatedData.items as guest (guest.id)}
+			  <div 
+				class="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors gap-4 cursor-pointer"
+				on:click={() => openTicketModal(guest)}
+			  >
+				<div class="flex items-center gap-4">
+				  <img 
+					src={guest.avatar} 
+					alt={guest.name}
+					class="w-10 h-10 rounded-full"
+				  />
+				  <div class="flex-1">
+					<h3 class="font-medium text-gray-900">{guest.name}</h3>
+					<p class="text-sm text-gray-500">{guest.email}</p>
+				  </div>
+				</div>
+				<div class="flex flex-wrap items-center justify-between sm:justify-end gap-2 sm:gap-4">
+				  <span class="text-sm text-gray-500 order-1 sm:order-none">{guest.registrationDate}</span>
+				  <span class={`px-3 py-1 rounded-full text-xs font-medium ${
+					guest.status === 'registered' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+				  } order-2 sm:order-none`}>
+					{guest.status}
+				  </span>
+				  <button 
+					class={`px-3 py-2 rounded-lg transition-colors text-xs flex items-center gap-2 order-3 sm:order-none ${
+					  guest.status === 'pending' 
+						? 'bg-[#E2E2E2] text-[#B7B7B7] cursor-not-allowed' 
+						: 'text-red-500 hover:border-red-600 hover:bg-red-200 hover:text-red-600 border-1 cursor-pointer'
+					}`}
+					disabled={guest.status === 'pending'}
+					on:click={(e) => { 
+					  if (guest.status !== 'pending') {
+						e.stopPropagation(); 
+						openQrCodeModal(guest); 
+					  }
+					}}
+				  >
+					<svg 
+					  xmlns="http://www.w3.org/2000/svg" 
+					  width="20" 
+					  height="20" 
+					  viewBox="0 0 24 24" 
+					  fill="currentColor" 
+					  class="w-4 h-4 sm:hidden"
+					>
+					  <path d="M3 4c-1.11 0-2 .89-2 2v12a2 2 0 0 0 2 2h10.5a6.5 6.5 0 0 1-.5-2.5a6.5 6.5 0 0 1 6.5-6.5a6.5 6.5 0 0 1 1.5.18V6a2 2 0 0 0-2-2zm0 2l8 5l8-5v2l-8 5l-8-5zm16 6l-2.25 2.25L19 16.5V15a2.5 2.5 0 0 1 2.5 2.5c0 .4-.09.78-.26 1.12l1.09 1.09c.42-.63.67-1.39.67-2.21c0-2.21-1.79-4-4-4zm-3.33 3.29c-.42.63-.67 1.39-.67 2.21c0 2.21 1.79 4 4 4V23l2.25-2.25L19 18.5V20a2.5 2.5 0 0 1-2.5-2.5c0-.4.09-.78.26-1.12z"/>
+					</svg>
+					<svg 
+					  xmlns="http://www.w3.org/2000/svg" 
+					  viewBox="0 0 24 24" 
+					  fill="currentColor" 
+					  class="hidden sm:inline w-5 h-5"
+					>
+					  <path d="M1.94607 9.31543C1.42353 9.14125 1.4194 8.86022 1.95682 8.68108L21.043 2.31901C21.5715 2.14285 21.8746 2.43866 21.7265 2.95694L16.2733 22.0432C16.1223 22.5716 15.8177 22.59 15.5944 22.0876L11.9999 14L17.9999 6.00005L9.99992 12L1.94607 9.31543Z"></path>
+					</svg>
+					<span class="hidden sm:inline">Resend QR Code</span>
+					
+				  </button>
+				</div>
 			  </div>
-			</div>
-			<div class="flex items-center justify-between sm:justify-end gap-4">
-			  <span class="text-sm text-gray-500">{guest.registrationDate}</span>
-			  <span class={`px-3 py-1 rounded-full text-xs font-medium ${
-				guest.status === 'registered' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-			  }`}>
-				{guest.status}
+			{/each}
+		  </div>
+	  
+		  <!-- Pagination Controls - Enhanced mobile layout -->
+		  <div class="flex flex-col-reverse sm:flex-row items-center justify-between gap-4 mt-6">
+			<div class="flex items-center gap-4 w-full sm:w-auto justify-center sm:justify-start">
+			  {#if showPagination}
+				<div class="flex items-center gap-2">
+				  <button 
+					class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+					on:click={prevPage}
+					disabled={!paginatedData.hasPrevPage}
+				  >
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+					</svg>
+				  </button>
+				  
+				  {#each paginatedData.pageNumbers as pageNum}
+					{#if typeof pageNum === 'number'}
+					  <button 
+						class="w-8 h-8 flex items-center justify-center rounded-lg transition-colors {
+						  pageNum === currentPage 
+							? 'bg-[#DF4D60] text-white hover:bg-[#eb6d80]' 
+							: 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+						}"
+						on:click={() => goToPage(pageNum)}
+					  >
+						{pageNum}
+					  </button>
+					{:else}
+					  <span class="text-gray-500">...</span>
+					{/if}
+				  {/each}
+		  
+				  <button 
+					class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+					on:click={nextPage}
+					disabled={!paginatedData.hasNextPage}
+				  >
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+					</svg>
+				  </button>
+				</div>
+			  {/if}
+			  
+			  <span class="text-sm text-gray-600 whitespace-nowrap">
+				Showing {Math.min(itemsPerPage, filteredGuests.length)} of {filteredGuests.length} items
 			  </span>
 			</div>
+			<div class="flex items-center gap-2 w-full sm:w-auto justify-center sm:justify-end">
+			  <span class="text-sm text-gray-600">Items per page:</span>
+			  <select 
+				class="bg-white border border-gray-200 rounded-lg px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base cursor-pointer"
+				on:change={handleItemsPerPageChange}
+			  >
+				<option value="5">5</option>
+				<option value="10">10</option>
+				<option value="20">20</option>
+				<option value="50">50</option>
+				<option value={filteredGuests.length}>All</option>
+			  </select>
+			</div>
 		  </div>
-		{/each}
+		</div>
 	  </div>
-	 <!-- Pagination Controls -->
-	 <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
-	  <div class="flex items-center gap-4 order-2 sm:order-1">
-		{#if showPagination}
-		  <div class="flex items-center gap-2">
-			<button 
-			  class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-			  on:click={prevPage}
-			  disabled={!paginatedData.hasPrevPage}
-			>
-			  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-			  </svg>
-			</button>
-			
-			{#each paginatedData.pageNumbers as pageNum}
-			  {#if typeof pageNum === 'number'}
-				<button 
-				  class="w-8 h-8 flex items-center justify-center rounded-lg transition-colors {
-					pageNum === currentPage 
-					  ? 'bg-[#DF4D60] text-white hover:bg-[#eb6d80]' 
-					  : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-				  }"
-				  on:click={() => goToPage(pageNum)}
-				>
-				  {pageNum}
-				</button>
-			  {:else}
-				<span class="text-gray-500">...</span>
-			  {/if}
-			{/each}
-	
-			<button 
-			  class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-			  on:click={nextPage}
-			  disabled={!paginatedData.hasNextPage}
-			>
-			  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-			  </svg>
-			</button>
-		  </div>
-		{/if}
-		
-		<span class="text-sm text-gray-600">
-		  Showing {Math.min(itemsPerPage, filteredGuests.length)} of {filteredGuests.length} items
-		</span>
-	  </div>
-	  <div class="flex items-center gap-2 order-1 sm:order-2">
-		<span class="text-sm text-gray-600">Items per page:</span>
-		<select 
-		  class="bg-white border border-gray-200 rounded-lg px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base cursor-pointer"
-		  on:change={handleItemsPerPageChange}
-		>
-		  <option value="5">5 per page</option>
-		  <option value="10">10 per page</option>
-		  <option value="20">20 per page</option>
-		  <option value="50">50 per page</option>
-		  <option value={filteredGuests.length}>Show all</option>
-		</select>
-	  </div>
-	</div>
-	</div>
-	</div>
-	<TicketModal 
-	  isOpen={isTicketModalOpen} 
-	  guest={selectedGuest} 
-	  onClose={closeTicketModal}
-	/>
-	
-	<EmailBlastModal 
-	  isOpen={isEmailBlastModalOpen}
-	  closeModal={closeEmailBlastModal}
-	/>
+	  
+	  <TicketModal 
+		isOpen={isTicketModalOpen} 
+		guest={selectedGuest} 
+		onClose={closeTicketModal}
+	  />
+	  
+	  <EmailBlastModal 
+		isOpen={isEmailBlastModalOpen}
+		closeModal={closeEmailBlastModal}
+	  />
+	  
+	  <QrCodeModal 
+		isOpen={isQrCodeModalOpen} 
+		guest={selectedGuestForQr} 
+		onClose={closeQrCodeModal} 
+		onResend={resendQrCode}
+	  />
