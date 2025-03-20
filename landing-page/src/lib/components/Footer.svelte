@@ -1,121 +1,227 @@
-<script>
+<script lang="ts">
+	import Cookies from "../components/ui/cookies-drawer.svelte";
+	import emailjs from '@emailjs/browser';
+	import { onMount } from 'svelte';
+	import { page } from '$app/stores';
+
+
+	let email = '';
+	let isSubmitting = false;
+	let submitStatus = '';
+	let showDrawer = false;
 	const currentYear = new Date().getFullYear();
+	$: shouldAddMargin = $page.url.pathname !== '/';
+
+	async function handleSubscribe(event: Event) {
+    event.preventDefault();
+    isSubmitting = true;
+    
+    try {
+      const templateParams = {
+        to_email: email,
+        message: 'Hi pogi',
+        from_name: 'Veent Newsletter',
+        reply_to: 'hello@veent.io',
+        to_name: email.split('@')[0],
+        email: email 
+      };
+
+      await emailjs.send(
+        'service_5i9hiut', 
+        'template_dzr2jko',
+        templateParams,
+        'F3jIEcOZHxESA2uOw'
+      );
+      
+      submitStatus = 'Success! Check your email.';
+      email = '';
+    } catch (error: any) {
+      console.error('Email failed to send:', error);
+      submitStatus = error.text || 'Something went wrong. Please try again.';
+    } finally {
+      isSubmitting = false;
+    }
+  }
+
+	
+	onMount(() => {
+   
+    console.log('Footer component mounted');
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          showDrawer = true;
+          console.log('Drawer triggered:', { showDrawer, timestamp: new Date().toISOString() });
+        } else {
+          showDrawer = false;
+          console.log('Drawer hidden:', { showDrawer, timestamp: new Date().toISOString() });
+        }
+      });
+    }, 
+    { 
+      threshold: 0.3,
+      rootMargin: '100px'
+    });
+
+   
+    const footer = document.querySelector('#footer-trigger');
+    
+    if (footer) {
+      observer.observe(footer);
+      console.log('Footer observer initialized with element:', footer);
+    } else {
+      console.error('Footer element not found! Looking for #footer-trigger');
+    }
+
+    return () => {
+      if (footer) {
+        observer.unobserve(footer);
+        console.log('Footer observer cleaned up');
+      }
+    };
+  });
+
+  
+  $: {
+    console.log('Drawer state changed:', showDrawer);
+  }
+	
 </script>
 
-<section class="bg-white">
-	<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-		<div class="text-center xl:flex xl:items-center xl:justify-between xl:text-left">
-			<div class="flex justify-center gap-5 xl:flex xl:items-center xl:justify-start">
-				<img src="https://veent.io/veent-logo.svg" alt="Veent Logo" class="h-16 w-16" />
-				<p class="mt-5 text-sm text-gray-600 xl:mt-0 xl:ml-6">© Copyright {currentYear} Veent</p>
-			</div>
-
-			<div class="my-3 flex items-center justify-center xl:mt-0 xl:justify-end xl:space-x-8">
-				<ul class="mt-5 flex items-center space-x-3 sm:mt-0 md:order-3">
-					<!-- <li>
-						<a
-							href="/"
-							aria-labelledby="twitter"
-							title="Twitter Link"
-							class="flex h-7 w-7 items-center justify-center rounded-full border border-gray-300 bg-transparent text-gray-800 transition-all duration-200 hover:border-[#D1302C] hover:bg-[#D1302C]hover:text-white focus:border-[#D1302C]focus:bg-[#D1302C] focus:text-white"
-						>
-							<svg
-								class="h-4 w-4"
-								xmlns="http://www.w3.org/2000/svg"
-								viewBox="0 0 24 24"
-								fill="currentColor"
-							>
-								<path
-									d="M19.633 7.997c.013.175.013.349.013.523 0 5.325-4.053 11.461-11.46 11.461-2.282 0-4.402-.661-6.186-1.809.324.037.636.05.973.05a8.07 8.07 0 0 0 5.001-1.721 4.036 4.036 0 0 1-3.767-2.793c.249.037.499.062.761.062.361 0 .724-.05 1.061-.137a4.027 4.027 0 0 1-3.23-3.953v-.05c.537.299 1.16.486 1.82.511a4.022 4.022 0 0 1-1.796-3.354c0-.748.199-1.434.548-2.032a11.457 11.457 0 0 0 8.306 4.215c-.062-.3-.1-.611-.1-.923a4.026 4.026 0 0 1 4.028-4.028c1.16 0 2.207.486 2.943 1.272a7.957 7.957 0 0 0 2.556-.973 4.02 4.02 0 0 1-1.771 2.22 8.073 8.073 0 0 0 2.319-.624 8.645 8.645 0 0 1-2.019 2.083z"
-								></path>
-							</svg>
-						</a>
-					</li> -->
-
-					<li>
-						<a
-							aria-labelledby="facebook"
-							href="https://www.facebook.com/veent.io/"
-							title="Facebook Link"
-							class="flex h-7 w-7 items-center justify-center rounded-full border border-gray-300 bg-transparent text-gray-800 transition-all duration-200 hover:border-[#D1302C] hover:bg-[#D1302C] hover:text-white focus:border-[#D1302C] focus:bg-[#D1302C] focus:text-white"
-						>
-							<svg
-								class="h-4 w-4"
-								xmlns="http://www.w3.org/2000/svg"
-								viewBox="0 0 24 24"
-								fill="currentColor"
-							>
-								<path
-									d="M13.397 20.997v-8.196h2.765l.411-3.209h-3.176V7.548c0-.926.258-1.56 1.587-1.56h1.684V3.127A22.336 22.336 0 0 0 14.201 3c-2.444 0-4.122 1.492-4.122 4.231v2.355H7.332v3.209h2.753v8.202h3.312z"
-								></path>
-							</svg>
-						</a>
-					</li>
-
-					<li>
-						<a
-							aria-labelledby="instagram"
-							href="https://www.instagram.com/veentapps/"
-							title="Instagram Link"
-							class="flex h-7 w-7 items-center justify-center rounded-full border border-gray-300 bg-transparent text-gray-800 transition-all duration-200 hover:border-[#D1302C] hover:bg-[#D1302C] hover:text-white focus:border-[#D1302C] focus:bg-[#D1302C] focus:text-white"
-						>
-							<svg
-								class="h-4 w-4"
-								xmlns="http://www.w3.org/2000/svg"
-								viewBox="0 0 24 24"
-								fill="currentColor"
-							>
-								<path
-									d="M11.999 7.377a4.623 4.623 0 1 0 0 9.248 4.623 4.623 0 0 0 0-9.248zm0 7.627a3.004 3.004 0 1 1 0-6.008 3.004 3.004 0 0 1 0 6.008z"
-								></path>
-								<circle cx="16.806" cy="7.207" r="1.078"></circle>
-								<path
-									d="M20.533 6.111A4.605 4.605 0 0 0 17.9 3.479a6.606 6.606 0 0 0-2.186-.42c-.963-.042-1.268-.054-3.71-.054s-2.755 0-3.71.054a6.554 6.554 0 0 0-2.184.42 4.6 4.6 0 0 0-2.633 2.632 6.585 6.585 0 0 0-.419 2.186c-.043.962-.056 1.267-.056 3.71 0 2.442 0 2.753.056 3.71.015.748.156 1.486.419 2.187a4.61 4.61 0 0 0 2.634 2.632 6.584 6.584 0 0 0 2.185.45c.963.042 1.268.055 3.71.055s2.755 0 3.71-.055a6.615 6.615 0 0 0 2.186-.419 4.613 4.613 0 0 0 2.633-2.633c.263-.7.404-1.438.419-2.186.043-.962.056-1.267.056-3.71s0-2.753-.056-3.71a6.581 6.581 0 0 0-.421-2.217zm-1.218 9.532a5.043 5.043 0 0 1-.311 1.688 2.987 2.987 0 0 1-1.712 1.711 4.985 4.985 0 0 1-1.67.311c-.95.044-1.218.055-3.654.055-2.438 0-2.687 0-3.655-.055a4.96 4.96 0 0 1-1.669-.311 2.985 2.985 0 0 1-1.719-1.711 5.08 5.08 0 0 1-.311-1.669c-.043-.95-.053-1.218-.053-3.654 0-2.437 0-2.686.053-3.655a5.038 5.038 0 0 1 .311-1.687c.305-.789.93-1.41 1.719-1.712a5.01 5.01 0 0 1 1.669-.311c.951-.043 1.218-.055 3.655-.055s2.687 0 3.654.055a4.96 4.96 0 0 1 1.67.311 2.991 2.991 0 0 1 1.712 1.712 5.08 5.08 0 0 1 .311 1.669c.043.951.054 1.218.054 3.655 0 2.436 0 2.698-.043 3.654h-.011z"
-								></path>
-							</svg>
-						</a>
-					</li>
-
-					<li>
-						<a
-							href="https://www.linkedin.com/company/veent/about/?viewAsMember=true"
-							title="LinkedIn Link"
-							aria-labelledby="linkedin"
-							class="flex h-7 w-7 items-center justify-center rounded-full border border-gray-300 bg-transparent text-gray-800 transition-all duration-200 hover:border-[#D1302C] hover:bg-[#D1302C] hover:text-white focus:border-[#D1302C] focus:bg-[#D1302C] focus:text-white"
-						>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								viewBox="0 0 24 24"
-								width="12"
-								height="12"
-								fill="currentColor"
-								><path
-									d="M6.94048 4.99993C6.94011 5.81424 6.44608 6.54702 5.69134 6.85273C4.9366 7.15845 4.07187 6.97605 3.5049 6.39155C2.93793 5.80704 2.78195 4.93715 3.1105 4.19207C3.43906 3.44699 4.18654 2.9755 5.00048 2.99993C6.08155 3.03238 6.94097 3.91837 6.94048 4.99993ZM7.00048 8.47993H3.00048V20.9999H7.00048V8.47993ZM13.3205 8.47993H9.34048V20.9999H13.2805V14.4299C13.2805 10.7699 18.0505 10.4299 18.0505 14.4299V20.9999H22.0005V13.0699C22.0005 6.89993 14.9405 7.12993 13.2805 10.1599L13.3205 8.47993Z"
-								></path></svg
-							>
-						</a>
-					</li>
-					<li>
-						<a
-							href="https://www.tiktok.com/@veentapps?enable_tiktok_webview=true"
-							title="TikTok Link"
-							aria-labelledby="tiktok"
-							class="flex h-7 w-7 items-center justify-center rounded-full border border-gray-300 bg-transparent text-gray-800 transition-all duration-200 hover:border-[#D1302C] hover:bg-[#D1302C] hover:text-white focus:border-[#D1302C] focus:bg-[#D1302C] focus:text-white"
-						>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								viewBox="0 0 24 24"
-								width="12"
-								height="12"
-								fill="currentColor"
-								><path
-									d="M16 8.24537V15.5C16 19.0899 13.0899 22 9.5 22C5.91015 22 3 19.0899 3 15.5C3 11.9101 5.91015 9 9.5 9C10.0163 9 10.5185 9.06019 11 9.17393V12.3368C10.5454 12.1208 10.0368 12 9.5 12C7.567 12 6 13.567 6 15.5C6 17.433 7.567 19 9.5 19C11.433 19 13 17.433 13 15.5V2H16C16 4.76142 18.2386 7 21 7V10C19.1081 10 17.3696 9.34328 16 8.24537Z"
-								></path></svg
-							>
-						</a>
-					</li>
-				</ul>
-			</div>
-		</div>
+<section 
+		id= "footer-trigger" 
+		class={`bg-[linear-gradient(80deg,#AE0D09_31%,#B7100B_39%,#6B1816_80%)] text-white py-12 relative
+			${shouldAddMargin ? 'mt-[100px]' : ''}`}
+		>
+	<div class="">																					
+		<img src="/assets/icons/Mount-2.svg" alt="Veent Logo" 
+		class="absolute size-[200px] mt-[-295px] left-[-2px] transform 
+        -translate-y-[-90px] z-[1px] 
+        md:w-90 md:h-50 md:mt-[-326px] md:ml-[-32px]
+        lg:w-100 lg:h-60 lg:mt-[-355px] lg:ml-[-40px]"
+  /> 	
 	</div>
+
+
+	<div class="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 md:px-8 lg:px-12 ">
+
+		<div class="grid grid-cols-1 gap-8 md:grid-cols-5 md:gap-8 lg:gap-8 lg:grid-cols-5">
+
+			<div class="md:col-span-2 grid grid-cols-2 gap-4 lg:col-span-2"> 
+				<div class="text-start ml-[40px] md:text-left md:ml-[-10px] lg:ml-[-10px]">
+					<h3 class="font-semibold mb-4 text-xl">Navigation</h3>
+					<ul class="space-y-2">
+					  <li><a href="/" class="hover:underline">Home</a></li>
+					  <li><a href="/features" class="hover:underline">Features</a></li>
+					  <li><a href="/pricing" class="hover:underline">Pricing</a></li>
+					  <li><a href="/about-us" class="hover:underline">About us</a></li>
+					</ul>
+				</div>
+
+				<div class="text-start ml-[50px] md:text-left md:ml-[-20px] lg:ml-[-20px]">
+					<h3 class="font-semibold mb-4 text-xl">Resources</h3>
+					<ul class="space-y-2">
+					  <li><a href="/help-center" class="hover:underline">Help Center</a></li>
+					  <li><a href="/blog" class="hover:underline">Blog</a></li>
+					</ul>
+				</div>
+			</div>
+
+			<div class="md:col-span-2 grid grid-cols-2 gap-4 lg:col-span-2"> 
+
+				<div class="text-start ml-[35px] md:text-left md:ml-[-40px] lg:ml-[-20px] xl:ml-[5px] ">
+					<h3 class="font-semibold mb-4 text-xl">Social Media</h3>
+					<div class="flex space-x-4 md:space-x-4 lg:space-x-6">
+					  <a href="https://www.facebook.com/veent.io/" class="hover:opacity-80">
+						<i class="ri-facebook-fill text-lg md:text-lg lg:text-lg"></i>
+					  </a>
+					  <a href="https://www.instagram.com/veentapps/" class="hover:opacity-80">
+						<i class="ri-instagram-line text-lg md:text-lg lg:text-lg"></i>
+					  </a>
+					  <a href="https://www.linkedin.com/company/veent/" class="hover:opacity-80">
+						<i class="ri-linkedin-fill text-lg md:text-lg lg:text-lg"></i>
+					  </a>
+					  <a href="https://www.tiktok.com/@veentapps" class="hover:opacity-80">
+						<i class="ri-tiktok-fill text-lg md:text-lg lg:text-lg"></i>
+					  </a>
+					</div>
+				  </div>
+
+					<div class="text-start ml-[35px] md:text-left md:ml-[-30px] xl:ml-[40px] ">
+						<h3 class="font-semibold mb-4 text-xl">Contact Us</h3>
+						<p>hello@veent.io</p>
+					</div>
+				</div>
+
+
+		<div class="w-full md:ml-[-30px] md:w-[150px] lg:w-[260px] xl:ml-[20px] " >
+			<h3 class="font-semibold mb-4 text-xl ">Newsletter</h3>
+			<p class="mb-4 text-white ">Subscribe to get the latest updates</p>
+			<form class="flex md:flex-col lg:flex-col xl:flex-col " on:submit={handleSubscribe}>
+			  <input
+				type="email"
+				bind:value={email}
+				placeholder="Enter your email"
+				
+				class="flex-1 px-4 py-3 bg-white/90 placeholder-gray-500
+					   w-[100px] md:w-[150px] lg:w-[200px]
+					   text-gray-600 md:text-sm"
+				required
+			  />
+			  <button
+				type="submit"
+				class="bg-[#D12F2B] text-white font-semibold px-6 py-3 hover:bg-[#B52320]
+						md:w-[150px] lg:w-[200px] xl:w-[200px]
+						md:mt-3
+					   "
+				disabled={isSubmitting}
+			  >
+			  {isSubmitting ? 'Sending...' : 'Subscribe'}
+			  </button>
+			</form>
+			{#if submitStatus}
+				<p class="mt-2 text-sm {submitStatus.includes('Success') ? 'text-green-400' : 'text-red-400'}">
+					{submitStatus}
+				</p>
+			{/if}
+			<div class="hidden md:block md:w-[150px] md:mt-3 lg:w-[200px]  ">
+			  <a href="https://veent.io/signup" class="hover:opacity-80 transition-opacity">
+				<img src="/assets/icons/ticket-2.svg" alt="ticket">
+			  </a>
+			</div>
+			<div class="block md:hidden w-full mt-5 flex justify-center">
+			   <a href="https://veent.io/signup"  class="hover:opacity-80 transition-opacity">
+				<img src="/assets/icons/ticket.svg" alt="ticket">
+			   </a>
+			  </div>
+		  </div>
+	  </div>
+	
+
+
+	  <div class="mt-12 pt-8 border-t border-white/10">
+		<div class="flex flex-col space-y-8">
+		  
+		  <div class="flex flex-row justify-center md:justify-end space-x-4 md:space-x-8 lg:space-x-8 md:order-2 md:mt-[-25px] lg:mt-[-25px] ">
+			<a href="/terms" class="text-sm hover:underline whitespace-nowrap md:text-base">Terms & conditions</a>
+			<a href="/privacy" class="text-sm hover:underline whitespace-nowrap md:text-base">Privacy policy</a>
+			<a href="/cookies" class="text-sm hover:underline whitespace-nowrap md:text-base">Cookie policy</a>
+		  </div>
+	  
+		 
+		  <div class="flex flex-col items-center md:items-start space-y-4 md:order-1">
+			<div class="text-center md:text-left">
+			  <p class="text-white font-bold mb-2  md:ml-[20px] lg:ml-[20px]">Powered By</p>
+			  <img src="/assets/icons/Veent-red-logo.svg" alt="Veent Logo" class="w-33 h-15 md:w-28 lg:w-33" />
+			</div>
+			<p class="text-white text-base md:text-base">&copy; {currentYear} Veent. All Rights Reserved.</p>
+		  </div>
+		</div>
+	  </div>
+	</div>
+	<Cookies {showDrawer} />	
 </section>
+
+
+
