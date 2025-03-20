@@ -6,7 +6,10 @@
 	export let data;
 </script>
 
+
+<div class="min-h-screen flex flex-col">
 <Nav loginUrl={data.urlConfig.loginUrl} />
 <slot />
 <MessengerQuickChat fbMessengerUrl={data.urlConfig.fbMessengerUrl} />
 <Footer />
+</div>
