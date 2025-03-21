@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Cookies from "../components/ui/cookies-drawer.svelte";
+	// import Cookies from "../components/ui/cookies-drawer.svelte";
 	import emailjs from '@emailjs/browser';
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
@@ -11,6 +11,7 @@
 	let showDrawer = false;
 	const currentYear = new Date().getFullYear();
 	$: shouldAddMargin = $page.url.pathname !== '/';
+	const urlConfig = $page.data.urlConfig;
 
 	async function handleSubscribe(event: Event) {
     event.preventDefault();
@@ -154,9 +155,9 @@
 					</div>
 				</div>
 
-
+<!-- Newsletter to be implemented soon -->
 		<div class="w-full md:ml-[-30px] md:w-[150px] lg:w-[260px] xl:ml-[20px] " >
-			<h3 class="font-semibold mb-4 text-xl ">Newsletter</h3>
+			<!-- <h3 class="font-semibold mb-4 text-xl ">Newsletter</h3>
 			<p class="mb-4 text-white ">Subscribe to get the latest updates</p>
 			<form class="flex md:flex-col lg:flex-col xl:flex-col " on:submit={handleSubscribe}>
 			  <input
@@ -184,14 +185,16 @@
 				<p class="mt-2 text-sm {submitStatus.includes('Success') ? 'text-green-400' : 'text-red-400'}">
 					{submitStatus}
 				</p>
-			{/if}
+			{/if} -->
+			<!-- signup button -->
 			<div class="hidden md:block md:w-[150px] md:mt-3 lg:w-[200px]  ">
 			  <a href="https://veent.io/signup" class="hover:opacity-80 transition-opacity">
 				<img src="/assets/icons/ticket-2.svg" alt="ticket">
 			  </a>
 			</div>
 			<div class="block md:hidden w-full mt-5 flex justify-center">
-			   <a href="https://veent.io/signup"  class="hover:opacity-80 transition-opacity">
+			   <a href={urlConfig.signupUrl} 
+				 class="hover:opacity-80 transition-opacity">
 				<img src="/assets/icons/ticket.svg" alt="ticket">
 			   </a>
 			  </div>
@@ -220,7 +223,8 @@
 		</div>
 	  </div>
 	</div>
-	<Cookies {showDrawer} />	
+	<!-- cookie drawer to be implemented soon -->
+	<!-- <Cookies {showDrawer} />	 -->
 </section>
 
 
