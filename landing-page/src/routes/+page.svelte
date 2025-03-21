@@ -3,8 +3,14 @@
 	import { fade, fly } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import gsap from 'gsap';
+	import DualMarquee from '$lib/components/DualMarquee.svelte';
+	import { page } from '$app/stores';
+
 	let mounted = false;
+	let isMobile = false;
 	let blobContainer: SVGGElement;
+
+	const urlConfig = $page.data.urlConfig;
 
 	// Define all 8 blob shapes based on the SVG files
 	const blobShapes = [
@@ -233,7 +239,7 @@
 					<button
 						class="animated-border-button rounded-full px-8 py-3 text-lg font-medium sm:text-2xl"
 						on:mousemove={handleButtonHover}
-						on:click={() => (window.location.href = 'https://veent.io/signup/')}
+						on:click={() => (window.location.href = urlConfig.signupUrl)}
 					>
 						Sign up for free!
 					</button>
@@ -242,387 +248,21 @@
 					<h2
 						class="shadow-base relative mx-auto mb-2 inline-block px-8 py-1 text-center text-sm font-bold tracking-tight text-[#3E3C3D] sm:text-xl"
 					>
-						PARTNERS WHO TRUST US
+						PARTNERS
 					</h2>
 
-					<div class="mb-8 flex w-full items-center justify-center overflow-hidden">
-						<div class="h-px flex-grow bg-gray-300"></div>
-						<div class="mx-2 flex-shrink-0">
-							<span class="inline-block h-2 w-2 rounded-full bg-rose-400"></span>
-						</div>
-						<div class="h-px w-24 flex-shrink-0 bg-gray-300"></div>
-						<div class="mx-2 flex-shrink-0">
-							<span class="inline-block h-2 w-2 rounded-full bg-rose-400"></span>
-						</div>
-						<div class="h-px flex-grow bg-gray-300"></div>
+					<!-- Mobile view -->
+					<div class="block sm:hidden">
+						{#if mounted}
+							<DualMarquee />
+						{/if}
 					</div>
 
-					<div
-						class="relative left-1/2 w-screen -translate-x-1/2 overflow-hidden bg-gray-50/50 py-8 shadow-sm"
-					>
-						<!-- Mobile view - Horizontal marquee -->
-						<div class="block sm:hidden">
-							<div class="marquee-wrapper flex w-full overflow-hidden">
-								<div class="animate-marquee-fast flex gap-4 px-4 py-2">
-									{#if mounted}
-										<div
-											class="partner-logo-wrapper flex h-20 w-40 flex-shrink-0 items-center justify-center rounded-lg p-3 transition-all duration-300 hover:bg-white hover:shadow-md"
-											in:fade={{ duration: 300, delay: 100 }}
-										>
-											<a
-												href="https://www.figo.org/philippine-obstetrical-gynecological-society-inc"
-											>
-												<img
-													class="h-auto max-h-14 w-auto max-w-full object-contain opacity-75 grayscale transition-all duration-300 hover:opacity-100 hover:grayscale-0"
-													src="/assets/images/pogs.png"
-													alt="Philippine Obstetrical & Gynecological Society, INC"
-													width="120"
-													height="40"
-													loading="lazy"
-												/>
-											</a>
-										</div>
-										<div
-											class="partner-logo-wrapper flex h-20 w-40 flex-shrink-0 items-center justify-center rounded-lg p-3 transition-all duration-300 hover:bg-white hover:shadow-md"
-											in:fade={{ duration: 300, delay: 150 }}
-										>
-											<a href="https://www.facebook.com/DICTRegion10">
-												<img
-													class="h-auto max-h-14 w-auto max-w-full object-contain opacity-75 grayscale transition-all duration-300 hover:opacity-100 hover:grayscale-0"
-													src="/assets/images/dict.png"
-													alt="Department of Information and Communications Technology"
-													width="120"
-													height="40"
-													loading="lazy"
-												/>
-											</a>
-										</div>
-										<div
-											class="partner-logo-wrapper flex h-20 w-40 flex-shrink-0 items-center justify-center rounded-lg p-3 transition-all duration-300 hover:bg-white hover:shadow-md"
-											in:fade={{ duration: 300, delay: 200 }}
-										>
-											<a href="https://www.facebook.com/samdhana.institute">
-												<img
-													class="h-auto max-h-14 w-auto max-w-full object-contain opacity-75 grayscale transition-all duration-300 hover:opacity-100 hover:grayscale-0"
-													src="/assets/images/tsi.png"
-													alt="The Samdhana Institute"
-													width="120"
-													height="40"
-													loading="lazy"
-												/>
-											</a>
-										</div>
-										<div
-											class="partner-logo-wrapper flex h-20 w-40 flex-shrink-0 items-center justify-center rounded-lg p-3 transition-all duration-300 hover:bg-white hover:shadow-md"
-											in:fade={{ duration: 300, delay: 250 }}
-										>
-											<a href="https://www.facebook.com/artrunningph">
-												<img
-													class="h-auto max-h-14 w-auto max-w-full object-contain opacity-75 grayscale transition-all duration-300 hover:opacity-100 hover:grayscale-0"
-													src="/assets/images/ar.png"
-													alt="Art Running"
-													width="120"
-													height="40"
-													loading="lazy"
-												/>
-											</a>
-										</div>
-										<div
-											class="partner-logo-wrapper flex h-20 w-40 flex-shrink-0 items-center justify-center rounded-lg p-3 transition-all duration-300 hover:bg-white hover:shadow-md"
-											in:fade={{ duration: 300, delay: 300 }}
-										>
-											<a href="https://feastconference.com/">
-												<img
-													class="h-auto max-h-14 w-auto max-w-full rounded-full object-contain opacity-75 grayscale transition-all duration-300 hover:opacity-100 hover:grayscale-0"
-													src="/assets/images/feastcon.jpg"
-													alt="SavvyCal"
-													width="120"
-													height="40"
-													loading="lazy"
-												/>
-											</a>
-										</div>
-									{/if}
-								</div>
-								<div class="animate-marquee-fast flex gap-4 px-4 py-2" aria-hidden="true">
-									{#if mounted}
-										<div
-											class="partner-logo-wrapper flex h-20 w-40 flex-shrink-0 items-center justify-center rounded-lg p-3 transition-all duration-300 hover:bg-white hover:shadow-md"
-											in:fade={{ duration: 300, delay: 350 }}
-										>
-											<a href="https://www.facebook.com/dauntlessoutdoorsph">
-												<img
-													class="h-auto max-h-14 w-auto max-w-full object-contain opacity-75 grayscale transition-all duration-300 hover:opacity-100 hover:grayscale-0"
-													src="/assets/images/dauntless.png"
-													alt="Statamic"
-													width="120"
-													height="40"
-													loading="lazy"
-												/>
-											</a>
-										</div>
-										<div
-											class="partner-logo-wrapper flex h-20 w-40 flex-shrink-0 items-center justify-center rounded-lg p-3 transition-all duration-300 hover:bg-white hover:shadow-md"
-											in:fade={{ duration: 300, delay: 400 }}
-										>
-											<a href="https://www.facebook.com/CircleProductionsCdO">
-												<img
-													class="h-auto max-h-14 w-auto max-w-full object-contain opacity-75 grayscale transition-all duration-300 hover:opacity-100 hover:grayscale-0"
-													src="/assets/images/circle.png"
-													alt="Circle Productions Inc."
-													width="120"
-													height="40"
-													loading="lazy"
-												/>
-											</a>
-										</div>
-										<div
-											class="partner-logo-wrapper flex h-20 w-40 flex-shrink-0 items-center justify-center rounded-lg p-3 transition-all duration-300 hover:bg-white hover:shadow-md"
-											in:fade={{ duration: 300, delay: 450 }}
-										>
-											<a href="https://www.facebook.com/sub30">
-												<img
-													class="h-auto max-h-14 w-auto max-w-full object-contain opacity-75 grayscale transition-all duration-300 hover:opacity-100 hover:grayscale-0"
-													src="/assets/images/sub30.png"
-													alt="SUB30 Events and Prints"
-													width="120"
-													height="40"
-													loading="lazy"
-												/>
-											</a>
-										</div>
-										<div
-											class="partner-logo-wrapper flex h-20 w-40 flex-shrink-0 items-center justify-center rounded-lg p-3 transition-all duration-300 hover:bg-white hover:shadow-md"
-											in:fade={{ duration: 300, delay: 500 }}
-										>
-											<a href="https://www.facebook.com/legendscdo">
-												<img
-													class="h-auto max-h-14 w-auto max-w-full object-contain opacity-75 grayscale transition-all duration-300 hover:opacity-100 hover:grayscale-0"
-													src="/assets/images/legends.png"
-													alt="Legends Events CDO"
-													width="120"
-													height="40"
-													loading="lazy"
-												/>
-											</a>
-										</div>
-										<div
-											class="partner-logo-wrapper flex h-20 w-40 flex-shrink-0 items-center justify-center rounded-lg p-3 transition-all duration-300 hover:bg-white hover:shadow-md"
-											in:fade={{ duration: 300, delay: 550 }}
-										>
-											<a href="https://www.facebook.com/profile.php?id=61566745691172">
-												<img
-													class="h-auto max-h-14 w-auto max-w-full rounded-full object-contain opacity-75 grayscale transition-all duration-300 hover:opacity-100 hover:grayscale-0"
-													src="/assets/images/eventspro.jpg"
-													alt="Events Pro Live"
-													width="120"
-													height="40"
-													loading="lazy"
-												/>
-											</a>
-										</div>
-									{/if}
-								</div>
-							</div>
-						</div>
-
-						<!-- Desktop view - Horizontal marquee -->
-						<div class="hidden sm:block">
-							<div class="marquee-wrapper flex w-full overflow-hidden">
-								<div class="animate-marquee-slow flex gap-8 px-6 py-2">
-									{#if mounted}
-										<div
-											class="partner-logo-wrapper flex h-28 w-56 flex-shrink-0 items-center justify-center rounded-lg p-4 transition-all duration-300 hover:bg-white hover:shadow-md"
-											in:fade={{ duration: 300, delay: 100 }}
-										>
-											<a
-												href="https://www.figo.org/philippine-obstetrical-gynecological-society-inc"
-											>
-												<img
-													class="h-auto max-h-20 w-auto max-w-full object-contain opacity-75 grayscale transition-all duration-300 hover:opacity-100 hover:grayscale-0"
-													src="/assets/images/pogs.png"
-													alt="Philippine Obstetrical & Gynecological Society, INC"
-													width="158"
-													height="48"
-													loading="lazy"
-												/>
-											</a>
-										</div>
-										<div
-											class="partner-logo-wrapper flex h-28 w-56 flex-shrink-0 items-center justify-center rounded-lg p-4 transition-all duration-300 hover:bg-white hover:shadow-md"
-											in:fade={{ duration: 300, delay: 150 }}
-										>
-											<a href="https://www.facebook.com/DICTRegion10">
-												<img
-													class="h-auto max-h-20 w-auto max-w-full object-contain opacity-75 grayscale transition-all duration-300 hover:opacity-100 hover:grayscale-0"
-													src="/assets/images/dict.png"
-													alt="Department of Information and Communications Technology"
-													width="158"
-													height="48"
-													loading="lazy"
-												/>
-											</a>
-										</div>
-										<div
-											class="partner-logo-wrapper flex h-28 w-56 flex-shrink-0 items-center justify-center rounded-lg p-4 transition-all duration-300 hover:bg-white hover:shadow-md"
-											in:fade={{ duration: 300, delay: 200 }}
-										>
-											<a href="https://www.facebook.com/samdhana.institute">
-												<img
-													class="h-auto max-h-20 w-auto max-w-full object-contain opacity-75 grayscale transition-all duration-300 hover:opacity-100 hover:grayscale-0"
-													src="/assets/images/tsi.png"
-													alt="The Samdhana Institute"
-													width="158"
-													height="48"
-													loading="lazy"
-												/>
-											</a>
-										</div>
-										<div
-											class="partner-logo-wrapper flex h-28 w-56 flex-shrink-0 items-center justify-center rounded-lg p-4 transition-all duration-300 hover:bg-white hover:shadow-md"
-											in:fade={{ duration: 300, delay: 250 }}
-										>
-											<a href="https://www.facebook.com/artrunningph">
-												<img
-													class="h-auto max-h-20 w-auto max-w-full object-contain opacity-75 grayscale transition-all duration-300 hover:opacity-100 hover:grayscale-0"
-													src="/assets/images/ar.png"
-													alt="Art Running"
-													width="158"
-													height="48"
-													loading="lazy"
-												/>
-											</a>
-										</div>
-										<div
-											class="partner-logo-wrapper flex h-28 w-56 flex-shrink-0 items-center justify-center rounded-lg p-4 transition-all duration-300 hover:bg-white hover:shadow-md"
-											in:fade={{ duration: 300, delay: 300 }}
-										>
-											<a href="https://feastconference.com/">
-												<img
-													class="h-auto max-h-20 w-auto max-w-full rounded-full object-contain opacity-75 grayscale transition-all duration-300 hover:opacity-100 hover:grayscale-0"
-													src="/assets/images/feastcon.jpg"
-													alt="SavvyCal"
-													width="158"
-													height="48"
-													loading="lazy"
-												/>
-											</a>
-										</div>
-										<div
-											class="partner-logo-wrapper flex h-28 w-56 flex-shrink-0 items-center justify-center rounded-lg p-4 transition-all duration-300 hover:bg-white hover:shadow-md"
-											in:fade={{ duration: 300, delay: 350 }}
-										>
-											<a href="https://www.facebook.com/dauntlessoutdoorsph">
-												<img
-													class="h-auto max-h-20 w-auto max-w-full object-contain opacity-75 grayscale transition-all duration-300 hover:opacity-100 hover:grayscale-0"
-													src="/assets/images/dauntless.png"
-													alt="Statamic"
-													width="158"
-													height="48"
-													loading="lazy"
-												/>
-											</a>
-										</div>
-									{/if}
-								</div>
-								<div class="animate-marquee-slow flex gap-8 px-6 py-2" aria-hidden="true">
-									{#if mounted}
-										<div
-											class="partner-logo-wrapper flex h-28 w-56 flex-shrink-0 items-center justify-center rounded-lg p-4 transition-all duration-300 hover:bg-white hover:shadow-md"
-											in:fade={{ duration: 300, delay: 400 }}
-										>
-											<a href="https://www.facebook.com/CircleProductionsCdO">
-												<img
-													class="h-auto max-h-20 w-auto max-w-full object-contain opacity-75 grayscale transition-all duration-300 hover:opacity-100 hover:grayscale-0"
-													src="/assets/images/circle.png"
-													alt="Circle Productions Inc."
-													width="158"
-													height="48"
-													loading="lazy"
-												/>
-											</a>
-										</div>
-										<div
-											class="partner-logo-wrapper flex h-28 w-56 flex-shrink-0 items-center justify-center rounded-lg p-4 transition-all duration-300 hover:bg-white hover:shadow-md"
-											in:fade={{ duration: 300, delay: 450 }}
-										>
-											<a href="https://www.facebook.com/sub30">
-												<img
-													class="h-auto max-h-20 w-auto max-w-full object-contain opacity-75 grayscale transition-all duration-300 hover:opacity-100 hover:grayscale-0"
-													src="/assets/images/sub30.png"
-													alt="SUB30 Events and Prints"
-													width="158"
-													height="48"
-													loading="lazy"
-												/>
-											</a>
-										</div>
-										<div
-											class="partner-logo-wrapper flex h-28 w-56 flex-shrink-0 items-center justify-center rounded-lg p-4 transition-all duration-300 hover:bg-white hover:shadow-md"
-											in:fade={{ duration: 300, delay: 500 }}
-										>
-											<a href="https://www.facebook.com/legendscdo">
-												<img
-													class="h-auto max-h-20 w-auto max-w-full object-contain opacity-75 grayscale transition-all duration-300 hover:opacity-100 hover:grayscale-0"
-													src="/assets/images/legends.png"
-													alt="Legends Events CDO"
-													width="158"
-													height="48"
-													loading="lazy"
-												/>
-											</a>
-										</div>
-										<div
-											class="partner-logo-wrapper flex h-28 w-56 flex-shrink-0 items-center justify-center rounded-lg p-4 transition-all duration-300 hover:bg-white hover:shadow-md"
-											in:fade={{ duration: 300, delay: 550 }}
-										>
-											<a href="https://www.facebook.com/profile.php?id=61566745691172">
-												<img
-													class="h-auto max-h-20 w-auto max-w-full rounded-full object-contain opacity-75 grayscale transition-all duration-300 hover:opacity-100 hover:grayscale-0"
-													src="/assets/images/eventspro.jpg"
-													alt="Events Pro Live"
-													width="158"
-													height="48"
-													loading="lazy"
-												/>
-											</a>
-										</div>
-										<div
-											class="partner-logo-wrapper flex h-28 w-56 flex-shrink-0 items-center justify-center rounded-lg p-4 transition-all duration-300 hover:bg-white hover:shadow-md"
-											in:fade={{ duration: 300, delay: 600 }}
-										>
-											<a href="https://www.facebook.com/cagayandeorobasketballfederation">
-												<img
-													class="h-auto max-h-20 w-auto max-w-full rounded-full object-contain opacity-75 grayscale transition-all duration-300 hover:opacity-100 hover:grayscale-0"
-													src="/assets/images/cdobasketball.png"
-													alt="Cagayan de Oro Basketball Federation - CDOBF"
-													width="158"
-													height="48"
-													loading="lazy"
-												/>
-											</a>
-										</div>
-										<div
-											class="partner-logo-wrapper flex h-28 w-56 flex-shrink-0 items-center justify-center rounded-lg p-4 transition-all duration-300 hover:bg-white hover:shadow-md"
-											in:fade={{ duration: 300, delay: 100 }}
-										>
-											<a
-												href="https://www.figo.org/philippine-obstetrical-gynecological-society-inc"
-											>
-												<img
-													class="h-auto max-h-20 w-auto max-w-full object-contain opacity-75 grayscale transition-all duration-300 hover:opacity-100 hover:grayscale-0"
-													src="/assets/images/pogs.png"
-													alt="Philippine Obstetrical & Gynecological Society, INC"
-													width="158"
-													height="48"
-													loading="lazy"
-												/>
-											</a>
-										</div>
-									{/if}
-								</div>
-							</div>
-						</div>
+					<!-- Desktop view -->
+					<div class="hidden sm:block">
+						{#if mounted}
+							<DualMarquee />
+						{/if}
 					</div>
 				</div>
 			</div>
@@ -694,69 +334,5 @@
 	}
 	:global(#blob-gradient) {
 		animation: gradientShift 10s ease-in-out infinite;
-	}
-
-	/* Custom animations for marquee */
-	@keyframes marquee-fast {
-		0% {
-			transform: translateX(0);
-		}
-		100% {
-			transform: translateX(-100%);
-		}
-	}
-
-	@keyframes marquee-slow {
-		0% {
-			transform: translateX(0);
-		}
-		100% {
-			transform: translateX(-100%);
-		}
-	}
-
-	:global(.animate-marquee-fast) {
-		animation: marquee-fast 25s linear infinite;
-	}
-
-	:global(.animate-marquee-slow) {
-		animation: marquee-slow 45s linear infinite;
-	}
-
-	:global(.marquee-wrapper:hover .animate-marquee-fast),
-	:global(.marquee-wrapper:hover .animate-marquee-slow) {
-		animation-play-state: paused;
-	}
-
-	@keyframes marquee {
-		0% {
-			transform: translateX(0);
-		}
-		100% {
-			transform: translateX(-100%);
-		}
-	}
-
-	/* Hover effects for partner logos */
-	.partner-logo-wrapper {
-		position: relative;
-		overflow: hidden;
-	}
-
-	.partner-logo-wrapper::after {
-		content: '';
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		background: radial-gradient(circle at center, rgba(251, 113, 133, 0.1) 0%, transparent 70%);
-		opacity: 0;
-		transition: opacity 0.3s ease;
-		pointer-events: none;
-	}
-
-	.partner-logo-wrapper:hover::after {
-		opacity: 1;
 	}
 </style>
