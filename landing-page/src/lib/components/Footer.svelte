@@ -47,8 +47,6 @@
 	
 	onMount(() => {
    
-    console.log('Footer component mounted');
-
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -134,20 +132,20 @@
 				<div class="text-start ml-[35px] md:text-left md:ml-[-40px] lg:ml-[-20px] xl:ml-[5px] ">
 					<h3 class="font-semibold mb-4 text-xl">Social Media</h3>
 					<div class="flex space-x-4 md:space-x-4 lg:space-x-6">
-						<a href="https://www.facebook.com/veent.io/" class="hover:opacity-80">
+						<a aria-label="Facebook" href="https://www.facebook.com/veent.io/" class="hover:opacity-80">
 							<i class="ri-facebook-fill text-lg md:text-lg lg:text-lg"></i>
 						</a>
-						<a href="https://www.instagram.com/veentapps/" class="hover:opacity-80">
+						<a aria-label="Instagram" href="https://www.instagram.com/veentapps/" class="hover:opacity-80">
 							<i class="ri-instagram-line text-lg md:text-lg lg:text-lg"></i>
 						</a>
-						<a href="https://www.linkedin.com/company/veent/" class="hover:opacity-80">
+						<a aria-label="LinkedIn" href="https://www.linkedin.com/company/veent/" class="hover:opacity-80">
 							<i class="ri-linkedin-fill text-lg md:text-lg lg:text-lg"></i>
 						</a>
-						<a href="https://www.tiktok.com/@veentapps" class="hover:opacity-80">
+						<a aria-label="TikTok" href="https://www.tiktok.com/@veentapps" class="hover:opacity-80">
 							<i class="ri-tiktok-fill text-lg md:text-lg lg:text-lg"></i>
 						</a>
 					</div>
-				</div>
+				</div>	
 					<div class="text-start ml-[35px] md:text-left md:ml-[-30px] xl:ml-[40px] ">
 						<h3 class="font-semibold mb-4 text-xl">Contact Us</h3>
 						<p>hello@veent.io</p>

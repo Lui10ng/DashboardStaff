@@ -3,12 +3,12 @@
 	import '@fontsource/roboto/700.css';
 	import 'animate.css';
 	import { lenisInstance } from '$lib/stores/lenis';
+	import { page } from '$app/stores';
 
-	// Remove the features array and instead get it from the page data
-	export let data;
-	const { features } = data;
-
-	let currentSection = 0;
+	// Use page store to access data with runes
+	const features = $page.data.features;
+	
+	let currentSection = $state(0);
 	let sections: NodeListOf<HTMLElement>;
 
 	onMount(() => {

@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types';
 
-interface Feature {
+export interface Feature {
 	text: string;
 	category?: string;
 }
@@ -22,8 +22,12 @@ interface PageServerData {
 	};
 }
 
-export const load: PageServerLoad = async (): Promise<PageServerData> => {
-	return {
+export const load: PageServerLoad = async ({ parent }) => {
+	// Access the urlConfig from layout.server.ts
+	const parentData = await parent();
+
+	// Page-specific data
+	const pageData: PageServerData = {
 		pricing: [
 			{
 				title: 'Free plan',
@@ -52,7 +56,9 @@ export const load: PageServerLoad = async (): Promise<PageServerData> => {
 		pageDescription:
 			'Veent offers a suite of event management features completely free of charge, with a 5% transaction fee on ticket sales or products sold through the platform.',
 		urlConfig: {
-			signupUrl: '/signup'
+			signupUrl: parentData.urlConfig.signupUrl
 		}
 	};
+
+	return pageData;
 };

@@ -1,14 +1,16 @@
 <script lang="ts">
-	export let data;
-	const { urlConfig, pageTitle, pageDescription, pricing } = data;
+	import { page } from '$app/stores';
+	import type { Feature } from './+page.server';
+	
+	const { urlConfig, pageTitle, pageDescription, pricing } = $page.data;
 
 	// Get the free plan data
 	const freePlan = pricing[0];
 
 	// Group features by category
-	const coreFeatures = freePlan.features.filter((feature) => feature.category === 'core');
-	const monetizeFeatures = freePlan.features.filter((feature) => feature.category === 'monetize');
-	const feeFeatures = freePlan.features.filter((feature) => feature.category === 'fees');
+	const coreFeatures = $state(freePlan.features.filter((feature: Feature) => feature.category === 'core'));
+	const monetizeFeatures = $state(freePlan.features.filter((feature: Feature) => feature.category === 'monetize'));
+	const feeFeatures = $state(freePlan.features.filter((feature: Feature) => feature.category === 'fees'));
 
 	// SVG check icon component
 	const CheckIcon = () => `
@@ -107,8 +109,7 @@
 				class="mt-8 block rounded-md bg-[#D1302C] px-3.5 py-2.5 text-center text-sm font-semibold text-white transition-colors duration-200 hover:bg-red-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 sm:mt-10"
 				tabindex="0"
 				aria-label="Sign up now for free"
-				on:click
-				on:keydown={(e: KeyboardEvent) => {
+				onkeydown={(e: KeyboardEvent) => {
 					if (e.key === 'Enter' && e.currentTarget) {
 						(e.currentTarget as HTMLElement).click();
 					}
