@@ -18,7 +18,19 @@ git pull origin main
 git checkout payload
 ```
 
-### 2. Run the project
+### 2. Setup the environment variables
+
+Create a .env file in the root directory and add the following variables:
+
+[discord](https://discord.com/channels/1326408878199406623/1333044401580015740/1353543951562313922)
+
+### 3. Create a custom Docker network named app-network
+
+```bash
+docker network create app-network
+```
+
+### 4. Run the project
 
 in the root directory run:
 
@@ -26,13 +38,13 @@ in the root directory run:
 docker compose up
 ```
 
-### 3. Access the project
+### 5. Access the project
 
 ```bash
 http://localhost:3000
 ```
 
-### 4. Stop the project
+### 6. Stop the project
 
 ```bash
 docker compose down
