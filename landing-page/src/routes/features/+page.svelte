@@ -1,34 +1,19 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import Lenis from 'lenis';
 	import '@fontsource/roboto/700.css';
 	import 'animate.css';
+	import { lenisInstance } from '$lib/stores/lenis';
+	import { page } from '$app/stores';
 
-	// Remove the features array and instead get it from the page data
-	export let data;
-	const { features } = data;
-
-	let currentSection = 0;
+	// Use page store to access data with runes
+	const features = $page.data.features;
+	
+	let currentSection = $state(0);
 	let sections: NodeListOf<HTMLElement>;
 
 	onMount(() => {
-		const lenis = new Lenis({
-			duration: 1.2,
-			easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-			orientation: 'vertical',
-			gestureOrientation: 'vertical',
-			smoothWheel: true,
-			wheelMultiplier: 1,
-			touchMultiplier: 2,
-			infinite: false
-		});
-
-		function raf(time: number) {
-			lenis.raf(time);
-			requestAnimationFrame(raf);
-		}
-
-		requestAnimationFrame(raf);
+		// Use the existing Lenis instance from the store
+		// No need to create a new one
 
 		sections = document.querySelectorAll('section.content-section');
 
@@ -72,17 +57,17 @@
 
 		// Handle section navigation
 		window.addEventListener('wheel', (e) => {
-			if (lenis.isScrolling) return;
+			if (!$lenisInstance || $lenisInstance.isScrolling) return;
 
 			if (e.deltaY > 0 && currentSection < sections.length - 1) {
 				currentSection++;
-				lenis.scrollTo(sections[currentSection], {
+				$lenisInstance.scrollTo(sections[currentSection], {
 					offset: 0,
 					duration: 1.2
 				});
 			} else if (e.deltaY < 0 && currentSection > 0) {
 				currentSection--;
-				lenis.scrollTo(sections[currentSection], {
+				$lenisInstance.scrollTo(sections[currentSection], {
 					offset: 0,
 					duration: 1.2
 				});
@@ -91,6 +76,7 @@
 	});
 </script>
 
+<!-- Rest of your component remains unchanged -->
 <div class="flex min-h-screen flex-col">
 	<!-- Mobile layout - Each section contains both image and content -->
 	<div class="block lg:hidden">
@@ -163,37 +149,3 @@
 		</div>
 	</div>
 </div>
-
-<style>
-	:global(html) {
-		overflow-x: hidden;
-	}
-
-	:global(body) {
-		margin: 0;
-		padding: 0;
-		overflow-x: hidden;
-	}
-
-	section {
-		scroll-snap-align: start;
-	}
-
-	.feature-image img {
-		opacity: 0;
-		transition: opacity 0.5s ease-in-out;
-	}
-
-	/* Animation duration */
-	:global(.animate__animated) {
-		--animate-duration: 1s;
-	}
-
-	@media (max-width: 1024px) {
-		.content-section {
-			background: white;
-			position: relative;
-			z-index: 10;
-		}
-	}
-</style>

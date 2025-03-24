@@ -9,6 +9,7 @@
 	let mounted = false;
 	let isMobile = false;
 	let blobContainer: SVGGElement;
+	let floatingElements: HTMLElement[] = [];
 
 	const urlConfig = $page.data.urlConfig;
 
@@ -129,6 +130,26 @@
 		morphToNextShape();
 	}
 
+	function animateFloatingElements() {
+		floatingElements.forEach((el, index) => {
+			// Create random animation parameters for each element
+			const xOffset = Math.random() * 30 - 15; // -15 to 15
+			const yOffset = Math.random() * 30 - 15; // -15 to 15
+			const duration = 8 + Math.random() * 12; // 8 to 20 seconds
+			const delay = index * 0.3; // Staggered start
+			
+			gsap.to(el, {
+				x: xOffset,
+				y: yOffset,
+				duration: duration,
+				repeat: -1,
+				yoyo: true,
+				ease: "sine.inOut",
+				delay: delay
+			});
+		});
+	}
+	
 	function handleButtonHover(e: MouseEvent & { currentTarget: HTMLButtonElement }) {
 		const button = e.currentTarget;
 		const rect = button.getBoundingClientRect();
@@ -142,6 +163,9 @@
 		mounted = true;
 		setTimeout(() => {
 			animateBlob();
+			// Collect references to floating elements
+			floatingElements = Array.from(document.querySelectorAll('.floating-element'));
+			animateFloatingElements();
 		}, 100);
 	});
 </script>
@@ -191,19 +215,19 @@
 		<!-- Floating elements -->
 		<div
 			in:fly={{ y: 100, duration: 1000, delay: 400, easing: cubicOut }}
-			class="float-1 absolute top-1/4 left-1/4 h-4 w-4 rounded-full bg-rose-400 opacity-60"
+			class="floating-element absolute top-1/4 left-1/4 h-4 w-4 rounded-full bg-rose-400 opacity-60"
 		></div>
 		<div
 			in:fly={{ y: -100, duration: 1000, delay: 600, easing: cubicOut }}
-			class="float-2 absolute top-1/3 right-1/4 h-6 w-6 rounded-full bg-yellow-400 opacity-60"
+			class="floating-element absolute top-1/3 right-1/4 h-6 w-6 rounded-full bg-yellow-400 opacity-60"
 		></div>
 		<div
 			in:fly={{ x: 100, duration: 1000, delay: 800, easing: cubicOut }}
-			class="float-3 absolute bottom-1/4 left-1/3 h-3 w-3 rounded-full bg-rose-300 opacity-60"
+			class="floating-element absolute bottom-1/4 left-1/3 h-3 w-3 rounded-full bg-rose-300 opacity-60"
 		></div>
 		<div
 			in:fly={{ x: -100, duration: 1000, delay: 1000, easing: cubicOut }}
-			class="float-4 absolute top-2/3 right-1/3 h-5 w-5 rounded-full bg-yellow-300 opacity-60"
+			class="floating-element absolute top-2/3 right-1/3 h-5 w-5 rounded-full bg-yellow-300 opacity-60"
 		></div>
 	{/if}
 	<div class="relative isolate px-6 lg:px-8">
@@ -237,9 +261,12 @@
 				</p>
 				<div class="mt-5 flex items-center justify-center gap-x-6">
 					<button
-						class="animated-border-button rounded-full px-8 py-3 text-lg font-medium sm:text-2xl"
+						class="relative overflow-hidden rounded-full bg-gradient-to-r from-rose-500 to-rose-600 px-8 py-3 text-lg font-medium text-white transition-all duration-300 hover:shadow-lg hover:shadow-rose-500/30 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 active:scale-[0.98] sm:text-1xl cursor-pointer"
 						on:mousemove={handleButtonHover}
 						on:click={() => (window.location.href = urlConfig.signupUrl)}
+						aria-label="Sign up for free"
+						tabindex="0"
+						on:keydown={(e) => e.key === 'Enter' && (window.location.href = urlConfig.signupUrl)}
 					>
 						Sign up for free!
 					</button>
@@ -280,59 +307,28 @@
 </div>
 
 <style>
-	@keyframes float1 {
-		0%,
-		100% {
-			transform: translate(0, 0);
-		}
-		50% {
-			transform: translate(-20px, -15px);
-		}
+	/* Only keep styles we can't implement with Tailwind */
+	button {
+		--x: 50%;
+		--y: 50%;
+		position: relative;
+		background: linear-gradient(to right, #e11d48, #be123c);
 	}
-
-	@keyframes float2 {
-		0%,
-		100% {
-			transform: translate(0, 0);
-		}
-		50% {
-			transform: translate(15px, -20px);
-		}
+	
+	button::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: radial-gradient(circle at var(--x) var(--y), rgba(255, 255, 255, 0.8) 0%, transparent 50%);
+		opacity: 0;
+		transition: opacity 0.3s;
+		border-radius: 9999px;
 	}
-
-	@keyframes float3 {
-		0%,
-		100% {
-			transform: translate(0, 0);
-		}
-		50% {
-			transform: translate(-15px, 20px);
-		}
-	}
-
-	@keyframes gradientShift {
-		0%,
-		100% {
-			filter: hue-rotate(0deg);
-		}
-		50% {
-			filter: hue-rotate(10deg);
-		}
-	}
-
-	:global(.float-1) {
-		animation: float1 12s ease-in-out infinite;
-	}
-	:global(.float-2) {
-		animation: float2 15s ease-in-out infinite;
-	}
-	:global(.float-3) {
-		animation: float3 18s ease-in-out infinite;
-	}
-	:global(.float-4) {
-		animation: float2 20s ease-in-out infinite;
-	}
-	:global(#blob-gradient) {
-		animation: gradientShift 10s ease-in-out infinite;
+	
+	button:hover::before {
+		opacity: 0.4;
 	}
 </style>

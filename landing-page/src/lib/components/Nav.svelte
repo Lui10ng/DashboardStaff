@@ -21,7 +21,7 @@
 		<div class="flex lg:flex-1">
 			<a href="/" class="-m-1.5 p-1.5">
 				<span class="sr-only">Veent</span>
-				<img src="https://veent.io/veent-logo.svg" alt="Veent Logo" class="h-16 w-16" />
+				<img src="/assets/icons/Veent-red-logo.svg" alt="Veent Logo" class="h-16 w-16" />
 			</a>
 		</div>
 		<div class="flex lg:hidden">
@@ -108,7 +108,7 @@
 				<div class="flex items-center justify-between">
 					<a href="/" class="-m-1.5 p-1.5" on:click={toggleMenu}>
 						<span class="sr-only">Veent</span>
-						<img src="https://veent.io/veent-logo.svg" alt="Veent Logo" class="h-16 w-16" />
+						<img src="/assets/icons/Veent-red-logo.svg" alt="Veent Logo" class="h-16 w-16" />		
 					</a>
 					<button type="button" class="-m-2.5 rounded-md p-2.5 text-gray-700" on:click={toggleMenu}>
 						<span class="sr-only">Close menu</span>
