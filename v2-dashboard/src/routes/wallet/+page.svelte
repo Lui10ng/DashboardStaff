@@ -1,14 +1,16 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
-	import { walletTransactions } from '$lib/stores/data';
 	import Pagination from '$lib/components/ui/Pagination.svelte';
 	import Tooltip from '$lib/components/ui/Tooltip.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
 	import { walletTransactionStore } from '$lib/stores';
 
-	export let data;
-	walletTransactionStore.set(data.walletTransactions);
+	let { data } = $props();
+
+	$effect(() => {
+		walletTransactionStore.set(data.walletTransactions);
+	});
 </script>
 
 <div class="space-y-8">

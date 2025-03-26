@@ -4,10 +4,15 @@
 	import VoucherCard from '$lib/components/dataDisplay/VoucherCard.svelte';
 	import { ticketStore, voucherStore } from '$lib/stores';
 
-	export let data;
+	let { data } = $props();
 
-	ticketStore.set(data.tickets);
-	voucherStore.set(data.vouchers);
+	$effect(() => {
+		ticketStore.set(data.tickets);
+	});
+
+	$effect(() => {
+		voucherStore.set(data.vouchers);
+	});
 </script>
 
 <div class="space-y-8">

@@ -9,8 +9,11 @@
 	import DynamicEventForm from '../lib/components/dataDisplay/TestEventForm.svelte';
 	import { eventStore } from '$lib/stores';
 
-	export let data;
-	eventStore.set(data.eventList);
+	let { data } = $props();
+
+	$effect(() => {
+		eventStore.set(data.eventList);
+	});
 
 	const formatStatus = (status: string) => {
 		if (status === 'Live') {
