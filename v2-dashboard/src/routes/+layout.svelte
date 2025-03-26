@@ -9,7 +9,7 @@
 
 <Header />
 
-<div class="bg-gray-100">
+<div class="bg-white">
 	<div
 		class="mx-auto min-h-svh max-w-7xl px-5 pt-6 pb-8"
 	>

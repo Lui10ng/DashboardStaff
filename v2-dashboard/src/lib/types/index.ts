@@ -12,9 +12,9 @@ export type DropdownMenuProps = DropdownMenu.Props & {
 };
 
 export type ModalProps = Dialog.RootProps & {
-	buttonText: string;
-	buttonClass?: string;
-	header: Snippet;
+	dialogClass?: string;
+	button: Snippet;
+	header?: Snippet;
 	content: Snippet;
 	contentProps?: WithoutChild<Dialog.ContentProps>;
 };
