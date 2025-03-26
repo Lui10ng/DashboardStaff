@@ -2,39 +2,38 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Pagination from '$lib/components/ui/Pagination.svelte';
-	import { guestList } from '$lib/stores/data';
 	import Modal from '$lib/components/ui/Modal.svelte';
 	import RegistrantsRow from '$lib/components/dataDisplay/RegistrantRow.svelte';
 	import Content from './modal/RegistrantContent.svelte';
 	import EmailBlastForm from './modal/EmailBlastForm.svelte';
+	import { registrantStore } from '$lib/stores';
+
+	export let data;
+	registrantStore.set(data.guestList);
 </script>
 
 <div class="space-y-8">
 	<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-		<Card  icon="fa-solid fa-users text-blue" iconText="Guests" content="250">
+		<Card icon="fa-solid fa-users text-blue" iconText="Guests" content="250">
 			<Modal>
 				{#snippet button()}
-					<h1 class="text-sm text-primary cursor-pointer">Email Blast</h1>	
+					<h1 class="text-primary cursor-pointer text-sm">Email Blast</h1>
 				{/snippet}
 				{#snippet content()}
 					<EmailBlastForm />
 				{/snippet}
 			</Modal>
 		</Card>
-		<Card  icon="fa-solid fa-dollar-sign text-green" iconText="Income" content="₱32,550.00">
+		<Card icon="fa-solid fa-dollar-sign text-green" iconText="Income" content="₱32,550.00">
 			<Modal>
 				{#snippet button()}
-					<h1 class="text-sm text-green cursor-pointer">View Breakdown</h1>	
+					<h1 class="text-green cursor-pointer text-sm">View Breakdown</h1>
 				{/snippet}
 				{#snippet header()}
-					<div>
-						View Breakdown Header
-					</div>
+					<div>View Breakdown Header</div>
 				{/snippet}
 				{#snippet content()}
-					<div>
-						List the Breakdown here
-					</div>
+					<div>List the Breakdown here</div>
 				{/snippet}
 			</Modal>
 		</Card>
@@ -48,7 +47,11 @@
 					label="Download CSV"
 					className="bg-gray-100 px-4 py-2 hover:bg-gray-200 rounded-lg"
 				/>
-				<Button onClick={() => {}} label="See full list" className="bg-primary text-white px-4 py-2 rounded-lg" />
+				<Button
+					onClick={() => {}}
+					label="See full list"
+					className="bg-primary text-white px-4 py-2 rounded-lg"
+				/>
 			</div>
 		</div>
 
@@ -57,21 +60,21 @@
 				<input
 					type="text"
 					placeholder="Search guests..."
-					class="focus:ring-blue w-full rounded-lg border border-gray-200 bg-gray-50 px-10 py-2 text-sm text-gray-900 placeholder-gray-500 focus:ring-2 focus:outline-none sm:text-base"
+					class="focus:ring-blue w-full rounded-lg border border-gray-200 bg-gray-50 px-10 py-2 text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 sm:text-base"
 				/>
 
-				<i class="fa-solid fa-magnifying-glass absolute top-2.5 left-3 h-5 w-5 text-gray-400"></i>
+				<i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 h-5 w-5 text-gray-400"></i>
 			</div>
 			<div class="flex flex-col gap-2 sm:flex-row sm:gap-4">
 				<select
-					class="focus:ring-blue cursor-pointer rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:outline-none sm:text-base"
+					class="focus:ring-blue cursor-pointer rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 sm:text-base"
 				>
 					<option value="all">All Guests</option>
 					<option value="registered">Registered</option>
 					<option value="pending">Pending</option>
 				</select>
 				<select
-					class="focus:ring-blue cursor-pointer rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:outline-none sm:text-base"
+					class="focus:ring-blue cursor-pointer rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 sm:text-base"
 				>
 					<option value="name">Name, Email...</option>
 					<option value="date">Registration Date</option>
@@ -82,21 +85,18 @@
 
 		<!-- Guest List Items -->
 		<div class="space-y-4">
-			{#each guestList as guest (guest.id)}
+			{#each $registrantStore as guest (guest.id)}
 				<Modal dialogClass="w-full">
 					{#snippet button()}
-						<RegistrantsRow guest={guest} />
+						<RegistrantsRow {guest} />
 					{/snippet}
 					{#snippet header()}
-						<div class="text-gray-500 mb-2">
-							Additional Info
-						</div>
+						<div class="mb-2 text-gray-500">Additional Info</div>
 					{/snippet}
 					{#snippet content()}
-						<Content guest={guest}/>
+						<Content {guest} />
 					{/snippet}
 				</Modal>
-				
 			{/each}
 			<div class="pb-5 sm:pb-0">
 				<Pagination total={300} />
@@ -104,4 +104,3 @@
 		</div>
 	</div>
 </div>
-

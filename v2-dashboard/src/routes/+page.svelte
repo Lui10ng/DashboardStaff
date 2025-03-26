@@ -1,10 +1,16 @@
 <script lang="ts">
-	import { eventList } from '$lib/stores/data';
 	import Pagination from '$lib/components/ui/Pagination.svelte';
 	import Tooltip from '$lib/components/ui/Tooltip.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { goto } from '$app/navigation';
+	import Drawer from '$lib/components/ui/Drawer.svelte';
+	import Modal from '$lib/components/ui/Modal.svelte';
+	import DynamicEventForm from '../lib/components/dataDisplay/TestEventForm.svelte';
+	import { eventStore } from '$lib/stores';
+
+	export let data;
+	eventStore.set(data.eventList);
 
 	const formatStatus = (status: string) => {
 		if (status === 'Live') {
@@ -19,32 +25,34 @@
 	};
 
 	const handleEvent = () => {
-		goto("eventId/registrants")
-	}
+		goto('eventId/registrants');
+	};
 
 	const handeCreateEvent = () => {
-		goto("/create")
-	}
+		goto('/create');
+	};
 </script>
+
+<!-- <Drawer /> -->
 
 <div class="space-y-5">
 	<div class="space-y-2">
 		<h1 class="text-2xl font-semibold sm:text-3xl sm:font-bold">Welcome back, Aero Dev!</h1>
 		<p class="text-gray-500">Manage your events and track their performance</p>
 	</div>
-	<div class="mb-6 flex flex-col lg:flex-row justify-between lg:items-center gap-5">
-		<div class="flex flex-col sm:flex-row gap-5">
+	<div class="mb-6 flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
+		<div class="flex flex-col gap-5 sm:flex-row">
 			<div class="relative">
 				<input
 					type="text"
 					placeholder="Search events..."
-					class="w-full rounded-lg border border-gray-200 px-10 py-2 text-gray-900 placeh focus:outline-none"
+					class="w-full rounded-lg border border-gray-200 px-10 py-2 text-gray-900 focus:outline-none"
 				/>
 
-				<i class="fa-solid fa-magnifying-glass absolute top-2.5 left-3 h-5 w-5 text-gray-400"></i>
+				<i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 h-5 w-5 text-gray-400"></i>
 			</div>
 			<select
-				class="cursor-pointer rounded-lg border border-gray-200 px-4 py-2 focus:outline-none w-full sm:w-50"
+				class="sm:w-50 w-full cursor-pointer rounded-lg border border-gray-200 px-4 py-2 focus:outline-none"
 			>
 				<option value="all">All Events</option>
 				<option value="live">Live</option>
@@ -53,29 +61,47 @@
 				<option value="draft">Draft</option>
 			</select>
 			<select
-				class="cursor-pointer rounded-lg border border-gray-200 px-4 py-2 focus:outline-none w-full sm:w-50"
+				class="sm:w-50 w-full cursor-pointer rounded-lg border border-gray-200 px-4 py-2 focus:outline-none"
 			>
 				<option value="name">Sort by Date</option>
 				<option value="date">Newest First</option>
 				<option value="status">Oldest First</option>
 			</select>
 		</div>
-		<Button onClick={handeCreateEvent} label="Create Event" icon="fa-solid fa-plus" className="bg-primary text-white rounded-lg px-4 py-2"/>
+		<Button
+			onClick={handeCreateEvent}
+			label="Create Event"
+			icon="fa-solid fa-plus"
+			className="bg-primary text-white rounded-lg px-4 py-2"
+		/>
+
+		<!-- <Modal>
+			{#snippet button()}
+				<h1 class="bg-primary cursor-pointer rounded-lg px-2 py-1 text-white">Create Event</h1>
+			{/snippet}
+			{#snippet content()}
+				<DynamicEventForm />
+			{/snippet}
+		</Modal> -->
 	</div>
 
-	<div class="rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+	<div class="overflow-hidden rounded-xl border border-gray-200 shadow-sm">
 		<!-- Guest List Items -->
 		<div>
-			{#each eventList as event (event.id)}
+			{#each $eventStore as event (event.id)}
 				<div
-					class="flex flex-col justify-between gap-5 md:gap-10 sm:flex-row sm:items-center border-b border-gray-200 p-4 sm:p-6"
+					class="flex flex-col justify-between gap-5 border-b border-gray-200 p-4 sm:flex-row sm:items-center sm:p-6 md:gap-10"
 				>
 					<div class="flex justify-between">
 						<div class="flex items-center gap-4">
 							<Button className="overflow-hidden rounded-lg" onClick={handleEvent}>
-								<img src={event.image} alt={event.name} class="h-16 w-16 rounded-lg object-cover object-center hover:scale-125 transition-all duration-500" />
+								<img
+									src={event.image}
+									alt={event.name}
+									class="h-16 w-16 rounded-lg object-cover object-center transition-all duration-500 hover:scale-125"
+								/>
 							</Button>
-							
+
 							<div class="flex-1">
 								<h3 class="font-medium text-gray-900">{event.name}</h3>
 								<p class="text-sm text-gray-500">
@@ -92,9 +118,13 @@
 							/>
 						</div>
 					</div>
-					<div class="flex flex-wrap items-center justify-between gap-x-6 gap-y-5 sm:justify-end md:gap-10">
+					<div
+						class="flex flex-wrap items-center justify-between gap-x-6 gap-y-5 sm:justify-end md:gap-10"
+					>
 						<div>
-							<h3 class="rounded-full px-2 py-1 text-sm {formatStatus(event.status)}">{event.status}</h3>
+							<h3 class="rounded-full px-2 py-1 text-sm {formatStatus(event.status)}">
+								{event.status}
+							</h3>
 							<p class="text-sm text-gray-500 sm:text-end">Status</p>
 						</div>
 						<div>
@@ -103,7 +133,7 @@
 						</div>
 						<div>
 							<h3 class="font-medium">{event.created}</h3>
-							<p class="text-sm text-gray-500 text-end">Date</p>
+							<p class="text-end text-sm text-gray-500">Date</p>
 						</div>
 						<div class="hidden sm:block">
 							<div>
@@ -143,12 +173,10 @@
 						</div>
 					</div>
 				</div>
-				
 			{/each}
 		</div>
-		<div class="px-3 sm:px-6 py-4">
+		<div class="px-3 py-4 sm:px-6">
 			<Pagination total={100} />
 		</div>
 	</div>
 </div>
-

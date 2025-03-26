@@ -1,10 +1,14 @@
 <script lang="ts">
-    import Button from '$lib/components/ui/Button.svelte';
-    import TicketCard from '$lib/components/dataDisplay/TicketCard.svelte';
-    import VoucherCard from '$lib/components/dataDisplay/VoucherCard.svelte';
-    import { tickets, vouchers } from '$lib/stores/data';
-</script>
+	import Button from '$lib/components/ui/Button.svelte';
+	import TicketCard from '$lib/components/dataDisplay/TicketCard.svelte';
+	import VoucherCard from '$lib/components/dataDisplay/VoucherCard.svelte';
+	import { ticketStore, voucherStore } from '$lib/stores';
 
+	export let data;
+
+	ticketStore.set(data.tickets);
+	voucherStore.set(data.vouchers);
+</script>
 
 <div class="space-y-8">
 	<div class="mb-4 flex items-center justify-between">
@@ -20,15 +24,8 @@
 	</div>
 
 	<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-		{#each tickets as ticket}
-			<TicketCard
-				status={ticket.status}
-				validFrom={ticket.validFrom}
-				validTo={ticket.validTo}
-				ticketName={ticket.name}
-				tiketPrice={ticket.price ?? 0}
-				ticketSold={ticket.sold}
-			/>
+		{#each $ticketStore as ticket}
+			<TicketCard ticketProps={ticket} />
 		{/each}
 	</div>
 
@@ -44,8 +41,8 @@
 		</div>
 	</div>
 
-	<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-2">
-		{#each vouchers as voucher}
+	<div class="mb-2 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+		{#each $voucherStore as voucher}
 			<VoucherCard
 				voucherId={voucher.id}
 				status={voucher.status}

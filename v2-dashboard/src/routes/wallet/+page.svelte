@@ -5,14 +5,18 @@
 	import Tooltip from '$lib/components/ui/Tooltip.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
+	import { walletTransactionStore } from '$lib/stores';
+
+	export let data;
+	walletTransactionStore.set(data.walletTransactions);
 </script>
 
 <div class="space-y-8">
 	<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-		<Card  icon="fa-solid fa-dollar-sign text-green" iconText="Wallet Balance" content="₱32,550.00">
+		<Card icon="fa-solid fa-dollar-sign text-green" iconText="Wallet Balance" content="₱32,550.00">
 			<Modal>
 				{#snippet button()}
-					<h1 class="text-green text-sm cursor-pointer">Wallet Balance</h1>	
+					<h1 class="text-green cursor-pointer text-sm">Wallet Balance</h1>
 				{/snippet}
 				{#snippet header()}
 					<div>Wallet Balance Header</div>
@@ -22,10 +26,10 @@
 				{/snippet}
 			</Modal>
 		</Card>
-		<Card  icon="fa-solid fa-dollar-sign text-green" iconText="Gross Income" content="₱92,550.00">
+		<Card icon="fa-solid fa-dollar-sign text-green" iconText="Gross Income" content="₱92,550.00">
 			<Modal>
 				{#snippet button()}
-					<h1 class="text-green text-sm cursor-pointer">Gross Income</h1>	
+					<h1 class="text-green cursor-pointer text-sm">Gross Income</h1>
 				{/snippet}
 				{#snippet header()}
 					<div>Gross Income Header</div>
@@ -46,7 +50,11 @@
 					label="Download CSV"
 					className="bg-gray-100 px-4 py-2 hover:bg-gray-200 rounded-lg"
 				/>
-				<Button onClick={() => {}} label="See full list" className="bg-primary text-white px-4 py-2 rounded-lg" />
+				<Button
+					onClick={() => {}}
+					label="See full list"
+					className="bg-primary text-white px-4 py-2 rounded-lg"
+				/>
 			</div>
 		</div>
 
@@ -55,10 +63,10 @@
 				<input
 					type="text"
 					placeholder="Search transaction..."
-					class="w-full rounded-lg border border-gray-200 px-10 py-2 text-gray-900 placeh focus:outline-none"
+					class="placeh w-full rounded-lg border border-gray-200 px-10 py-2 text-gray-900 focus:outline-none"
 				/>
 
-				<i class="fa-solid fa-magnifying-glass absolute top-2.5 left-3 h-5 w-5 text-gray-400"></i>
+				<i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 h-5 w-5 text-gray-400"></i>
 			</div>
 			<div class="flex flex-col gap-2 sm:flex-row sm:gap-4">
 				<select
@@ -87,7 +95,7 @@
 
 		<!-- Guest List Items -->
 		<div class="space-y-4">
-			{#each walletTransactions as transaction (transaction.id)}
+			{#each $walletTransactionStore as transaction (transaction.id)}
 				<div
 					class="flex flex-col justify-between gap-4 rounded-lg bg-gray-50 p-4 hover:bg-gray-300 sm:flex-row sm:items-center"
 				>

@@ -3,23 +3,23 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import { currentEvent, navItems } from '$lib/stores/data';
 	import { page } from '$app/stores';
+	import { eventHeaderStore } from '$lib/stores';
 
 	const handleActiveNav = (path: string) => {
 		return $page.url.pathname.includes(path) ? 'bg-primary text-white' : '';
 	};
-	
 </script>
 
 <div>
 	<div class="flex flex-col items-start gap-4 sm:mb-8 sm:flex-row sm:items-center sm:gap-6">
 		<img
-			src={currentEvent.imageUrl}
-			alt={currentEvent.title}
+			src={$eventHeaderStore.imageUrl}
+			alt={$eventHeaderStore.title}
 			class="h-48 w-full rounded-lg object-cover shadow-lg sm:h-32 sm:w-32"
 		/>
 		<div class="w-full flex-1">
 			<div class="flex flex-col justify-between gap-2 sm:flex-row sm:items-center sm:gap-0">
-				<h1 class="mb-2 text-2xl font-bold text-gray-900 sm:text-3xl">{currentEvent.title}</h1>
+				<h1 class="mb-2 text-2xl font-bold text-gray-900 sm:text-3xl">{$eventHeaderStore.title}</h1>
 				<button class="flex items-center gap-2 text-red-600 transition-colors hover:text-red-700">
 					Edit Event
 					<i class="fa-solid fa-pen"></i>
@@ -28,22 +28,22 @@
 			<div class="flex flex-col gap-2 text-gray-600">
 				<div class="flex items-center gap-2">
 					<i class="fa-regular fa-calendar-minus text-red"></i>
-					<span>{currentEvent.date}</span>
+					<span>{$eventHeaderStore.date}</span>
 				</div>
 				<div class="flex items-center gap-2">
 					<i class="fa-solid fa-location-dot text-red"></i>
-					<span class="text-sm sm:text-base">{currentEvent.location}</span>
+					<span class="text-sm sm:text-base">{$eventHeaderStore.location}</span>
 				</div>
 			</div>
 
 			<div class="mt-2 flex items-center gap-2">
 				<a
-					href={currentEvent.url}
+					href={$eventHeaderStore.url}
 					target="_blank"
 					rel="noopener noreferrer"
-					class="text-blue text-sm break-all transition-colors sm:text-base"
+					class="text-blue break-all text-sm transition-colors sm:text-base"
 				>
-					{currentEvent.url}
+					{$eventHeaderStore.url}
 				</a>
 				<div class="flex items-center gap-2 text-gray-500">
 					<i class="fa-solid fa-link"></i>
