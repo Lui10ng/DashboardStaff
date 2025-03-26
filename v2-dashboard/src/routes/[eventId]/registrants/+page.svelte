@@ -8,8 +8,11 @@
 	import EmailBlastForm from './modal/EmailBlastForm.svelte';
 	import { registrantStore } from '$lib/stores';
 
-	export let data;
-	registrantStore.set(data.guestList);
+	let { data } = $props();
+
+	$effect(() => {
+		registrantStore.set(data.guestList);
+	});
 </script>
 
 <div class="space-y-8">
