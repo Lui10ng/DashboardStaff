@@ -301,7 +301,7 @@ export const eventList = [
 	{
 		id: '1',
 		name: 'Tech Talks 2024',
-		location: 'San Francisco',
+		location: 'Los Angeles',
 		status: 'Live',
 		ticketSold: '145/200',
 		created: '09 Jan 2024',
@@ -312,16 +312,16 @@ export const eventList = [
 		name: 'Tech Talks 2024',
 		location: 'San Francisco',
 		status: 'Live',
-		ticketSold: '145/200',
+		ticketSold: '120/200',
 		created: '09 Jan 2024',
 		image: 'https://veent.s3.ap-southeast-1.amazonaws.com/media/arou56pj4tsdx1yilpge.jpg'
 	},
 	{
 		id: '3',
 		name: 'Tech Talks 2024',
-		location: 'San Francisco',
+		location: 'Canada',
 		status: 'Upcoming',
-		ticketSold: '145/200',
+		ticketSold: '105/200',
 		created: '09 Jan 2024',
 		image: 'https://veent.s3.ap-southeast-1.amazonaws.com/media/arou56pj4tsdx1yilpge.jpg'
 	},
@@ -337,9 +337,9 @@ export const eventList = [
 	{
 		id: '5',
 		name: 'Tech Talks 2024',
-		location: 'San Francisco',
+		location: 'Los Angeles',
 		status: 'Live',
-		ticketSold: '145/200',
+		ticketSold: '150/200',
 		created: '09 Jan 2024',
 		image: 'https://veent.s3.ap-southeast-1.amazonaws.com/media/arou56pj4tsdx1yilpge.jpg'
 	}

@@ -11,13 +11,12 @@
 	const wallet = () => {
 		goto('/wallet');
 	};
-
 </script>
 
 <div
-	class="sticky top-0 left-0 flex items-center justify-between border border-gray-200 bg-white p-6 z-10"
+	class="sticky left-0 top-0 z-10 flex items-center justify-between border border-gray-200 bg-white p-6"
 >
-	<div class="flex gap-5 sm:gap-13">
+	<div class="sm:gap-13 flex gap-5">
 		<Button onClick={home}>
 			<img src="/images/veent-logo.svg" alt="veent" width="64" height="50" />
 		</Button>
