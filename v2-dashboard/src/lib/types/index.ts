@@ -54,9 +54,7 @@ export type GuestProps = {
 };
 
 export type CardProps = {
-	card: {
-		icon: string;
-		iconText: string;
-		content: string;
-	};
+	icon: string;
+	iconText: string;
+	content: string;
 };

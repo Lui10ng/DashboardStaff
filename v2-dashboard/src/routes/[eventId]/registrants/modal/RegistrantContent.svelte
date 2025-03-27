@@ -1,7 +1,9 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
 
-	let { guest } = $props();
+	import type { GuestProps } from '$lib/types';
+
+	let { guest }: GuestProps = $props();
 </script>
 
 <div class="grid grid-cols-1 gap-5">
