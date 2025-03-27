@@ -1,5 +1,7 @@
 <script lang="ts">
-	let { guest } = $props();
+	import type { GuestProps } from '$lib/types';
+
+	let { guest }: GuestProps = $props();
 </script>
 
 <div

@@ -1,5 +1,6 @@
 <script lang="ts">
-	let { icon = '', iconText = '', content = '' } = $props();
+	import type { CardProps } from '$lib/types';
+	let { icon, iconText, content }: CardProps = $props();
 </script>
 
 <div class="rounded-xl border border-gray-200 p-4 shadow-sm sm:p-6">
