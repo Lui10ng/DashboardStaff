@@ -30,7 +30,7 @@
 
 	<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
 		{#each $ticketStore as ticket}
-			<TicketCard ticketProps={ticket} />
+			<TicketCard {ticket} />
 		{/each}
 	</div>
 
@@ -48,15 +48,7 @@
 
 	<div class="mb-2 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
 		{#each $voucherStore as voucher}
-			<VoucherCard
-				voucherId={voucher.id}
-				status={voucher.status}
-				discount={voucher.discount}
-				validUntil={voucher.validUntil}
-				validTime={voucher.validTime}
-				sold={voucher.sold}
-				progressColor={voucher.progressColor}
-			/>
+			<VoucherCard {voucher} />
 		{/each}
 	</div>
 </div>

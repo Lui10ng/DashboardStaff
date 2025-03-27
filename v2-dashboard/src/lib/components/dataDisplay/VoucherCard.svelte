@@ -1,11 +1,7 @@
 <script lang="ts">
-	export let voucherId = '';
-	export let status = '';
-	export let discount = '';
-	export let validUntil = '';
-	export let validTime = '';
-	export let sold = '';
-	export let progressColor = '';
+	import type { VoucherProps } from '$lib/types';
+
+	let { voucher }: VoucherProps = $props();
 
 	const getStatusColor = (status: string) => {
 		if (status === 'Active') return 'bg-green-500';
@@ -18,21 +14,21 @@
 <div class="rounded-lg border border-gray-400 shadow-sm">
 	<div class="space-y-2 p-4">
 		<div class="flex items-start justify-between">
-			<div class="font-medium">{voucherId}</div>
+			<div class="font-medium">{voucher.id}</div>
 			<div class="flex items-center text-xs">
-				<span class="mr-1 h-2 w-2 rounded-full {getStatusColor(status)}"></span>
-				{status}
+				<span class="mr-1 h-2 w-2 rounded-full {getStatusColor(voucher.status)}"></span>
+				{voucher.status}
 			</div>
 		</div>
 		<div class="space-y-4">
-			<div class="text-2xl font-bold text-red-500">{discount}</div>
+			<div class="text-2xl font-bold text-red-500">{voucher.discount}</div>
 			<div class="space-y-1">
 				<div class="flex justify-between text-xs">
-					<p class="text-gray-500">Valid until {validUntil} - {validTime}</p>
-					<p>{sold}</p>
+					<p class="text-gray-500">Valid until {voucher.validUntil} - {voucher.validTime}</p>
+					<p>{voucher.sold}</p>
 				</div>
 				<div class="h-1.5 w-full rounded-full bg-gray-200">
-					<div class={`${progressColor} h-1.5 rounded-full`} style="width: 70%"></div>
+					<div class={`${voucher.progressColor} h-1.5 rounded-full`} style="width: 70%"></div>
 				</div>
 			</div>
 		</div>
