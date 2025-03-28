@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import Button from '$lib/components/ui/Button.svelte';
-	import { currentEvent, navItems } from '$lib/stores/data';
+	import { navItems } from '$lib/stores/data';
 	import { page } from '$app/stores';
 	import { eventHeaderStore } from '$lib/stores';
 

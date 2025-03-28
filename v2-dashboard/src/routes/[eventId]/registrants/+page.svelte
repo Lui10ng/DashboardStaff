@@ -1,10 +1,8 @@
-<script>
+<script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Pagination from '$lib/components/ui/Pagination.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
-	import RegistrantsRow from '$lib/components/dataDisplay/RegistrantRow.svelte';
-	import Content from './modal/RegistrantContent.svelte';
 	import EmailBlastForm from './modal/EmailBlastForm.svelte';
 	import { registrantStore } from '$lib/stores';
 
@@ -91,13 +89,77 @@
 			{#each $registrantStore as guest (guest.id)}
 				<Modal dialogClass="w-full">
 					{#snippet button()}
-						<RegistrantsRow {guest} />
-					{/snippet}
-					{#snippet header()}
-						<div class="mb-2 text-gray-500">Additional Info</div>
+						<div
+							class="flex cursor-pointer flex-col justify-between gap-4 rounded-lg bg-gray-100 p-4 transition-colors hover:bg-gray-300 sm:flex-row sm:items-center"
+						>
+							<div class="flex items-center gap-4 text-left">
+								<img src={guest.avatar} alt={guest.name} class="h-10 w-10 rounded-full" />
+								<div>
+									<h3 class="font-medium text-gray-900">{guest.name}</h3>
+									<p class="text-sm text-gray-500">{guest.email}</p>
+								</div>
+							</div>
+							<div
+								class="flex flex-wrap items-center justify-between gap-2 sm:justify-end sm:gap-4"
+							>
+								<span class="order-1 text-sm text-gray-500 sm:order-none"
+									>{guest.registrationDate}</span
+								>
+								<span
+									class={`rounded-full px-3 py-1 text-xs font-medium ${
+										guest.status === 'registered'
+											? 'bg-green-100 text-green-700'
+											: 'bg-yellow-100 text-yellow-700'
+									} order-2 sm:order-none`}
+								>
+									{guest.status}
+								</span>
+								<button
+									class={`order-3 flex items-center gap-2 rounded-lg px-3 py-2 text-xs transition-colors sm:order-none ${
+										guest.status === 'pending'
+											? 'cursor-not-allowed bg-[#E2E2E2] text-[#B7B7B7]'
+											: 'border-1 cursor-pointer text-red-500 hover:border-red-600 hover:bg-red-200 hover:text-red-600'
+									}`}
+									disabled={guest.status === 'pending'}
+								>
+									<i class="fa-solid fa-location-arrow text-xl"></i>
+									<span class="hidden sm:inline">Resend QR Code</span>
+								</button>
+							</div>
+						</div>
 					{/snippet}
 					{#snippet content()}
-						<Content {guest} />
+						<div class="mb-2 text-gray-500">Additional Info</div>
+						<div class="grid grid-cols-1 gap-5">
+							<div>
+								<p class="font-medium">First Name</p>
+								<p>{guest.name}</p>
+							</div>
+							<div>
+								<p class="font-medium">Email</p>
+								<p>{guest.email}</p>
+							</div>
+							<div>
+								<p class="font-medium">Date Registered</p>
+								<p>{guest.registrationDate}</p>
+							</div>
+							<div>
+								<p class="font-medium">Status</p>
+								<p>{guest.status}</p>
+							</div>
+							<div class="flex justify-between gap-5">
+								<Button
+									onClick={() => {}}
+									label="Resend Email"
+									className="bg-gray-300 w-full p-2 rounded-lg"
+								/>
+								<Button
+									onClick={() => {}}
+									label="Check-In"
+									className="bg-primary w-full p-2 text-white rounded-lg"
+								/>
+							</div>
+						</div>
 					{/snippet}
 				</Modal>
 			{/each}
