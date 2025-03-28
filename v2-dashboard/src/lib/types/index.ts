@@ -20,41 +20,59 @@ export type ModalProps = Dialog.RootProps & {
 };
 
 export type VoucherProps = {
-	voucher: {
-		id: string;
-		discount: string;
-		status: string;
-		validUntil: string;
-		validTime: string;
-		sold: string;
-		progressColor: string;
-	};
+	id: string;
+	discount: string;
+	status: string;
+	validUntil: string;
+	validTime: string;
+	sold: string;
+	progressColor: string;
 };
 
 export type TicketProps = {
-	ticket: {
-		status: string;
-		validFrom: string;
-		validTo: string;
-		name: string;
-		price: string;
-		sold: string;
-	};
+	status: string;
+	validFrom: string;
+	validTo: string;
+	name: string;
+	price: number;
+	sold: string;
 };
 
 export type GuestProps = {
-	guest: {
-		id: string;
-		name: string;
-		email: string;
-		registrationDate: string;
-		status: string;
-		avatar: string;
-	};
+	id: string;
+	name: string;
+	email: string;
+	registrationDate: string;
+	status: string;
+	avatar: string;
 };
 
 export type CardProps = {
 	icon: string;
 	iconText: string;
 	content: string;
+};
+
+export type EventProps = {
+	id: string;
+	name: string;
+	location: string;
+	status: string;
+	ticketSold: string;
+	created: string;
+	image: string;
+};
+
+export type WalletTransactionProps = {
+	id: string;
+	name: string;
+	email: string;
+	phone: string;
+	registrationDate: string;
+	event: string;
+	amount: number;
+	paymentMethod: string;
+	netIncome: number;
+	referenceNo: string;
+	avatar: string;
 };
