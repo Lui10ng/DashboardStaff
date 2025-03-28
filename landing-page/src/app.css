@@ -1,9 +1,9 @@
 @import 'tailwindcss';
-@import '@fontsource/roboto';
+@import '@fontsource/poppins';
 @import 'animate.css';
 
 body {
-	font-family: 'Inter', sans-serif;
+	font-family: 'Poppins', sans-serif;
 }
 
 @keyframes mainBlobAnimation {

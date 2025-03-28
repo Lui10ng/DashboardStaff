@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import '@fontsource/roboto/700.css';
+	import '@fontsource/poppins/700.css';
 	import 'animate.css';
 	import { lenisInstance } from '$lib/stores/lenis';
 	import { page } from '$app/stores';

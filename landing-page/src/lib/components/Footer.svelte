@@ -81,11 +81,6 @@
     };
   });
 
-  
-  $: {
-    console.log('Drawer state changed:', showDrawer);
-  }
-	
 </script>
 
 <section 
