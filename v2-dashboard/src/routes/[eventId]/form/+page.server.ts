@@ -3,12 +3,12 @@ export const load = async () => {
 };
 
 export const actions = {
-	createStaff: async ({ request }) => {
+	createForm: async ({ request }) => {
 		const data = await request.formData();
 		console.log(data);
 	},
 
-	disableStaff: async ({ request }) => {
+	updateForm: async ({ request }) => {
 		const data = await request.formData();
 		console.log(data);
 	}
