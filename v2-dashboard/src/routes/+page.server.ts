@@ -1,8 +1,8 @@
-import { eventList } from '$lib/stores/data';
+import { events } from '$lib/stores/data';
 
 export const load = async () => {
 	return {
-		eventList
+		events
 	};
 };
 

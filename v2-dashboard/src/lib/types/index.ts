@@ -76,3 +76,16 @@ export type WalletTransactionProps = {
 	referenceNo: string;
 	avatar: string;
 };
+
+export type Event = {
+	id: string;
+	title: string;
+	location: string;
+	date: string;
+	status: string;
+	tickets: {
+		sold: number;
+		total: number;
+	};
+	image: string;
+};
