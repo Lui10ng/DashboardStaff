@@ -1,24 +1,22 @@
-import { walletTransactions } from '$lib/stores/data';
-
 export const load = async () => {
-	return {
-		walletTransactions
-	};
+	return {};
 };
 
 export const actions = {
-	searchWalletTransaction: async ({ request }) => {
+	createPost: async ({ request }) => {
 		const data = await request.formData();
 		console.log(data);
 	},
 
-	walletWithdrawal: async ({ request }) => {
+	updatePost: async ({ request }) => {
 		const data = await request.formData();
 		console.log(data);
 	},
 
-	walletIncomeBreakdown: async ({ request }) => {
+	uploadPostImage: async ({ request }) => {
 		const data = await request.formData();
 		console.log(data);
-	}
+	},
+
+	getAwsUploadImage: async () => {}
 };
