@@ -415,3 +415,7 @@ body {
 	max-width: none;
 	margin: 10px 0;
 }
+
+button {
+	cursor: pointer;
+}
