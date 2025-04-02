@@ -15,6 +15,7 @@
 	let selectedImage = $state<string | null>(null);
 	let fileInput: HTMLInputElement | null = null;
 	let activeDropdownIndex = $state<number | null>(null);
+	let popupTimerId: number | null = $state(null);
 	
 	
 	let isEditScannerDrawerOpen = $state(false);
@@ -58,6 +59,14 @@
 	function copyLink() {
 		navigator.clipboard.writeText(qrScannerLink).then(() => {
 			showCopyPopup = true;
+			if (popupTimerId !== null) {
+				clearTimeout(popupTimerId);
+			}			
+			popupTimerId = setTimeout(() => {
+				showCopyPopup = false;
+				popupTimerId = null;
+			}, 3000) as unknown as number;
+			
 		}).catch(err => {
 			console.error("Failed to copy: ", err);
 		});
@@ -65,6 +74,11 @@
 	
 	function handleClosePopup() {
 		showCopyPopup = false;
+		
+		if (popupTimerId !== null) {
+			clearTimeout(popupTimerId);
+			popupTimerId = null;
+		}
 	}
 
 	function navigateTo(path: string) {
@@ -166,6 +180,8 @@
 			activeDropdownIndex = null;
 		}
 	}
+
+	
 </script>
 
 <svelte:window on:click={handleClickOutside} />
@@ -202,7 +218,8 @@
 						class=" md:w-auto px-4 py-2 rounded-lg flex items-center justify-center space-x-2 cursor-pointer bg-[#DF4D60] font-sans h-10 w-[150px] text-white hover:bg-[#dc3c51]"
 						on:click={openInviteModal}
 					>
-					<i class="fa-solid fa-user h-5 w-5"></i>
+					<i class="fa fa-user-plus" aria-hidden="true"></i>
+
 						<span>Invite Staff</span>
 					</button>
 				</div>
