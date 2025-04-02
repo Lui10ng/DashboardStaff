@@ -1,9 +1,55 @@
 import type { RequestEvent } from '@sveltejs/kit';
 import { updateForm } from '$lib/services/payload.server';
 import type { FormData, FormResponse } from './types';
+import type { PageServerLoad } from './$types';
 
-export const load = async () => {
-	return {};
+export const load: PageServerLoad = async ({ params }) => {
+	try {
+		const formData: FormData = {
+			title: 'Registration Form',
+			description: 'Please fill out this registration form',
+			formBuilder: [
+				{
+					id: crypto.randomUUID(),
+					name: 'firstName',
+					fieldType: 'firstName',
+					label: 'First Name',
+					required: true
+				},
+				{
+					id: crypto.randomUUID(),
+					name: 'lastName',
+					fieldType: 'lastName',
+					label: 'Last Name',
+					required: true
+				},
+				{
+					id: crypto.randomUUID(),
+					name: 'email',
+					fieldType: 'email',
+					label: 'Email Address',
+					required: true
+				},
+				{
+					id: crypto.randomUUID(),
+					name: 'phone',
+					fieldType: 'phone',
+					label: 'Contact Number',
+					required: true
+				}
+			]
+		};
+
+		return {
+			formData
+		};
+	} catch (error) {
+		console.error('Error loading form data:', error);
+		return {
+			formData: null,
+			error: 'Failed to load form data'
+		};
+	}
 };
 
 export const actions = {
@@ -24,8 +70,7 @@ export const actions = {
 			const parsedResponses: Record<string, any> = JSON.parse(responsesJson);
 			const formattedResponses: FormResponse[] = Object.entries(parsedResponses).map(
 				([fieldId, value]) => ({
-					fieldId,
-					value
+					form: parsedFormData
 				})
 			);
 

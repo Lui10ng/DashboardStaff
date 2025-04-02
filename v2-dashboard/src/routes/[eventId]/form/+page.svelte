@@ -3,40 +3,15 @@
 	import Icon from '@iconify/svelte';
 	import type { FormData, FormField, FieldType } from './types';
 	import FormFieldComponent from './components/FormField.svelte';
+	import { formStore } from '$lib/stores/form.svelte.ts';
+	const { data } = $props();
 
-	let isEditMode = false;
-	let formResponses: Record<string, any> = {};
-	let validationErrors: Record<string, string> = {};
-
-	let formData: FormData = {
-		title: 'test',
-		description: 'Registration prompt text',
-		fields: [
-			{
-				id: crypto.randomUUID(),
-				name: 'name',
-				fieldType: 'name',
-				label: 'Name',
-				required: true
-			},
-			{
-				id: crypto.randomUUID(),
-				name: 'email',
-				fieldType: 'email',
-				label: 'Email Address',
-				required: true
-			},
-			{
-				id: crypto.randomUUID(),
-				name: 'phone',
-				fieldType: 'phone',
-				label: 'Contact Number',
-				required: true
-			}
-		]
-	};
-
+	let isEditMode = $state(false);
+	let formResponses = $state<Record<string, any>>({});
+	let validationErrors = $state<Record<string, string>>({});
 	let fieldTypes: { fieldType: FieldType; label: string; icon: string }[] = [
+		{ fieldType: 'firstName', label: 'First Name', icon: 'material-symbols:person' },
+		{ fieldType: 'lastName', label: 'Last Name', icon: 'material-symbols:person' },
 		{ fieldType: 'shortText', label: 'Short Text', icon: 'material-symbols:short-text' },
 		{ fieldType: 'longText', label: 'Long Text', icon: 'material-symbols:text-fields' },
 		{ fieldType: 'email', label: 'Email', icon: 'material-symbols:mail-outline' },
@@ -51,10 +26,21 @@
 		{ fieldType: 'checkbox', label: 'Checkbox', icon: 'material-symbols:check-box' },
 		{ fieldType: 'dropdown', label: 'Dropdown', icon: 'material-symbols:arrow-drop-down-circle' },
 		{ fieldType: 'file', label: 'File Upload', icon: 'material-symbols:upload-file' },
-		{ fieldType: 'name', label: 'Name', icon: 'material-symbols:person' },
 		{ fieldType: 'time', label: 'Time', icon: 'material-symbols:schedule' },
 		{ fieldType: 'region', label: 'Region & City', icon: 'material-symbols:location-on' }
 	];
+
+	$effect(() => {
+		formStore.setFormData(
+			data?.formData || {
+				title: 'Registration Form',
+				description: 'Please fill out this registration form',
+				formBuilder: []
+			}
+		);
+	});
+
+	let formData = $derived(formStore.getFormData());
 
 	interface Region {
 		id: string;
@@ -72,8 +58,8 @@
 	let cities: Record<string, City[]> = {};
 	let selectedRegion = '';
 
-	let dragging = false;
-	$: dragDisabled = !dragging;
+	let dragging = $state(false);
+	let dragDisabled = $derived(!dragging);
 
 	async function fetchRegions() {
 		try {
@@ -98,8 +84,8 @@
 
 	function addField(fieldType: FieldType) {
 		if (fieldType === 'region') {
-			formData.fields = [
-				...formData.fields,
+			formData.formBuilder = [
+				...formData.formBuilder,
 				{
 					id: crypto.randomUUID(),
 					name: 'region',
@@ -138,23 +124,23 @@
 						? ['Option 1']
 						: undefined
 			};
-			formData.fields = [...formData.fields, newField];
+			formData.formBuilder = [...formData.formBuilder, newField];
 		}
 	}
 
 	function handleDnd(e: CustomEvent<{ items: FormField[] }>) {
-		formData.fields = e.detail.items;
+		formData.formBuilder = e.detail.items;
 		if (e.type === 'finalize') {
 			dragging = false;
 		}
 	}
 
 	function deleteField(id: string) {
-		formData.fields = formData.fields.filter((field) => field.id !== id);
+		formData.formBuilder = formData.formBuilder.filter((field) => field.id !== id);
 	}
 
 	function updateField(updatedField: FormField) {
-		formData.fields = formData.fields.map((field) =>
+		formData.formBuilder = formData.formBuilder.map((field) =>
 			field.id === updatedField.id ? updatedField : field
 		);
 	}
@@ -164,12 +150,15 @@
 	}
 
 	function handleSaveChanges() {
-		// Here you would typically save the form changes to your backend
+		formData.formBuilder = formData.formBuilder.map((field) => ({
+			...field,
+			id: field.id || crypto.randomUUID()
+		}));
+
 		isEditMode = false;
 	}
 
 	function handleCancel() {
-		// Here you might want to reset any unsaved changes
 		isEditMode = false;
 	}
 
@@ -185,7 +174,8 @@
 				}
 				break;
 			case 'phone':
-				if (value && !/^[0-9]{10}$/.test(value.replace(/[^0-9]/g, ''))) {
+				const phoneNumber = value?.replace(/[^0-9]/g, '');
+				if (value && (!/^[0-9]{10}$/.test(phoneNumber))) {
 					return 'Please enter a valid 10-digit phone number';
 				}
 				break;
@@ -203,7 +193,7 @@
 		validationErrors = {};
 		let isValid = true;
 
-		formData.fields.forEach((field) => {
+		formData.formBuilder.forEach((field) => {
 			const value = formResponses[field.id];
 			const error = validateField(field, value);
 			if (error) {
@@ -234,7 +224,6 @@
 				throw new Error('Failed to submit form');
 			}
 
-			// Handle successful submission
 			alert('Form submitted successfully!');
 		} catch (error) {
 			console.error('Error submitting form:', error);
@@ -253,7 +242,7 @@
 		if (region) {
 			console.log(region);
 			await fetchCities(region.code);
-			formData.fields = formData.fields.map((f) => {
+			formData.formBuilder = formData.formBuilder.map((f) => {
 				if (f.fieldType === 'city') {
 					return {
 						...f,
@@ -263,7 +252,7 @@
 				return f;
 			});
 
-			console.log('Updated form fields:', formData.fields);
+			console.log('Updated form fields:', formData.formBuilder);
 		}
 	}
 
@@ -335,7 +324,7 @@
 
 			<div
 				use:dndzone={{
-					items: formData.fields,
+					items: formData.formBuilder,
 					flipDurationMs: 200,
 					dragDisabled
 				}}
@@ -343,7 +332,7 @@
 				on:finalize={handleDnd}
 				class="mb-6 space-y-4"
 			>
-				{#each formData.fields as field (field.id)}
+				{#each formData.formBuilder as field (field.id)}
 					<FormFieldComponent
 						{field}
 						on:delete={() => deleteField(field.id)}
@@ -371,7 +360,7 @@
 		{:else}
 			<!-- Preview Mode -->
 			<form on:submit|preventDefault={handleSubmit} class="space-y-6">
-				{#each formData.fields as field (field.id)}
+				{#each formData.formBuilder as field (field.id)}
 					<div class="space-y-2">
 						<label for={field.id} class="block text-sm font-medium text-gray-700">
 							{field.label}
@@ -384,25 +373,15 @@
 							<p class="text-sm text-red-500">{validationErrors[field.id]}</p>
 						{/if}
 
-						{#if field.fieldType === 'name'}
-							<div class="grid grid-cols-2 gap-4">
+						{#if field.fieldType === 'firstName' || field.fieldType === 'lastName'}
 								<input
 									type="text"
-									id={`${field.id}_first`}
+								id={field.id}
 									class="w-full rounded-md border p-2"
-									placeholder="First name"
+								placeholder={field.fieldType === 'firstName' ? 'First name' : 'Last name'}
 									required={field.required}
-									bind:value={formResponses[`${field.id}_first`]}
-								/>
-								<input
-									type="text"
-									id={`${field.id}_last`}
-									class="w-full rounded-md border p-2"
-									placeholder="Last name"
-									required={field.required}
-									bind:value={formResponses[`${field.id}_last`]}
-								/>
-							</div>
+								bind:value={formResponses[field.id]}
+							/>
 						{:else if field.fieldType === 'phone'}
 							<div class="relative">
 								<span class="absolute top-2 left-3">+63</span>
@@ -410,7 +389,7 @@
 									type="tel"
 									id={field.id}
 									class="w-full rounded-md border p-2 pl-12"
-									pattern="[0-9]{10}"
+									maxlength="10"
 									placeholder="9XX XXX XXXX"
 									required={field.required}
 									bind:value={formResponses[field.id]}

@@ -9,7 +9,8 @@ export type FieldType =
 	| 'checkbox'
 	| 'dropdown'
 	| 'file'
-	| 'name'
+	| 'firstName'
+	| 'lastName'
 	| 'region'
 	| 'city'
 	| 'shortText'
@@ -28,12 +29,11 @@ export interface FormField {
 export interface FormData {
 	title: string;
 	description: string;
-	fields: FormField[];
+	formBuilder: FormField[];
 }
 
 export interface FormResponse {
-	fieldId: string;
-	value: any;
+	form: FormData;
 }
 
 export interface FormValidationError {
