@@ -1,13 +1,14 @@
 import { zod } from 'sveltekit-superforms/adapters';
-import { superValidate } from 'sveltekit-superforms/server';
+import { message, superValidate } from 'sveltekit-superforms/server';
 import { fail } from 'sveltekit-superforms';
 import { env } from '$env/dynamic/private';
 import { registration } from '$lib/schema/registration';
+import { AWS_URL } from '$env/static/private';
 
 let eventID = '';
 let createdBy = '';
 let webhook = '';
-let forms: any = null;
+let eventDetails: any = null;
 
 export const load = async ({ url }) => {
 	const hostName = url.hostname;
@@ -24,14 +25,14 @@ export const load = async ({ url }) => {
 				method: 'GET'
 			}
 		);
-		forms = await formsResp.json();
+		eventDetails = await formsResp.json();
 
-		forms = forms.docs[0];
-		eventID = forms.id;
-		createdBy = forms.createdBy;
+		eventDetails = eventDetails.docs[0];
+		eventID = eventDetails.id;
+		createdBy = eventDetails.createdBy;
 
-		if (forms.webhook != undefined || forms.webhook != '') {
-			webhook = forms.webhook;
+		if (eventDetails.webhook != undefined || eventDetails.webhook != '') {
+			webhook = eventDetails.webhook;
 		}
 	} else if (
 		hostName.includes('veent-registration.vercel.app') ||
@@ -43,39 +44,39 @@ export const load = async ({ url }) => {
 				method: 'GET'
 			}
 		);
-		forms = await formsResp.json();
-		forms = forms.docs[0];
-		eventID = forms.id;
-		createdBy = forms.createdBy;
-		if (forms.webhook != undefined || forms.webhook != '') {
-			webhook = forms.webhook;
+		eventDetails = await formsResp.json();
+		eventDetails = eventDetails.docs[0];
+		eventID = eventDetails.id;
+		createdBy = eventDetails.createdBy;
+		if (eventDetails.webhook != undefined || eventDetails.webhook != '') {
+			webhook = eventDetails.webhook;
 		}
 	} else {
 		// redirect(302, 'https://www.veent.io/');
 	}
 
-	const formBuilder = forms.formBuilder;
+	const formBuilder = eventDetails.formBuilder;
 
-	const schema = registration(forms.formBuilder);
+	const schema = registration(eventDetails.formBuilder);
 	const form = await superValidate(zod(schema));
 
-	return { form, formBuilder };
+	return { form, formBuilder, eventDetails, AWS_URL };
 };
 
 export const actions = {
 	register: async ({ request }) => {
 		const formData = await request.formData();
 
-		const schema = registration(forms.formBuilder);
+		const schema = registration(eventDetails.formBuilder);
 		const form = await superValidate(formData, zod(schema));
-
-		console.log('form: ', form);
 
 		if (!form.valid) {
 			return fail(400, { form });
 		}
 
 		console.log('form: ', form.data.tabs);
+
+		return message(form, { success: true, message: 'Registration successful!' });
 	}
 };
 
