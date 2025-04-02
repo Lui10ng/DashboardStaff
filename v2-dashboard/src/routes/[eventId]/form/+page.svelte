@@ -10,24 +10,20 @@
 	let formResponses = $state<Record<string, any>>({});
 	let validationErrors = $state<Record<string, string>>({});
 	let fieldTypes: { fieldType: FieldType; label: string; icon: string }[] = [
-		{ fieldType: 'firstName', label: 'First Name', icon: 'material-symbols:person' },
-		{ fieldType: 'lastName', label: 'Last Name', icon: 'material-symbols:person' },
-		{ fieldType: 'shortText', label: 'Short Text', icon: 'material-symbols:short-text' },
-		{ fieldType: 'longText', label: 'Long Text', icon: 'material-symbols:text-fields' },
-		{ fieldType: 'email', label: 'Email', icon: 'material-symbols:mail-outline' },
-		{ fieldType: 'phone', label: 'Phone', icon: 'material-symbols:call' },
-		{ fieldType: 'number', label: 'Number', icon: 'material-symbols:numbers' },
-		{ fieldType: 'date', label: 'Date', icon: 'material-symbols:calendar-month' },
-		{
-			fieldType: 'multipleChoice',
-			label: 'Multiple Choice',
-			icon: 'material-symbols:radio-button-checked'
-		},
-		{ fieldType: 'checkbox', label: 'Checkbox', icon: 'material-symbols:check-box' },
-		{ fieldType: 'dropdown', label: 'Dropdown', icon: 'material-symbols:arrow-drop-down-circle' },
-		{ fieldType: 'file', label: 'File Upload', icon: 'material-symbols:upload-file' },
-		{ fieldType: 'time', label: 'Time', icon: 'material-symbols:schedule' },
-		{ fieldType: 'region', label: 'Region & City', icon: 'material-symbols:location-on' }
+		{ fieldType: 'firstName', label: 'First Name', icon: 'fa-user' },
+		{ fieldType: 'lastName', label: 'Last Name', icon: 'fa-user' },
+		{ fieldType: 'shortText', label: 'Short Text', icon: 'fa-font' },
+		{ fieldType: 'longText', label: 'Long Text', icon: 'fa-paragraph' },
+		{ fieldType: 'email', label: 'Email', icon: 'fa-envelope' },
+		{ fieldType: 'phone', label: 'Phone', icon: 'fa-phone' },
+		{ fieldType: 'number', label: 'Number', icon: 'fa-hashtag' },
+		{ fieldType: 'date', label: 'Date', icon: 'fa-calendar' },
+		{ fieldType: 'multipleChoice', label: 'Multiple Choice', icon: 'fa-list-ul' },
+		{ fieldType: 'checkbox', label: 'Checkbox', icon: 'fa-check-square' },
+		{ fieldType: 'dropdown', label: 'Dropdown', icon: 'fa-chevron-down' },
+		{ fieldType: 'file', label: 'File Upload', icon: 'fa-upload' },
+		{ fieldType: 'time', label: 'Time', icon: 'fa-clock' },
+		{ fieldType: 'region', label: 'Region & City', icon: 'fa-map-marker-alt' }
 	];
 
 	$effect(() => {
@@ -292,7 +288,7 @@
 					on:click={toggleEditMode}
 				>
 					<span>Edit Form</span>
-					<Icon icon="material-symbols:edit" />
+					<i class="fas fa-edit"></i>
 				</button>
 			{/if}
 		</div>
@@ -351,7 +347,7 @@
 							class="flex cursor-pointer flex-col items-center rounded-lg border p-4 transition-colors hover:bg-gray-50"
 							on:click={() => addField(fieldType)}
 						>
-							<Icon {icon} class="mb-2 text-2xl" />
+							<i class="fas {icon} mb-2 text-2xl"></i>
 							<span class="text-sm">{label}</span>
 						</button>
 					{/each}

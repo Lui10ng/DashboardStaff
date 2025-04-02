@@ -1,13 +1,12 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import Icon from '@iconify/svelte';
-	import type { FormFieldTypes } from '../types';
+	import type { FormField } from '../types';
 
-	export let field: FormFieldTypes;
+	export let field: FormField;
 
 	const dispatch = createEventDispatcher();
 
-	function updateField(updates: Partial<FormFieldTypes>) {
+	function updateField(updates: Partial<FormField>) {
 		dispatch('update', { ...field, ...updates });
 	}
 
@@ -66,16 +65,13 @@
 				on:click={() => updateField({ required: !field.required })}
 				title={field.required ? 'Required field' : 'Optional field'}
 			>
-				<Icon
-					icon={field.required ? 'material-symbols:error' : 'material-symbols:error-outline'}
-					class={field.required ? 'text-red-500' : 'text-gray-400'}
-				/>
+				<i class="fas {field.required ? 'fa-exclamation-circle text-red-500' : 'fa-exclamation-circle text-gray-400'}"></i>
 			</button>
 			<button
 				class="cursor-pointer p-2 text-gray-500 hover:text-red-500"
 				on:click={() => dispatch('delete')}
 			>
-				<Icon icon="material-symbols:delete-outline" />
+				<i class="fas fa-trash-alt"></i>
 			</button>
 			<div
 				class="cursor-grab p-2 text-gray-400 hover:text-gray-600"
@@ -84,23 +80,16 @@
 				on:mouseleave={() => dispatch('stopdrag')}
 				data-dnd-handle
 			>
-				<Icon icon="material-symbols:drag-indicator" />
+				<i class="fas fa-grip-vertical"></i>
 			</div>
 		</div>
 	</div>
 
-	{#if field.type === 'multipleChoice' || field.type === 'checkbox' || field.type === 'dropdown'}
+	{#if field.fieldType === 'multipleChoice' || field.fieldType === 'checkbox' || field.fieldType === 'dropdown'}
 		<div class="space-y-2">
 			{#each field.options || [] as option, i}
 				<div class="flex items-center space-x-2">
-					<Icon
-						icon={field.type === 'multipleChoice'
-							? 'material-symbols:radio-button-unchecked'
-							: field.type === 'checkbox'
-								? 'material-symbols:check-box-outline-blank'
-								: 'material-symbols:arrow-drop-down-circle-outline'}
-						class="text-gray-400"
-					/>
+					<i class="fas {field.fieldType === 'multipleChoice' ? 'fa-circle' : field.fieldType === 'checkbox' ? 'fa-square' : 'fa-chevron-down'} text-gray-400"></i>
 					<input
 						class="flex-1 rounded-md border p-2"
 						value={option}
@@ -111,7 +100,7 @@
 						on:click={() => deleteOption(i)}
 						disabled={field.options?.length === 1}
 					>
-						<Icon icon="material-symbols:delete-outline" />
+						<i class="fas fa-trash-alt"></i>
 					</button>
 				</div>
 			{/each}
@@ -119,58 +108,46 @@
 				class="flex cursor-pointer items-center space-x-2 text-blue-500 hover:text-blue-600"
 				on:click={addOption}
 			>
-				<Icon icon="material-symbols:add-circle-outline" />
+				<i class="fas fa-plus-circle"></i>
 				<span>Add Option</span>
 			</button>
 		</div>
 	{:else}
 		<div class="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
 			<div class="text-gray-500">
-				{#if field.type === 'shortText'}
+				{#if field.fieldType === 'shortText'}
 					<input
 						type="text"
 						class="w-full rounded-md p-2"
 						placeholder="Short answer text"
 						disabled
 					/>
-				{:else if field.type === 'longText'}
-					<textarea class="w-full rounded-md p-2" placeholder="Long answer text" disabled
-					></textarea>
-				{:else if field.type === 'email'}
+				{:else if field.fieldType === 'longText'}
+					<textarea class="w-full rounded-md p-2" placeholder="Long answer text" disabled></textarea>
+				{:else if field.fieldType === 'email'}
 					<input type="email" class="w-full rounded-md p-2" placeholder="Email" disabled />
-				{:else if field.type === 'phone'}
+				{:else if field.fieldType === 'phone'}
 					<input type="tel" class="w-full rounded-md p-2" placeholder="Phone number" disabled />
-				{:else if field.type === 'number'}
+				{:else if field.fieldType === 'number'}
 					<input type="number" class="w-full rounded-md p-2" placeholder="Number" disabled />
-				{:else if field.type === 'date'}
+				{:else if field.fieldType === 'date'}
 					<input type="date" class="w-full rounded-md p-2" disabled />
-				{:else if field.type === 'file'}
+				{:else if field.fieldType === 'file'}
 					<input type="file" class="w-full rounded-md p-2" disabled />
-				{:else if field.type === 'name'}
+				{:else if field.fieldType === 'firstName' || field.fieldType === 'lastName'}
 					<div class="grid grid-cols-2 gap-4">
 						<input
 							type="text"
 							class="rounded-md border-2 border-gray-200 p-2"
-							placeholder="First name"
-							disabled
-						/>
-						<input
-							type="text"
-							class="rounded-md border-2 border-gray-200 p-2"
-							placeholder="Last name"
+							placeholder={field.fieldType === 'firstName' ? 'First name' : 'Last name'}
 							disabled
 						/>
 					</div>
-				{:else if field.type === 'price'}
-					<div class="relative">
-						<span class="absolute top-2 left-3">₱</span>
-						<input type="number" class="w-full rounded-md p-2 pl-8" placeholder="0.00" disabled />
-					</div>
-				{:else if field.type === 'region'}
+				{:else if field.fieldType === 'region'}
 					<select class="w-full rounded-md p-2" disabled>
 						<option>Select Region</option>
 					</select>
-				{:else if field.type === 'city'}
+				{:else if field.fieldType === 'city'}
 					<select class="w-full rounded-md p-2" disabled>
 						<option>Select City/Municipality</option>
 					</select>
