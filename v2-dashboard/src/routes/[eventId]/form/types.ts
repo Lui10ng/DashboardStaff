@@ -1,33 +1,42 @@
-export interface FormFieldTypes {
-    id: string;
-    type: FieldType;
-    label: string;
-    required: boolean;
-    options?: string[];
-    description?: string;
-    placeholder?: string;
+export type FieldType =
+	| 'text'
+	| 'email'
+	| 'phone'
+	| 'number'
+	| 'date'
+	| 'time'
+	| 'multipleChoice'
+	| 'checkbox'
+	| 'dropdown'
+	| 'file'
+	| 'name'
+	| 'region'
+	| 'city'
+	| 'shortText'
+	| 'longText';
+
+export interface FormField {
+	id: string;
+	name: string;
+	label: string;
+	required: boolean;
+	fieldType: FieldType;
+	options?: string[];
+	description?: string;
 }
 
-export type FieldType =
-    | 'shortText'
-    | 'longText'
-    | 'email'
-    | 'phone'
-    | 'number'
-    | 'date'
-    | 'time'
-    | 'multipleChoice'
-    | 'checkbox'
-    | 'dropdown'
-    | 'file'
-    | 'name'
-    | 'price'
-    | 'region'
-    | 'city'
-    | 'street';
-
 export interface FormData {
-    title: string;
-    description: string;
-    fields: FormFieldTypes[];
+	title: string;
+	description: string;
+	fields: FormField[];
+}
+
+export interface FormResponse {
+	fieldId: string;
+	value: any;
+}
+
+export interface FormValidationError {
+	fieldId: string;
+	message: string;
 }
