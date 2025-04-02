@@ -60,7 +60,6 @@
 		"leaflet": "^1.9.4",
 		"leaflet-geosearch": "^4.2.0",
 		"postgres": "^3.4.5",
-		"remixicon": "^4.6.0",
 		"tailwindcss-animate": "^1.0.7"
 	}
 }
