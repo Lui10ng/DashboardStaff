@@ -4,15 +4,12 @@
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { goto } from '$app/navigation';
-	import Drawer from '$lib/components/ui/Drawer.svelte';
-	import Modal from '$lib/components/ui/Modal.svelte';
-	import DynamicEventForm from '../lib/components/dataDisplay/TestEventForm.svelte';
-	import { eventStore } from '$lib/stores';
+	import { eventListStore } from '$lib/stores/eventList.svelte.ts';
 
 	let { data } = $props();
 
 	$effect(() => {
-		eventStore.set(data.eventList);
+		eventListStore.setEvents(data.events);
 	});
 
 	const formatStatus = (status: string) => {
@@ -27,16 +24,75 @@
 		}
 	};
 
-	const handleEvent = () => {
-		goto('eventId/registrants');
+	const handleEvent = (id: string) => {
+		goto(`${id}/registrants`);
 	};
 
-	const handeCreateEvent = () => {
+	const handleCreateEvent = () => {
 		goto('/create');
 	};
-</script>
 
-<!-- <Drawer /> -->
+	// Pagination state
+	let currentPage = $state(1);
+	let eventsPerPage = $state(5);
+	let events = $derived(eventListStore.events);
+  
+	let paginatedEvents = $derived(events.slice((currentPage - 1) * eventsPerPage, currentPage * eventsPerPage));
+  
+	const handlePageChange = (event: CustomEvent<{page: number}>) => {
+		currentPage = event.detail.page;
+	};
+  
+	const handlePageSizeChange = (event: CustomEvent<{size: number}>) => {
+		eventsPerPage = event.detail.size;
+		// Reset to first page when changing page size
+		currentPage = 1;
+	};
+
+	const handleScanQR = (id: string) => {
+		console.log(`Scan QR for event ${id}`);
+	};
+  
+	const handleTickets = (id: string) => {
+		console.log(`View tickets for event ${id}`);
+	};
+  
+	const handleCopyLink = (id: string) => {
+		console.log(`Copy link for event ${id}`);
+	};
+  
+	const handleShare = (id: string) => {
+		console.log(`Share event ${id}`);
+	};
+  
+	// Handle duplicating an event
+	const handleDuplicateEvent = (id: string) => {
+		console.log(`Duplicating event ${id}`);
+		// Code to duplicate the event would go here
+	};
+
+	const handleDropdownSelection = (item: string, eventId: string) => {
+		switch (item) {
+			case 'Scanner':
+				handleScanQR(eventId);
+				break;
+			case 'Ticket':
+				handleTickets(eventId);
+				break;
+			case 'Copy link':
+				handleCopyLink(eventId);
+				break;
+			case 'Share event':
+				handleShare(eventId);
+				break;
+			case 'Duplicate event':
+				handleDuplicateEvent(eventId);
+				break;
+			default:
+				console.log(`Unknown item selected: ${item}`);
+		}
+	};
+</script>
 
 <div class="space-y-5">
 	<div class="space-y-2">
@@ -44,80 +100,57 @@
 		<p class="text-gray-500">Manage your events and track their performance</p>
 	</div>
 	<div class="mb-6 flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
-		<div class="flex flex-col gap-5 sm:flex-row">
-			<div class="relative">
-				<input
-					type="text"
-					placeholder="Search events..."
-					class="w-full rounded-lg border border-gray-200 px-10 py-2 text-gray-900 focus:outline-none"
-				/>
-
-				<i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 h-5 w-5 text-gray-400"></i>
-			</div>
-			<select
-				class="sm:w-50 w-full cursor-pointer rounded-lg border border-gray-200 px-4 py-2 focus:outline-none"
-			>
-				<option value="all">All Events</option>
-				<option value="live">Live</option>
-				<option value="upcoming">Upcoming</option>
-				<option value="past">Past</option>
-				<option value="draft">Draft</option>
-			</select>
-			<select
-				class="sm:w-50 w-full cursor-pointer rounded-lg border border-gray-200 px-4 py-2 focus:outline-none"
-			>
-				<option value="name">Sort by Date</option>
-				<option value="date">Newest First</option>
-				<option value="status">Oldest First</option>
-			</select>
-		</div>
+		
 		<Button
-			onClick={handeCreateEvent}
+			onClick={handleCreateEvent}
 			label="Create Event"
-			icon="fa-solid fa-plus"
-			className="bg-primary text-white rounded-lg px-4 py-2"
+			icon="ri-add-line"
+			className="bg-red-600 text-white rounded-lg px-4 py-2 hover:bg-red-700"
 		/>
-
-		<!-- <Modal>
-			{#snippet button()}
-				<h1 class="bg-primary cursor-pointer rounded-lg px-2 py-1 text-white">Create Event</h1>
-			{/snippet}
-			{#snippet content()}
-				<DynamicEventForm />
-			{/snippet}
-		</Modal> -->
 	</div>
 
 	<div class="overflow-hidden rounded-xl border border-gray-200 shadow-sm">
-		<!-- Guest List Items -->
+		<!-- Event List Items -->
 		<div>
-			{#each $eventStore as event (event.id)}
+			{#each paginatedEvents as event (event.id)}
 				<div
-					class="flex flex-col justify-between gap-5 border-b border-gray-200 p-4 sm:flex-row sm:items-center sm:p-6 md:gap-10"
+					class="flex flex-col justify-between gap-5 border-b border-gray-200 p-4 sm:flex-row sm:items-center sm:p-6 md:gap-10 cursor-pointer hover:bg-gray-50 transition-colors"
+					onclick={() => handleEvent(event.id)}
+					onkeydown={(e) => e.key === 'Enter' && handleEvent(event.id)}
+					tabindex="0"
+					role="button"
+					aria-label="View details for {event.title}"
 				>
 					<div class="flex justify-between">
 						<div class="flex items-center gap-4">
-							<Button className="overflow-hidden rounded-lg" onClick={handleEvent}>
+							<div class="overflow-hidden rounded-lg">
 								<img
 									src={event.image}
-									alt={event.name}
+									alt={event.title}
 									class="h-16 w-16 rounded-lg object-cover object-center transition-all duration-500 hover:scale-125"
 								/>
-							</Button>
+							</div>
 
 							<div class="flex-1">
-								<h3 class="font-medium text-gray-900">{event.name}</h3>
+								<h3 class="font-medium text-gray-900">{event.title}</h3>
 								<p class="text-sm text-gray-500">
-									<i class="fa-solid fa-location-dot text-gray-400"></i>
+									<i class="ri-map-pin-line text-gray-400"></i>
 									{event.location}
 								</p>
 							</div>
 						</div>
 						<div class="block sm:hidden">
 							<DropdownMenu
-								icon="fa-solid fa-ellipsis text-2xl text-gray-400 hover:text-primary p-2"
-								items={['Scanner', 'Ticket', 'Copy link', 'Share link', 'Disable']}
+								icon="fa-solid fa-ellipsis text-2xl text-gray-400 hover:text-red-600 p-2"
+								className="cursor-pointer relative z-10"
+								classMenu="mt-2 shadow-md"
 								alignContent="end"
+								buttonText=""
+								items={['Scanner', 'Ticket', 'Copy link', 'Share event', 'Duplicate event']}
+								on:select={(e) => {
+									e.stopPropagation();
+									handleDropdownSelection(e.detail, event.id);
+								}}
 							/>
 						</div>
 					</div>
@@ -125,53 +158,98 @@
 						class="flex flex-wrap items-center justify-between gap-x-6 gap-y-5 sm:justify-end md:gap-10"
 					>
 						<div>
-							<h3 class="rounded-full px-2 py-1 text-sm {formatStatus(event.status)}">
+              <p class="text-sm text-gray-500 sm:text-end">Status</p>
+							<h3 class="px-2 py-1 text-sm {formatStatus(event.status)}">
 								{event.status}
 							</h3>
-							<p class="text-sm text-gray-500 sm:text-end">Status</p>
+							
 						</div>
 						<div>
-							<h3 class="font-medium sm:text-end">{event.ticketSold}</h3>
-							<p class="text-sm text-gray-500">Ticket Sold</p>
+              <p class="text-sm text-gray-500">Ticket Sold</p>
+							<h3 class="font-medium sm:text-end">{event.tickets.sold}/{event.tickets.total}</h3>
 						</div>
 						<div>
-							<h3 class="font-medium">{event.created}</h3>
 							<p class="text-end text-sm text-gray-500">Date</p>
+
+							<h3 class="font-medium">{event.date}</h3>
 						</div>
 						<div class="hidden sm:block">
 							<div>
-								<Tooltip
-									icon="fa-solid fa-expand hover:text-primary p-2"
-									content="Scanner"
-									classTrigger="text-lg text-gray-400"
-									classContent="border bg-white px-2 py-1 rounded-lg text-primary"
-								/>
-
-								<Tooltip
-									icon="fa-solid fa-ticket hover:text-primary p-2"
-									content="Ticket"
-									classTrigger="text-lg text-gray-400"
-									classContent="border bg-white px-2 py-1 rounded-lg text-primary"
-								/>
-
-								<Tooltip
-									icon="fa-solid fa-link hover:text-primary p-2"
-									content="Copy link"
-									classTrigger="text-lg text-gray-400"
-									classContent="border bg-white px-2 py-1 rounded-lg text-primary "
-								/>
-
-								<Tooltip
-									icon="fa-solid fa-share-nodes hover:text-primary p-2"
-									content="Share event"
-									classTrigger="text-lg text-gray-400"
-									classContent="border bg-white px-2 py-1 rounded-lg text-primary"
-								/>
-								<DropdownMenu
-									icon="fa-solid fa-ellipsis-vertical text-lg text-gray-400 hover:text-primary p-2"
-									items={['option 1', 'option 2', 'option 3']}
-									alignContent="center"
-								/>
+								<button 
+									class="cursor-pointer p-2 text-gray-500 transition-colors hover:text-gray-600"
+									aria-label="QR Scanner"
+									tabindex="0"
+									onclick={(e) => { e.preventDefault(); e.stopPropagation(); handleScanQR(event.id); }}
+									onkeydown={(e) => e.key === 'Enter' && handleScanQR(event.id)}
+								>
+									<Tooltip 
+										icon="fa-solid fa-expand text-lg text-gray-400 hover:text-red-600" 
+										text="" 
+										content="Scanner" 
+										classTrigger="" 
+										classContent="border bg-white px-2 py-1 rounded-lg text-red-600"
+									/>	
+								</button>
+								<button
+									class="cursor-pointer p-2 text-gray-500 transition-colors hover:text-gray-600"
+									aria-label="Tickets"
+									tabindex="0"
+									onclick={(e) => { e.stopPropagation(); handleTickets(event.id); }}
+									onkeydown={(e) => e.key === 'Enter' && handleTickets(event.id)}
+								>
+									<Tooltip 
+										icon="fa-solid fa-ticket text-lg text-gray-400 hover:text-red-600" 
+										text="" 
+										content="Ticket" 
+										classTrigger="" 
+										classContent="border bg-white px-2 py-1 rounded-lg text-red-600"
+									/>	
+								</button>
+								<button
+									class="cursor-pointer p-2 text-gray-500 transition-colors hover:text-gray-600"
+									aria-label="Copy link"
+									tabindex="0"
+									onclick={(e) => { e.stopPropagation(); handleCopyLink(event.id); }}
+									onkeydown={(e) => e.key === 'Enter' && handleCopyLink(event.id)}
+								>
+									<Tooltip 
+										icon="fa-sharp fa-solid fa-link text-lg text-gray-400 hover:text-red-600" 
+										text="" 
+										content="Copy link" 
+										classTrigger="" 
+										classContent="border bg-white px-2 py-1 rounded-lg text-red-600"
+									/>	
+								</button>
+								<button
+									class="cursor-pointer p-2 text-gray-500 transition-colors hover:text-gray-600"
+									aria-label="Share"
+									tabindex="0"
+									onclick={(e) => { e.stopPropagation(); handleShare(event.id); }}
+									onkeydown={(e) => e.key === 'Enter' && handleShare(event.id)}
+								>
+									<Tooltip 
+										icon="fa-sharp fa-solid fa-share-nodes text-lg text-gray-400 hover:text-red-600" 
+										text="" 
+										content="Share event" 
+										classTrigger="" 
+										classContent="border bg-white px-2 py-1 rounded-lg text-red-600"
+									/>	
+								</button>
+								<button
+									class="cursor-pointer p-2 text-gray-500 transition-colors hover:text-gray-600"
+									aria-label="Duplicate event"
+									tabindex="0"
+									onclick={(e) => { e.stopPropagation(); handleDuplicateEvent(event.id); }}
+									onkeydown={(e) => e.key === 'Enter' && handleDuplicateEvent(event.id)}
+								>
+									<Tooltip 
+										icon="fa-solid fa-clone text-lg text-gray-400 hover:text-red-600" 
+										text="" 
+										content="Duplicate event" 
+										classTrigger="" 
+										classContent="border bg-white px-2 py-1 rounded-lg text-red-600"
+									/>	
+								</button>
 							</div>
 						</div>
 					</div>
@@ -179,7 +257,13 @@
 			{/each}
 		</div>
 		<div class="px-3 py-4 sm:px-6">
-			<Pagination total={100} />
+			<Pagination
+				totalItems={events.length} 
+				itemsPerPage={eventsPerPage} 
+				currentPage={currentPage}
+				on:pageChange={handlePageChange} 
+				on:pageSizeChange={handlePageSizeChange} 
+			/>
 		</div>
 	</div>
-</div>
+</div> 

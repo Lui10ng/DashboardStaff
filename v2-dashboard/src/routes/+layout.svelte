@@ -10,7 +10,7 @@
 <Header />
 
 <div class="bg-white">
-	<div class="mx-auto min-h-svh max-w-7xl px-5 pb-8 pt-6">
+	<div class="mx-auto max-w-7xl px-5 pb-8 pt-6">
 		<Tooltip.Provider>
 			{@render children()}
 		</Tooltip.Provider>
