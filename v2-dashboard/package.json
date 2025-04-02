@@ -59,7 +59,7 @@
 		"leaflet": "^1.9.4",
 		"leaflet-geosearch": "^4.2.0",
 		"postgres": "^3.4.5",
-		"tailwindcss-animate": "^1.0.7",
-		"svelte-dnd-action": "^0.9.60"
+		"svelte-dnd-action": "^0.9.60",
+		"tailwindcss-animate": "^1.0.7"
 	}
 }
