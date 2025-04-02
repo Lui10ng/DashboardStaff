@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { dndzone } from 'svelte-dnd-action';
-	import Icon from '@iconify/svelte';
 	import type { FormData, FormField, FieldType } from './types';
 	import FormFieldComponent from './components/FormField.svelte';
 	import { formStore } from '$lib/stores/form.svelte.ts';
