@@ -30,4 +30,8 @@ export default defineConfig({
 			}
 		]
 	}
+	// server: {
+	// 	host: '192.168.0.146',
+	// 	port: 4000
+	// }
 });

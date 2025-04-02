@@ -148,6 +148,24 @@ export const events = [
 		status: 'Upcoming',
 		tickets: { sold: 0, total: 500 },
 		image: 'https://veent.s3.ap-southeast-1.amazonaws.com/media/arou56pj4tsdx1yilpge.jpg'
+	},
+	{
+		id: '5',
+		title: 'Music gwapo',
+		location: 'Los Angeles',
+		date: 'Apr 20, 2024',
+		status: 'Upcoming',
+		tickets: { sold: 0, total: 500 },
+		image: 'https://veent.s3.ap-southeast-1.amazonaws.com/media/arou56pj4tsdx1yilpge.jpg'
+	},
+	{
+		id: '6',
+		title: 'Music gwapo',
+		location: 'Los Angeles',
+		date: 'Apr 20, 2024',
+		status: 'Upcoming',
+		tickets: { sold: 0, total: 500 },
+		image: 'https://veent.s3.ap-southeast-1.amazonaws.com/media/arou56pj4tsdx1yilpge.jpg'
 	}
 ];
 
