@@ -2,24 +2,50 @@
 	import panzoom from 'panzoom';
 	import { onMount } from 'svelte';
 	import '../../lib/styles/seatVisualizer/seat-visualizer.css';
-	// @ts-ignore
-	import seatsObj from '$lib/data/seats.json';
 
 	let seatContainer: HTMLElement;
 	let selectedSeats: string[] = [];
 	let ticketQuantity = 2;
 	let showWarning = false;
+	let seats: Seat[] = [];
+	let isLoading = false;
 
 	type Seat = {
 		seatName: string;
 		paid: boolean;
 	};
 
-	let seats: Seat[] = Object.entries(seatsObj).map(([seatName, details]) => ({
-		seatName,
-		paid: (details as { paid?: boolean }).paid || false,
-		...(typeof details === 'object' ? details : {})
-	}));
+	async function fetchSeats() {
+		isLoading = true;
+		try {
+			const response = await fetch('http://localhost:3000/api/seats');
+			const data = await response.json();
+			
+			const seatsObj = data.docs[0]?.seats || {};
+			
+			seats = Object.entries(seatsObj).map(([seatName, details]) => ({
+				seatName,
+				paid: (details as { paid?: boolean }).paid || false,
+				...(typeof details === 'object' ? details : {})
+			}));
+
+			groupedSeats = seats.reduce(
+				(acc, seat) => {
+					let rowKey = getRowPrefix(seat.seatName);
+					if (!acc[rowKey]) acc[rowKey] = [];
+					acc[rowKey].push(seat);
+					return acc;
+				},
+				{} as Record<string, Seat[]>
+			);
+
+			columnNumbers = getColumnNumbers(seats);
+		} catch (error) {
+			console.error('Failed to fetch seats:', error);
+		} finally {
+			isLoading = false;
+		}
+	}
 
 	function getRowPrefix(seatName: string): string {
 		let match = seatName.match(/^[a-zA-Z]+/);
@@ -35,62 +61,24 @@
 		return Array.from(numbers).sort((a, b) => a - b);
 	}
 
-	let groupedSeats = seats.reduce(
-		(acc, seat) => {
-			let rowKey = getRowPrefix(seat.seatName);
-			if (!acc[rowKey]) acc[rowKey] = [];
-			acc[rowKey].push(seat);
-			return acc;
-		},
-		{} as Record<string, Seat[]>
-	);
-
-	let columnNumbers = getColumnNumbers(seats);
-
-	function handleSeatClick(seat: Seat) {
-		if (seat.paid) return;
-
-		const seatIndex = selectedSeats.indexOf(seat.seatName);
-		if (seatIndex > -1) {
-			selectedSeats = selectedSeats.filter((s) => s !== seat.seatName);
-		} else if (selectedSeats.length < ticketQuantity) {
-			selectedSeats = [...selectedSeats, seat.seatName];
-		}
-
-		showWarning = selectedSeats.length !== ticketQuantity;
-	}
-
-	function handleQuantityChange(newQuantity: number) {
-		ticketQuantity = newQuantity;
-		if (selectedSeats.length > ticketQuantity) {
-			selectedSeats = selectedSeats.slice(0, ticketQuantity);
-		}
-		showWarning = selectedSeats.length !== ticketQuantity;
-	}
-
-	function incrementQuantity() {
-		if (ticketQuantity < 10) {
-			handleQuantityChange(ticketQuantity + 1);
-		}
-	}
-
-	function decrementQuantity() {
-		if (ticketQuantity > 1) {
-			handleQuantityChange(ticketQuantity - 1);
-		}
-	}
+	let groupedSeats: Record<string, Seat[]> = {};
+	let columnNumbers: number[] = [];
 
 	async function refreshSeatData() {
 		try {
-			console.log('Refreshing seat data...');
+			await fetchSeats();
+			console.log('Seat data refreshed successfully');
 		} catch (error) {
 			console.error('Failed to refresh seat data:', error);
 		}
 	}
 
 	onMount(() => {
-		const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+		(async () => {
+			await fetchSeats();
+		})();
 
+		const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 		const panZoomInstance = panzoom(seatContainer, {
 			maxZoom: 5,
 			minZoom: 1,
@@ -179,6 +167,39 @@
 			panZoomInstance.dispose();
 		};
 	});
+
+	function handleSeatClick(seat: Seat) {
+		if (seat.paid) return;
+
+		const seatIndex = selectedSeats.indexOf(seat.seatName);
+		if (seatIndex > -1) {
+			selectedSeats = selectedSeats.filter((s) => s !== seat.seatName);
+		} else if (selectedSeats.length < ticketQuantity) {
+			selectedSeats = [...selectedSeats, seat.seatName];
+		}
+
+		showWarning = selectedSeats.length !== ticketQuantity;
+	}
+
+	function handleQuantityChange(newQuantity: number) {
+		ticketQuantity = newQuantity;
+		if (selectedSeats.length > ticketQuantity) {
+			selectedSeats = selectedSeats.slice(0, ticketQuantity);
+		}
+		showWarning = selectedSeats.length !== ticketQuantity;
+	}
+
+	function incrementQuantity() {
+		if (ticketQuantity < 10) {
+			handleQuantityChange(ticketQuantity + 1);
+		}
+	}
+
+	function decrementQuantity() {
+		if (ticketQuantity > 1) {
+			handleQuantityChange(ticketQuantity - 1);
+		}
+	}
 </script>
 
 <div class="min-h-screen bg-gray-50 p-4">
@@ -225,17 +246,23 @@
 			</div>
 		{/if}
 
-		<!-- <button
+		<button
 			class="mb-6 flex w-full transform items-center justify-center gap-2 rounded-xl bg-blue-500
                        px-8 py-4 text-base font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-blue-600"
 			on:click={refreshSeatData}
 		>
 			Refresh Seat Availability
-		</button> -->
+		</button>
 
 		<div class="my-15 text-center">
 			<span class="text-2xl font-bold text-gray-800">STAGE</span>
 		</div>
+
+		{#if isLoading}
+			<div class="flex justify-center p-4">
+				<div class="h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent"></div>
+			</div>
+		{/if}
 
 		<div class="seat-layout">
 			<div bind:this={seatContainer} class="grid">
