@@ -6,12 +6,13 @@
 	import { formatDateTime } from '$lib/utils';
 	import { browser } from '$app/environment';
 	import { Modal } from '@skeletonlabs/skeleton-svelte';
+	import { regions } from '$lib/static/constant.js';
 
 	let { data } = $props();
 	let currentTab = $state('tab-0');
 	let openState = $state(false);
-	let name = $state('');
 	let timeRemaining = $state();
+	let cities: any = $state([]);
 
 	const { form, errors, enhance, delayed, message } = superForm(data.form, {
 		dataType: 'json'
@@ -101,6 +102,11 @@
 
 	const modalClose = () => {
 		openState = false;
+	};
+
+	const updateCities = (selectedregion: string) => {
+		const selectedRegionObj = regions.find((region) => region.name === selectedregion);
+		cities = selectedRegionObj ? selectedRegionObj.cities : [];
 	};
 </script>
 
@@ -361,7 +367,7 @@
 				{/if}
 
 				<form
-					class="bg-secondary-300 dark:bg-surface-700 mx-auto max-w-xl space-y-5 rounded-xl p-5 text-white sm:p-10"
+					class="bg-secondary-300 dark:bg-surface-700 mx-auto max-w-lg space-y-5 rounded-xl p-5 text-white sm:p-10"
 					action="?/register"
 					method="POST"
 					use:enhance
@@ -422,19 +428,128 @@
 							{#each $form.tabs as _, i}
 								<Tabs.Panel value={`tab-${i}`}>
 									<div class="space-y-5">
-										{#each formBuilder as field}
+										{#each formBuilder as field, index}
 											<div class="flex flex-col">
-												{field.label}
-												<input
-													class="rounded-lg border px-4 py-2 outline-none {$errors.tabs?.[i]?.[
-														field.name
-													]
-														? 'border-primary text-red-500'
-														: ''}"
-													type="text"
-													data-invalid={$errors.tabs?.[i]?.[field.name]}
-													bind:value={$form.tabs[i][field.name]}
-												/>
+												{#if index > 0}
+													<hr class="border-surface-800" />
+												{/if}
+												{#if field.name == 'region'}
+													<div class="mb-4">
+														<label for={field.name} class="block">{field.label}</label>
+														<select
+															id={field.name}
+															bind:value={$form.tabs[i][field.name]}
+															onchange={() => {
+																updateCities($form.tabs[i][field.name]);
+															}}
+															class="bg-surface-50 text-surface-900 mt-1 w-full rounded-md border p-2"
+														>
+															{#each regions as { number, name }}
+																<option value={name}>{`Region ${number} - ${name}`}</option>
+															{/each}
+														</select>
+													</div>
+												{:else if field.name == 'city'}
+													<div class="mb-4">
+														<label for={field.name} class="block">{field.label}</label>
+														<select
+															id={field.name}
+															bind:value={$form.tabs[i][field.name]}
+															class="bg-surface-50 text-surface-900 mt-1 w-full rounded-md border p-2"
+														>
+															{#each cities as city}
+																<option value={city}>{city}</option>
+															{/each}
+														</select>
+													</div>
+												{:else if field.fieldType == 'checkbox'}
+													<label class="flex items-center gap-2 capitalize" for={field.name}>
+														<input
+															class="size-4 cursor-pointer rounded-lg border px-4 py-2 outline-none {$errors
+																.tabs?.[i]?.[field.name]
+																? 'border-primary text-red-500'
+																: ''}"
+															type="checkbox"
+															data-invalid={$errors.tabs?.[i]?.[field.name]}
+															bind:checked={$form.tabs[i][field.name]}
+														/>
+														{field.label}
+													</label>
+												{:else if field.fieldType == 'radio'}
+													<div class="mb-4">
+														<label for={field.name} class="font-bold capitalize"
+															>{field.label}</label
+														>
+														<div class="grid grid-cols-2 gap-2">
+															{#each JSON.parse(field.radioInputs) as radioInput}
+																<label class="flex items-center gap-2">
+																	<input
+																		class="size-4 cursor-pointer"
+																		type="radio"
+																		name={field.name}
+																		value={radioInput}
+																	/>
+																	{radioInput}
+																</label>
+															{/each}
+														</div>
+													</div>
+												{:else if field.fieldType == 'dropdown'}
+													<div class="mb-4">
+														<label for={field.name} class="font-bold">{field.label}</label>
+														<select
+															name={field.name}
+															bind:value={$form.tabs[i][field.name]}
+															class="bg-surface-50 text-surface-900 mt-1 w-full rounded-md border p-2"
+														>
+															{#each JSON.parse(field.radioInputs) as radioInput}
+																<option value={radioInput}>{radioInput}</option>
+															{/each}
+														</select>
+													</div>
+												{:else if field.fieldType == 'textArea'}
+													<div class="mb-4">
+														<label for={field.name} class="block"
+															>{field.label}
+															<textarea
+																bind:value={$form.tabs[i][field.name]}
+																id={field.name}
+																name={field.name}
+																class="bg-surface-50 text-surface-900 mt-1 w-full rounded-lg border p-2"
+																placeholder={field.label}
+																required
+															></textarea>
+														</label>
+													</div>
+												{:else if field.fieldType == 'date'}
+													<div class="mb-4">
+														<label for={field.name} class="block"
+															>{field.label}
+															<input
+																bind:value={$form.tabs[i][field.name]}
+																type="date"
+																id={field.name}
+																name={field.name}
+																class="bg-surface-50 text-surface-900 mt-1 w-full rounded-lg border p-2"
+																placeholder={field.label}
+																required
+															/>
+														</label>
+													</div>
+												{:else}
+													{field.label}
+													<input
+														class="text-surface-950 rounded-lg border bg-white px-4 py-2 outline-none {$errors
+															.tabs?.[i]?.[field.name]
+															? 'border-primary text-red-500'
+															: ''}"
+														type="text"
+														data-invalid={$errors.tabs?.[i]?.[field.name]}
+														bind:value={$form.tabs[i][field.name]}
+														required
+													/>
+												{/if}
+
 												{#if $errors.tabs?.[i]?.[field.name]}
 													<span class="text-sm text-red-500">{$errors.tabs[i][field.name]}</span>
 												{/if}
