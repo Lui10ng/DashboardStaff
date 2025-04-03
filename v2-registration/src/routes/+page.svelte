@@ -12,7 +12,7 @@
 	let currentTab = $state('tab-0');
 	let openState = $state(false);
 	let timeRemaining = $state();
-	let cities: any = $state([]);
+	let cities = $state([]);
 
 	const { form, errors, enhance, delayed, message } = superForm(data.form, {
 		dataType: 'json'
