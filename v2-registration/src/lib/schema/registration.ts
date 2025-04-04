@@ -7,6 +7,11 @@ export const registration = (fields: any): any => {
 			z_object_fields[field.name] = z.string().email();
 			continue;
 		}
+		if (field.fieldType == 'checkbox') {
+			z_object_fields[field.name] = z.boolean();
+			continue;
+		}
+
 		z_object_fields[field.name] = z.string().min(1);
 	}
 	z_object_fields['payment'] = z.any();

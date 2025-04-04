@@ -488,6 +488,8 @@
 																		type="radio"
 																		name={field.name}
 																		value={radioInput}
+																		data-invalid={$errors.tabs?.[i]?.[field.name]}
+																		bind:group={$form.tabs[i][field.name]}
 																	/>
 																	{radioInput}
 																</label>
@@ -517,7 +519,6 @@
 																name={field.name}
 																class="bg-surface-50 text-surface-900 mt-1 w-full rounded-lg border p-2"
 																placeholder={field.label}
-																required
 															></textarea>
 														</label>
 													</div>
@@ -532,7 +533,6 @@
 																name={field.name}
 																class="bg-surface-50 text-surface-900 mt-1 w-full rounded-lg border p-2"
 																placeholder={field.label}
-																required
 															/>
 														</label>
 													</div>
@@ -546,7 +546,6 @@
 														type="text"
 														data-invalid={$errors.tabs?.[i]?.[field.name]}
 														bind:value={$form.tabs[i][field.name]}
-														required
 													/>
 												{/if}
 
