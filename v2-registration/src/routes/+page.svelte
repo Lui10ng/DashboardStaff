@@ -7,6 +7,7 @@
 	import { browser } from '$app/environment';
 	import { Modal } from '@skeletonlabs/skeleton-svelte';
 	import { regions } from '$lib/static/constant.js';
+	import Tooltip from '$lib/components/Tooltip.svelte';
 
 	let { data } = $props();
 	let currentTab = $state('tab-0');
@@ -22,6 +23,8 @@
 	let eventDetails = $derived(data.eventDetails);
 	let formBuilder = $derived(data.formBuilder);
 	let awsUrl = $derived(data.AWS_URL);
+	let serverTime = $derived(data.serverTime);
+	let ticketDetails = $state();
 
 	message.subscribe(async (msg) => {
 		if (msg) {
@@ -107,6 +110,27 @@
 	const updateCities = (selectedregion: string) => {
 		const selectedRegionObj = regions.find((region) => region.name === selectedregion);
 		cities = selectedRegionObj ? selectedRegionObj.cities : [];
+	};
+
+	const checkTicketValid = (payment: any) => {
+		const from = new Date(payment.from).setHours(0, 0, 0, 0);
+		let to = new Date(payment.to).setHours(0, 0, 0, 0);
+		const currentDate = serverTime.setHours(0, 0, 0, 0);
+
+		if (to < 0) {
+			to = currentDate + 86400000;
+		}
+
+		if (currentDate >= from && currentDate <= to) {
+			return true;
+		} else {
+			return false;
+		}
+	};
+
+	const selectTicket = (ticket: any) => {
+		ticketDetails = ticket;
+		console.log('ticket: ', ticket);
 	};
 </script>
 
@@ -434,7 +458,7 @@
 													<hr class="border-surface-800" />
 												{/if}
 												{#if field.name == 'region'}
-													<div class="mb-4">
+													<div>
 														<label for={field.name} class="block">{field.label}</label>
 														<select
 															id={field.name}
@@ -476,7 +500,7 @@
 														{field.label}
 													</label>
 												{:else if field.fieldType == 'radio'}
-													<div class="mb-4">
+													<div>
 														<label for={field.name} class="font-bold capitalize"
 															>{field.label}</label
 														>
@@ -497,7 +521,7 @@
 														</div>
 													</div>
 												{:else if field.fieldType == 'dropdown'}
-													<div class="mb-4">
+													<div>
 														<label for={field.name} class="font-bold">{field.label}</label>
 														<select
 															name={field.name}
@@ -510,7 +534,7 @@
 														</select>
 													</div>
 												{:else if field.fieldType == 'textArea'}
-													<div class="mb-4">
+													<div>
 														<label for={field.name} class="block"
 															>{field.label}
 															<textarea
@@ -523,7 +547,7 @@
 														</label>
 													</div>
 												{:else if field.fieldType == 'date'}
-													<div class="mb-4">
+													<div>
 														<label for={field.name} class="block"
 															>{field.label}
 															<input
@@ -539,7 +563,7 @@
 												{:else}
 													{field.label}
 													<input
-														class="text-surface-950 rounded-lg border bg-white px-4 py-2 outline-none {$errors
+														class="text-surface-950 bg-surface-50 rounded-lg border px-4 py-2 outline-none {$errors
 															.tabs?.[i]?.[field.name]
 															? 'border-primary text-red-500'
 															: ''}"
@@ -554,6 +578,87 @@
 												{/if}
 											</div>
 										{/each}
+										{#if eventDetails.paymentType.length > 0}
+											<div class="space-y-1">
+												<h1>Select Ticket</h1>
+												<div class="grid grid-cols-2 gap-3">
+													{#each eventDetails.paymentType as ticket}
+														<button
+															onclick={() => {
+																selectTicket(ticket);
+															}}
+															disabled={!ticket.quantity || !checkTicketValid(ticket)}
+															type="button"
+															style="border-color:{ticket.color}; border-left-width: 11px"
+															class="text-tertiary-950 relative rounded-md bg-white p-2 text-left transition-transform duration-150 hover:scale-105 hover:transform {!ticket.quantity ||
+															!checkTicketValid(ticket)
+																? 'cursor-not-allowed'
+																: ''}"
+														>
+															<span class="text-sm">{ticket.label}</span><br />
+															<span class="font-bold">₱{ticket.price}</span>
+
+															{#if !ticket.quantity}
+																<div
+																	class="absolute inset-0 m-2 flex items-center justify-center bg-red-500 text-center font-bold text-white opacity-80 sm:m-3"
+																>
+																	SOLD OUT
+																</div>
+															{/if}
+															{#if !checkTicketValid(ticket)}
+																<div
+																	class="text-surface-50 absolute inset-0 m-2 flex items-center justify-center bg-red-500 text-center text-xs font-bold opacity-80 sm:m-3 sm:text-sm"
+																>
+																	{#if ticket.from != ticket.to}
+																		Only available between {`${String(new Date(ticket.from).getMonth() + 1).padStart(2, '0')}/${String(new Date(ticket.from).getDate()).padStart(2, '0')}/${String(new Date(ticket.from).getFullYear()).slice(2)}`}
+																		and {`${String(new Date(ticket.to).getMonth() + 1).padStart(2, '0')}/${String(new Date(ticket.to).getDate()).padStart(2, '0')}/${String(new Date(ticket.to).getFullYear()).slice(2)}`}
+																	{:else}
+																		Only available on {`${String(new Date(ticket.to).getMonth() + 1).padStart(2, '0')}/${String(new Date(ticket.to).getDate()).padStart(2, '0')}/${String(new Date(ticket.to).getFullYear()).slice(2)}`}
+																	{/if}
+																</div>
+															{/if}
+														</button>
+													{/each}
+												</div>
+											</div>
+											{#if ticketDetails}
+												<div
+													class="text-surface-950 bg-surface-50 rounded-t-lg p-5 text-center text-sm"
+												>
+													<div class="grid grid-cols-3">
+														<div></div>
+														<div class="font-semibold">Voucher</div>
+														<div class="font-semibold">Price</div>
+													</div>
+													<div class="grid grid-cols-3">
+														<div
+															class="rounded-sm bg-white p-1"
+															style="border-color:{ticketDetails.color}; border-left-width: 7px"
+														>
+															{ticketDetails.label}
+														</div>
+														<div></div>
+														<div>₱{ticketDetails.price}</div>
+													</div>
+													<div class="grid grid-cols-3">
+														<div></div>
+														<div class="text-right text-xs">
+															<Tooltip
+																text="*Convenience Fee"
+																content="This small fee helps us keep things running smoothly, ensuring you have a seamless and
+			secure experience every time. Thanks for supporting us!"
+															/>
+														</div>
+														<div class="text-center">₱20</div>
+													</div>
+													<div class="grid grid-cols-3">
+														<div></div>
+														<div>Total</div>
+														<div class="font-semibold">₱320</div>
+													</div>
+												</div>
+											{/if}
+										{/if}
 									</div>
 								</Tabs.Panel>
 							{/each}
@@ -579,6 +684,32 @@
 							{/if}Submit</button
 						>
 					</div>
+					{#if eventDetails.paymentType.length > 0}
+						<div class="space-y-1">
+							<div class="text-center">Accepts the following payments</div>
+							<div class="flex flex-wrap justify-center gap-1 pb-2">
+								<img src="/images/payments/visa.png" class="h-[30px] rounded-xl" alt="visa" />
+								<img
+									src="/images/payments/mastercard.png"
+									class="h-[30px] rounded-xl"
+									alt="mastercard"
+								/>
+								<img src="/images/payments/gcash.png" class="h-[30px] rounded-xl" alt="gcash" />
+								<img src="/images/payments/maya.png" class="h-[30px] rounded-xl" alt="maya" />
+								<img src="/images/payments/grabpay.png" class="h-[30px] rounded-xl" alt="grabpay" />
+								<img
+									src="/images/payments/billease.png"
+									class="h-[30px] rounded-xl"
+									alt="billease"
+								/>
+								<img
+									src="/images/payments/bank-transfer.png"
+									class="h-[30px] rounded-xl"
+									alt="bank-transfer"
+								/>
+							</div>
+						</div>
+					{/if}
 				</form>
 			</div>
 		{/if}

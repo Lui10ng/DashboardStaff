@@ -60,7 +60,9 @@ export const load = async ({ url }) => {
 	const schema = registration(eventDetails.formBuilder);
 	const form = await superValidate(zod(schema));
 
-	return { form, formBuilder, eventDetails, AWS_URL };
+	const serverTime = new Date();
+
+	return { form, formBuilder, eventDetails, AWS_URL, serverTime };
 };
 
 export const actions = {
