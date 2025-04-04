@@ -61,6 +61,7 @@
 		"drizzle-orm": "^0.40.1",
 		"leaflet": "^1.9.4",
 		"leaflet-geosearch": "^4.2.0",
+		"panzoom": "^9.4.3",
 		"postgres": "^3.4.5",
 		"svelte-dnd-action": "^0.9.60",
 		"tailwindcss-animate": "^1.0.7"
