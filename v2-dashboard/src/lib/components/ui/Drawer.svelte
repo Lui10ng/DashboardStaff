@@ -1,54 +1,60 @@
 <script lang="ts">
-	import Button from './Button.svelte';
-	import { fade, fly } from 'svelte/transition';
-	import { cubicInOut } from 'svelte/easing';
+  import { Modal } from '@skeletonlabs/skeleton-svelte';
+  import Button from '$lib/components/ui/Button.svelte';
 
-	let isOpen = $state(true);
+  let {
+    initialDrawerState = false,
+    buttonLabel = "Add Ticket",
+    buttonIcon = "fa-solid fa-plus text-sm",
+    buttonClass = "bg-gray-200 px-4 py-2 rounded-md",
+    title = "Event Title",
+    children
+  } = $props();
+  
+  let drawerState = $state(initialDrawerState);
 
-	const handleDrawer = () => {
-		isOpen = !isOpen;
-	};
+  const handleOpenDrawer = () => {
+    drawerState = true;
+  };
+
+  const handleCloseDrawer = () => {
+    drawerState = false;
+  };
 </script>
 
-{#if isOpen}
-	<div class="relative z-10" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
-		<div
-			class="fixed inset-0 bg-opacity-30 backdrop-blur-[2.8px] transition-opacity"
-			aria-hidden="true"
-			transition:fade={{ duration: 500, easing: cubicInOut }}
-		></div>
+<Button
+  label={buttonLabel}
+  icon={buttonIcon}
+  className={buttonClass}
+  onClick={handleOpenDrawer}
+/>
 
-		<div class="fixed inset-0 overflow-hidden">
-			<div class="absolute inset-0 overflow-hidden">
-				<div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
-					<div
-						class="pointer-events-auto relative w-screen max-w-6xl"
-						transition:fly={{ x: 400, duration: 500, easing: cubicInOut }}
-					>
-						<div
-							class="absolute left-0 top-0 -ml-8 flex pr-2 pt-4 sm:-ml-10 sm:pr-4"
-							transition:fade={{ duration: 500, easing: cubicInOut }}
-						>
-							<Button
-								onClick={handleDrawer}
-								icon="fa-solid fa-xmark"
-								className="bg-primary text-white rounded-lg px-2 py-1"
-							/>
-						</div>
-
-						<div class="flex h-full flex-col overflow-y-scroll bg-white py-6 shadow-xl">
-							<div class="px-4 sm:px-6">
-								<h2 class="text-base font-semibold text-gray-900" id="slide-over-title">
-									Panel title
-								</h2>
-							</div>
-							<div class="relative mt-6 flex-1 px-4 sm:px-6">
-								<p>Hello</p>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-{/if}
+<Modal
+  open={drawerState}
+  onOpenChange={(e) => (drawerState = e.open)}
+  contentBase="bg-white p-4 space-y-4 shadow-xl w-full h-[90vh] rounded-t-xl overflow-y-auto"
+  positionerJustify=""
+  positionerAlign="items-end"
+  positionerPadding=""
+  transitionsPositionerIn={{ y: 600, duration: 200 }}
+  transitionsPositionerOut={{ y: 600, duration: 200 }}
+  backdropClasses="backdrop-blur-md bg-black/20"
+>
+  {#snippet content()}
+    <header class="flex justify-between items-center px-4">
+      
+      <button 
+        type="button" 
+        class="text-gray-500 hover:text-gray-700" 
+        onclick={handleCloseDrawer}
+        aria-label="Close drawer"
+      >
+        <i class="fa-solid fa-xmark text-2xl"></i>
+      </button>
+    </header>
+    <div class="max-w-7xl mx-auto ">
+			<h1 class="text-2xl font-bold">{title}</h1>
+      {@render children()}
+    </div>
+  {/snippet}
+</Modal>
