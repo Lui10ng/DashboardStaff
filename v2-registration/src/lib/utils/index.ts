@@ -21,3 +21,17 @@ export const formatDateTime = (eventStartTime: string, eventEndTime: string) => 
 
 	return { date: formattedStartDate, time: formattedEndDate };
 };
+
+export const getTimeRemaining = (e: any) => {
+	const t = new Date(e).getTime(),
+		n = new Date().getTime(),
+		o = t - n;
+	return o <= 0
+		? { days: 0, hours: 0, minutes: 0, seconds: 0 }
+		: {
+				days: Math.floor(o / (1e3 * 60 * 60 * 24)),
+				hours: Math.floor((o % (1e3 * 60 * 60 * 24)) / (1e3 * 60 * 60)),
+				minutes: Math.floor((o % (1e3 * 60 * 60)) / (1e3 * 60)),
+				seconds: Math.floor((o % (1e3 * 60)) / 1e3)
+			};
+};

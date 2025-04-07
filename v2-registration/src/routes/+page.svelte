@@ -3,7 +3,7 @@
 	import { ProgressRing, type ToastContext } from '@skeletonlabs/skeleton-svelte';
 	import { Tabs } from '@skeletonlabs/skeleton-svelte';
 	import { getContext } from 'svelte';
-	import { formatDateTime } from '$lib/utils';
+	import { formatDateTime, getTimeRemaining } from '$lib/utils';
 	import { browser } from '$app/environment';
 	import { Modal } from '@skeletonlabs/skeleton-svelte';
 	import { regions } from '$lib/static/constant.js';
@@ -25,6 +25,15 @@
 	let awsUrl = $derived(data.AWS_URL);
 	let serverTime = $derived(data.serverTime);
 	let ticketDetails = $state();
+
+	$effect(() => {
+		const favicon = document.querySelector("link[rel='icon']") as HTMLLinkElement;
+
+		if (favicon) {
+			favicon.href = `${awsUrl}${eventDetails.logo.url}`;
+		}
+		document.title = eventDetails.fullEventName;
+	});
 
 	message.subscribe(async (msg) => {
 		if (msg) {
@@ -54,8 +63,9 @@
 		return newTab;
 	});
 
-	const addFormTab = () => {
+	const addFormTab = (index: number) => {
 		$form.tabs = [...$form.tabs, tabData];
+		currentTab = `tab-${index}`;
 	};
 
 	$form.tabs = [...$form.tabs, tabData];
@@ -67,20 +77,6 @@
 		minute: 'numeric',
 		hour12: true
 	});
-
-	const getTimeRemaining = (e: any) => {
-		const t = new Date(e).getTime(),
-			n = new Date().getTime(),
-			o = t - n;
-		return o <= 0
-			? { days: 0, hours: 0, minutes: 0, seconds: 0 }
-			: {
-					days: Math.floor(o / (1e3 * 60 * 60 * 24)),
-					hours: Math.floor((o % (1e3 * 60 * 60 * 24)) / (1e3 * 60 * 60)),
-					minutes: Math.floor((o % (1e3 * 60 * 60)) / (1e3 * 60)),
-					seconds: Math.floor((o % (1e3 * 60)) / 1e3)
-				};
-	};
 
 	timeRemaining = getTimeRemaining(formatTime);
 
@@ -98,8 +94,9 @@
 		}
 	};
 
-	const removeTab = (tabIndex: any) => {
-		console.log('remove tab', tabIndex);
+	const removeTab = (tabIndex: number) => {
+		$form.tabs.splice(tabIndex, 1);
+		$form.tabs = [...$form.tabs];
 		modalClose();
 	};
 
@@ -132,6 +129,10 @@
 		ticketDetails = ticket;
 		console.log('ticket: ', ticket);
 	};
+
+	setInterval(() => {
+		timeRemaining = getTimeRemaining(formatTime);
+	}, 1000);
 </script>
 
 <!-- prevent hydration browser -->
@@ -388,292 +389,311 @@
 					<p class="py-[3rem] text-center text-3xl font-bold">
 						{eventDetails.registerButtonLabel}
 					</p>
-				{/if}
 
-				<form
-					class="bg-secondary-300 dark:bg-surface-700 mx-auto max-w-lg space-y-5 rounded-xl p-5 text-white sm:p-10"
-					action="?/register"
-					method="POST"
-					use:enhance
-				>
-					<Tabs
-						defaultValue={currentTab}
-						value={currentTab}
-						onValueChange={(e) => (currentTab = e.value)}
+					<form
+						class="bg-secondary-300 dark:bg-surface-700 mx-auto max-w-lg space-y-5 rounded-xl p-5 text-white sm:p-10"
+						action="?/register"
+						method="POST"
+						use:enhance
 					>
-						{#snippet list()}
-							{#each $form.tabs as _, i}
-								<Tabs.Control value={`tab-${i}`}>
-									<span class="flex items-center justify-center gap-3"
-										>Tab {i + 1}
-
-										<Modal
-											open={openState}
-											onOpenChange={(e) => (openState = e.open)}
-											triggerBase="btn preset-tonal"
-											contentBase="card bg-surface-100-900 p-5 space-y-4 shadow-xl sm:w-[30rem]"
-											backdropClasses="backdrop-blur-sm"
-										>
-											{#snippet trigger()}
-												<p
-													class="bg-error-500 flex h-2 w-2 items-center justify-center rounded-full p-3 font-semibold"
+						<Tabs
+							defaultValue={currentTab}
+							value={currentTab}
+							onValueChange={(e) => (currentTab = e.value)}
+							listClasses="overflow-x-auto overflow-y-hidden hide-scrollbar"
+							listGap="space-x-0"
+						>
+							{#snippet list()}
+								{#each $form.tabs as _, i}
+									<Tabs.Control
+										value={`tab-${i}`}
+										stateLabelActive="border-t-4 border-x border-primary-500 rounded-b-none"
+										stateLabelInactive="border-b border-surface-50 rounded-b-none w-[4rem] pb-3"
+									>
+										<span>
+											{i + 1}
+											{#if currentTab === `tab-${i}`}
+												<Modal
+													open={openState}
+													onOpenChange={(e) => (openState = e.open)}
+													triggerBase="pl-3 py-1"
+													contentBase="card bg-surface-100-900 p-5 space-y-4 shadow-xl sm:w-[30rem]"
+													backdropClasses="backdrop-blur-sm"
 												>
-													x
-												</p>
-											{/snippet}
-											{#snippet content()}
-												<header class="flex justify-between">
-													<h4 class="h4">Remove Entry</h4>
-												</header>
-												<article>
-													<p class="opacity-60">Are you sure you wish to remove this entry?</p>
-												</article>
-												<footer class="flex justify-end gap-4">
-													<button
-														type="button"
-														class="btn border-surface-500 foc border"
-														onclick={modalClose}>No</button
-													>
-													<button
-														aria-label="Remove entry"
-														type="button"
-														class="btn text-surface-950 bg-white"
-														onclick={() => removeTab(i)}>Yes</button
-													>
-												</footer>
-											{/snippet}
-										</Modal>
-									</span>
+													{#snippet trigger()}
+														<p
+															class="flex h-2 w-2 items-center justify-center rounded-full bg-red-700 p-3 font-semibold"
+														>
+															x
+														</p>
+													{/snippet}
+													{#snippet content()}
+														<header class="flex justify-between">
+															<h4 class="h4">Remove Entry</h4>
+														</header>
+														<article>
+															<p class="opacity-60">Are you sure you wish to remove this entry?</p>
+														</article>
+														<footer class="flex justify-end gap-4">
+															<button
+																type="button"
+																class="btn border-surface-500 foc border"
+																onclick={modalClose}>No</button
+															>
+															<button
+																aria-label="Remove entry"
+																type="button"
+																class="btn text-surface-950 bg-white"
+																onclick={() => removeTab(i)}>Yes</button
+															>
+														</footer>
+													{/snippet}
+												</Modal>
+											{/if}
+										</span>
+									</Tabs.Control>
+								{/each}
+								<Tabs.Control value="add">
+									<button
+										class="bg-surface-50 text-surface-950 rounded-lg px-3 py-2 text-sm"
+										type="button"
+										onclick={() => addFormTab(1)}>Add Registrant</button
+									>
 								</Tabs.Control>
-							{/each}
-						{/snippet}
+							{/snippet}
 
-						{#snippet content()}
-							{#each $form.tabs as _, i}
-								<Tabs.Panel value={`tab-${i}`}>
-									<div class="space-y-5">
-										{#each formBuilder as field, index}
-											<div class="flex flex-col">
-												{#if index > 0}
-													<hr class="border-surface-800" />
-												{/if}
-												{#if field.name == 'region'}
-													<div>
-														<label for={field.name} class="block">{field.label}</label>
-														<select
-															id={field.name}
-															bind:value={$form.tabs[i][field.name]}
-															onchange={() => {
-																updateCities($form.tabs[i][field.name]);
-															}}
-															class="bg-surface-50 text-surface-900 mt-1 w-full rounded-md border p-2"
-														>
-															{#each regions as { number, name }}
-																<option value={name}>{`Region ${number} - ${name}`}</option>
-															{/each}
-														</select>
-													</div>
-												{:else if field.name == 'city'}
-													<div class="mb-4">
-														<label for={field.name} class="block">{field.label}</label>
-														<select
-															id={field.name}
-															bind:value={$form.tabs[i][field.name]}
-															class="bg-surface-50 text-surface-900 mt-1 w-full rounded-md border p-2"
-														>
-															{#each cities as city}
-																<option value={city}>{city}</option>
-															{/each}
-														</select>
-													</div>
-												{:else if field.fieldType == 'checkbox'}
-													<label class="flex items-center gap-2 capitalize" for={field.name}>
+							{#snippet content()}
+								{#each $form.tabs as _, i}
+									<Tabs.Panel value={`tab-${i}`}>
+										<div class="space-y-5">
+											{#each formBuilder as field, index}
+												<div class="flex flex-col">
+													{#if index > 0}
+														<hr class="border-surface-800" />
+													{/if}
+													{#if field.name == 'region'}
+														<div>
+															<label for={field.name} class="block">{field.label}</label>
+															<select
+																id={field.name}
+																bind:value={$form.tabs[i][field.name]}
+																onchange={() => {
+																	updateCities($form.tabs[i][field.name]);
+																}}
+																class="bg-surface-50 text-surface-900 mt-1 w-full rounded-md border p-2"
+															>
+																{#each regions as { number, name }}
+																	<option value={name}>{`Region ${number} - ${name}`}</option>
+																{/each}
+															</select>
+														</div>
+													{:else if field.name == 'city'}
+														<div class="mb-4">
+															<label for={field.name} class="block">{field.label}</label>
+															<select
+																id={field.name}
+																bind:value={$form.tabs[i][field.name]}
+																class="bg-surface-50 text-surface-900 mt-1 w-full rounded-md border p-2"
+															>
+																{#each cities as city}
+																	<option value={city}>{city}</option>
+																{/each}
+															</select>
+														</div>
+													{:else if field.fieldType == 'checkbox'}
+														<label class="flex items-center gap-2 capitalize" for={field.name}>
+															<input
+																class="size-4 cursor-pointer rounded-lg border px-4 py-2 outline-none {$errors
+																	.tabs?.[i]?.[field.name]
+																	? 'border-primary text-red-500'
+																	: ''}"
+																type="checkbox"
+																data-invalid={$errors.tabs?.[i]?.[field.name]}
+																bind:checked={$form.tabs[i][field.name]}
+															/>
+															{field.label}
+														</label>
+													{:else if field.fieldType == 'radio'}
+														<div>
+															<label for={field.name} class="font-bold capitalize"
+																>{field.label}</label
+															>
+															<div class="grid grid-cols-2 gap-2">
+																{#each JSON.parse(field.radioInputs) as radioInput}
+																	<label class="flex items-center gap-2">
+																		<input
+																			class="size-4 cursor-pointer"
+																			type="radio"
+																			name={field.name}
+																			value={radioInput}
+																			data-invalid={$errors.tabs?.[i]?.[field.name]}
+																			bind:group={$form.tabs[i][field.name]}
+																		/>
+																		{radioInput}
+																	</label>
+																{/each}
+															</div>
+														</div>
+													{:else if field.fieldType == 'dropdown'}
+														<div>
+															<label for={field.name} class="font-bold">{field.label}</label>
+															<select
+																name={field.name}
+																bind:value={$form.tabs[i][field.name]}
+																class="bg-surface-50 text-surface-900 mt-1 w-full rounded-md border p-2"
+															>
+																{#each JSON.parse(field.radioInputs) as radioInput}
+																	<option value={radioInput}>{radioInput}</option>
+																{/each}
+															</select>
+														</div>
+													{:else if field.fieldType == 'textArea'}
+														<div>
+															<label for={field.name} class="block"
+																>{field.label}
+																<textarea
+																	bind:value={$form.tabs[i][field.name]}
+																	id={field.name}
+																	name={field.name}
+																	class="bg-surface-50 text-surface-900 mt-1 w-full rounded-lg border p-2"
+																	placeholder={field.label}
+																></textarea>
+															</label>
+														</div>
+													{:else if field.fieldType == 'date'}
+														<div>
+															<label for={field.name} class="block"
+																>{field.label}
+																<input
+																	bind:value={$form.tabs[i][field.name]}
+																	type="date"
+																	id={field.name}
+																	name={field.name}
+																	class="bg-surface-50 text-surface-900 mt-1 w-full rounded-lg border p-2"
+																	placeholder={field.label}
+																/>
+															</label>
+														</div>
+													{:else if field.fieldType == 'json'}
+														{#if eventDetails.paymentType.length > 0}
+															<div class="mb-3 space-y-1">
+																<h1>Select Ticket</h1>
+																<div class="grid grid-cols-2 gap-3">
+																	{#each field.radioInputs as ticket}
+																		<input
+																			type="radio"
+																			name={field.name}
+																			value={ticket.id}
+																			bind:group={$form.tabs[i][field.name]}
+																			class="hidden"
+																		/>
+																		<button
+																			onclick={() => {
+																				selectTicket(ticket);
+																				$form.tabs[i][field.name] = ticket.id;
+																			}}
+																			disabled={!ticket.quantity || !checkTicketValid(ticket)}
+																			type="button"
+																			style="border-color:{ticket.color}; border-left-width: 11px"
+																			class="text-tertiary-950 relative rounded-md bg-white p-2 text-left transition-transform duration-150 hover:scale-105 hover:transform {!ticket.quantity ||
+																			!checkTicketValid(ticket)
+																				? 'cursor-not-allowed'
+																				: ''}"
+																		>
+																			<span class="text-sm">{ticket.label}</span><br />
+																			<span class="font-bold">₱{ticket.price}</span>
+
+																			{#if !ticket.quantity}
+																				<div
+																					class="absolute inset-0 m-2 flex items-center justify-center bg-red-500 text-center font-bold text-white opacity-80 sm:m-3"
+																				>
+																					SOLD OUT
+																				</div>
+																			{:else if !checkTicketValid(ticket)}
+																				<div
+																					class="text-surface-50 absolute inset-0 m-2 flex items-center justify-center bg-red-500 text-center text-xs font-bold opacity-80 sm:m-3 sm:text-sm"
+																				>
+																					{#if ticket.from != ticket.to}
+																						Only available between {`${String(new Date(ticket.from).getMonth() + 1).padStart(2, '0')}/${String(new Date(ticket.from).getDate()).padStart(2, '0')}/${String(new Date(ticket.from).getFullYear()).slice(2)}`}
+																						and {`${String(new Date(ticket.to).getMonth() + 1).padStart(2, '0')}/${String(new Date(ticket.to).getDate()).padStart(2, '0')}/${String(new Date(ticket.to).getFullYear()).slice(2)}`}
+																					{:else}
+																						Only available on {`${String(new Date(ticket.to).getMonth() + 1).padStart(2, '0')}/${String(new Date(ticket.to).getDate()).padStart(2, '0')}/${String(new Date(ticket.to).getFullYear()).slice(2)}`}
+																					{/if}
+																				</div>
+																			{/if}
+																		</button>
+																	{/each}
+																</div>
+															</div>
+															{#if ticketDetails}
+																<div
+																	class="text-surface-950 bg-surface-50 rounded-t-lg p-5 text-center text-sm"
+																>
+																	<div class="grid grid-cols-3">
+																		<div></div>
+																		<div class="text-left font-semibold">Voucher</div>
+																		<div class="text-right font-semibold">Price</div>
+																	</div>
+																	<div class="grid grid-cols-3 gap-20">
+																		<div
+																			class="rounded-sm bg-white p-1"
+																			style="border-color:{ticketDetails.color}; border-left-width: 7px"
+																		>
+																			{ticketDetails?.label}
+																		</div>
+																		<div></div>
+																		<div class="text-right">₱{ticketDetails.price}</div>
+																	</div>
+																	<div class="grid grid-cols-3">
+																		<div></div>
+																		<div class="text-left text-xs">
+																			<Tooltip
+																				text="*Convenience Fee"
+																				content="This small fee helps us keep things running smoothly, ensuring you have a seamless and
+																		 secure experience every time. Thanks for supporting us!"
+																			/>
+																		</div>
+																		<div class="text-right">₱20</div>
+																	</div>
+																	<div class="grid grid-cols-3">
+																		<div></div>
+																		<div class="text-left">Total</div>
+																		<div class="text-right font-semibold">₱320</div>
+																	</div>
+																</div>
+															{/if}
+														{/if}
+													{:else}
+														{field.label}
 														<input
-															class="size-4 cursor-pointer rounded-lg border px-4 py-2 outline-none {$errors
+															class="text-surface-950 bg-surface-50 rounded-lg border px-4 py-2 outline-none {$errors
 																.tabs?.[i]?.[field.name]
 																? 'border-primary text-red-500'
 																: ''}"
-															type="checkbox"
+															type="text"
 															data-invalid={$errors.tabs?.[i]?.[field.name]}
-															bind:checked={$form.tabs[i][field.name]}
-														/>
-														{field.label}
-													</label>
-												{:else if field.fieldType == 'radio'}
-													<div>
-														<label for={field.name} class="font-bold capitalize"
-															>{field.label}</label
-														>
-														<div class="grid grid-cols-2 gap-2">
-															{#each JSON.parse(field.radioInputs) as radioInput}
-																<label class="flex items-center gap-2">
-																	<input
-																		class="size-4 cursor-pointer"
-																		type="radio"
-																		name={field.name}
-																		value={radioInput}
-																		data-invalid={$errors.tabs?.[i]?.[field.name]}
-																		bind:group={$form.tabs[i][field.name]}
-																	/>
-																	{radioInput}
-																</label>
-															{/each}
-														</div>
-													</div>
-												{:else if field.fieldType == 'dropdown'}
-													<div>
-														<label for={field.name} class="font-bold">{field.label}</label>
-														<select
-															name={field.name}
 															bind:value={$form.tabs[i][field.name]}
-															class="bg-surface-50 text-surface-900 mt-1 w-full rounded-md border p-2"
-														>
-															{#each JSON.parse(field.radioInputs) as radioInput}
-																<option value={radioInput}>{radioInput}</option>
-															{/each}
-														</select>
-													</div>
-												{:else if field.fieldType == 'textArea'}
-													<div>
-														<label for={field.name} class="block"
-															>{field.label}
-															<textarea
-																bind:value={$form.tabs[i][field.name]}
-																id={field.name}
-																name={field.name}
-																class="bg-surface-50 text-surface-900 mt-1 w-full rounded-lg border p-2"
-																placeholder={field.label}
-															></textarea>
-														</label>
-													</div>
-												{:else if field.fieldType == 'date'}
-													<div>
-														<label for={field.name} class="block"
-															>{field.label}
-															<input
-																bind:value={$form.tabs[i][field.name]}
-																type="date"
-																id={field.name}
-																name={field.name}
-																class="bg-surface-50 text-surface-900 mt-1 w-full rounded-lg border p-2"
-																placeholder={field.label}
-															/>
-														</label>
-													</div>
-												{:else}
-													{field.label}
-													<input
-														class="text-surface-950 bg-surface-50 rounded-lg border px-4 py-2 outline-none {$errors
-															.tabs?.[i]?.[field.name]
-															? 'border-primary text-red-500'
-															: ''}"
-														type="text"
-														data-invalid={$errors.tabs?.[i]?.[field.name]}
-														bind:value={$form.tabs[i][field.name]}
-													/>
-												{/if}
+														/>
+													{/if}
 
-												{#if $errors.tabs?.[i]?.[field.name]}
-													<span class="text-sm text-red-500">{$errors.tabs[i][field.name]}</span>
-												{/if}
-											</div>
-										{/each}
-										{#if eventDetails.paymentType.length > 0}
-											<div class="space-y-1">
-												<h1>Select Ticket</h1>
-												<div class="grid grid-cols-2 gap-3">
-													{#each eventDetails.paymentType as ticket}
-														<button
-															onclick={() => {
-																selectTicket(ticket);
-															}}
-															disabled={!ticket.quantity || !checkTicketValid(ticket)}
-															type="button"
-															style="border-color:{ticket.color}; border-left-width: 11px"
-															class="text-tertiary-950 relative rounded-md bg-white p-2 text-left transition-transform duration-150 hover:scale-105 hover:transform {!ticket.quantity ||
-															!checkTicketValid(ticket)
-																? 'cursor-not-allowed'
-																: ''}"
-														>
-															<span class="text-sm">{ticket.label}</span><br />
-															<span class="font-bold">₱{ticket.price}</span>
-
-															{#if !ticket.quantity}
-																<div
-																	class="absolute inset-0 m-2 flex items-center justify-center bg-red-500 text-center font-bold text-white opacity-80 sm:m-3"
-																>
-																	SOLD OUT
-																</div>
-															{/if}
-															{#if !checkTicketValid(ticket)}
-																<div
-																	class="text-surface-50 absolute inset-0 m-2 flex items-center justify-center bg-red-500 text-center text-xs font-bold opacity-80 sm:m-3 sm:text-sm"
-																>
-																	{#if ticket.from != ticket.to}
-																		Only available between {`${String(new Date(ticket.from).getMonth() + 1).padStart(2, '0')}/${String(new Date(ticket.from).getDate()).padStart(2, '0')}/${String(new Date(ticket.from).getFullYear()).slice(2)}`}
-																		and {`${String(new Date(ticket.to).getMonth() + 1).padStart(2, '0')}/${String(new Date(ticket.to).getDate()).padStart(2, '0')}/${String(new Date(ticket.to).getFullYear()).slice(2)}`}
-																	{:else}
-																		Only available on {`${String(new Date(ticket.to).getMonth() + 1).padStart(2, '0')}/${String(new Date(ticket.to).getDate()).padStart(2, '0')}/${String(new Date(ticket.to).getFullYear()).slice(2)}`}
-																	{/if}
-																</div>
-															{/if}
-														</button>
-													{/each}
-												</div>
-											</div>
-											{#if ticketDetails}
-												<div
-													class="text-surface-950 bg-surface-50 rounded-t-lg p-5 text-center text-sm"
-												>
-													<div class="grid grid-cols-3">
-														<div></div>
-														<div class="font-semibold">Voucher</div>
-														<div class="font-semibold">Price</div>
-													</div>
-													<div class="grid grid-cols-3">
-														<div
-															class="rounded-sm bg-white p-1"
-															style="border-color:{ticketDetails.color}; border-left-width: 7px"
-														>
-															{ticketDetails.label}
+													{#if $errors.tabs?.[i]?.[field.name]}
+														<div class="mt-1">
+															<span class="bg-surface-200 rounded-md p-2 text-xs text-red-800"
+																>{$errors.tabs[i][field.name]}</span
+															>
 														</div>
-														<div></div>
-														<div>₱{ticketDetails.price}</div>
-													</div>
-													<div class="grid grid-cols-3">
-														<div></div>
-														<div class="text-right text-xs">
-															<Tooltip
-																text="*Convenience Fee"
-																content="This small fee helps us keep things running smoothly, ensuring you have a seamless and
-			secure experience every time. Thanks for supporting us!"
-															/>
-														</div>
-														<div class="text-center">₱20</div>
-													</div>
-													<div class="grid grid-cols-3">
-														<div></div>
-														<div>Total</div>
-														<div class="font-semibold">₱320</div>
-													</div>
+													{/if}
 												</div>
-											{/if}
-										{/if}
-									</div>
-								</Tabs.Panel>
-							{/each}
-						{/snippet}
-					</Tabs>
+											{/each}
+										</div>
+									</Tabs.Panel>
+								{/each}
+							{/snippet}
+						</Tabs>
 
-					<div class="mt-5 flex items-center justify-center gap-5">
-						<button
-							class="rounded-lg bg-blue-400 px-3 py-2 text-white"
-							type="button"
-							onclick={addFormTab}>Add Tab</button
-						>
 						<button
 							type="submit"
-							class="bg-primary-500 flex items-center gap-2 rounded-lg px-4 py-2 text-white"
+							class="bg-primary-500 flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-white"
 							>{#if $delayed}
 								<ProgressRing
 									value={null}
@@ -683,34 +703,43 @@
 								/>
 							{/if}Submit</button
 						>
-					</div>
-					{#if eventDetails.paymentType.length > 0}
-						<div class="space-y-1">
-							<div class="text-center">Accepts the following payments</div>
-							<div class="flex flex-wrap justify-center gap-1 pb-2">
-								<img src="/images/payments/visa.png" class="h-[30px] rounded-xl" alt="visa" />
-								<img
-									src="/images/payments/mastercard.png"
-									class="h-[30px] rounded-xl"
-									alt="mastercard"
-								/>
-								<img src="/images/payments/gcash.png" class="h-[30px] rounded-xl" alt="gcash" />
-								<img src="/images/payments/maya.png" class="h-[30px] rounded-xl" alt="maya" />
-								<img src="/images/payments/grabpay.png" class="h-[30px] rounded-xl" alt="grabpay" />
-								<img
-									src="/images/payments/billease.png"
-									class="h-[30px] rounded-xl"
-									alt="billease"
-								/>
-								<img
-									src="/images/payments/bank-transfer.png"
-									class="h-[30px] rounded-xl"
-									alt="bank-transfer"
-								/>
+
+						{#if eventDetails.paymentType.length > 0}
+							<div class="space-y-1">
+								<div class="text-center">Accepts the following payments</div>
+								<div class="flex flex-wrap justify-center gap-1">
+									<img src="/images/payments/visa.png" class="h-[30px] rounded-xl" alt="visa" />
+									<img
+										src="/images/payments/mastercard.png"
+										class="h-[30px] rounded-xl"
+										alt="mastercard"
+									/>
+									<img src="/images/payments/gcash.png" class="h-[30px] rounded-xl" alt="gcash" />
+									<img src="/images/payments/maya.png" class="h-[30px] rounded-xl" alt="maya" />
+									<img
+										src="/images/payments/grabpay.png"
+										class="h-[30px] rounded-xl"
+										alt="grabpay"
+									/>
+									<img
+										src="/images/payments/billease.png"
+										class="h-[30px] rounded-xl"
+										alt="billease"
+									/>
+									<img
+										src="/images/payments/bank-transfer.png"
+										class="h-[30px] rounded-xl"
+										alt="bank-transfer"
+									/>
+								</div>
 							</div>
-						</div>
-					{/if}
-				</form>
+						{/if}
+					</form>
+				{:else}
+					<h1 class="py-12 text-center text-5xl font-bold">
+						Registration<br />has ended!
+					</h1>
+				{/if}
 			</div>
 		{/if}
 

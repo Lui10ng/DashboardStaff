@@ -57,7 +57,14 @@ export const load = async ({ url }) => {
 
 	const formBuilder = eventDetails.formBuilder;
 
-	const schema = registration(eventDetails.formBuilder);
+	formBuilder.push({
+		name: 'paymentType',
+		fieldType: 'json',
+		label: 'Tickets',
+		radioInputs: eventDetails.paymentType
+	});
+
+	const schema = registration(formBuilder);
 	const form = await superValidate(zod(schema));
 
 	const serverTime = new Date();
