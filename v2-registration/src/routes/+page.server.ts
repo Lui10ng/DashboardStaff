@@ -61,7 +61,7 @@ export const load = async ({ url }) => {
 		name: 'paymentType',
 		fieldType: 'json',
 		label: 'Tickets',
-		radioInputs: eventDetails.paymentType
+		ticketData: eventDetails.paymentType
 	});
 
 	const schema = registration(formBuilder);

@@ -24,7 +24,7 @@
 	let formBuilder = $derived(data.formBuilder);
 	let awsUrl = $derived(data.AWS_URL);
 	let serverTime = $derived(data.serverTime);
-	let ticketDetails = $state();
+	let ticketDetails = $state({});
 
 	$effect(() => {
 		const favicon = document.querySelector("link[rel='icon']") as HTMLLinkElement;
@@ -63,9 +63,9 @@
 		return newTab;
 	});
 
-	const addFormTab = (index: number) => {
+	const addFormTab = () => {
 		$form.tabs = [...$form.tabs, tabData];
-		currentTab = `tab-${index}`;
+		currentTab = `tab-${$form.tabs.length - 1}`;
 	};
 
 	$form.tabs = [...$form.tabs, tabData];
@@ -97,6 +97,12 @@
 	const removeTab = (tabIndex: number) => {
 		$form.tabs.splice(tabIndex, 1);
 		$form.tabs = [...$form.tabs];
+
+		if (tabIndex == 0) {
+			currentTab = `tab-0`;
+		} else {
+			currentTab = `tab-${tabIndex - 1}`;
+		}
 		modalClose();
 	};
 
@@ -125,9 +131,8 @@
 		}
 	};
 
-	const selectTicket = (ticket: any) => {
-		ticketDetails = ticket;
-		console.log('ticket: ', ticket);
+	const selectTicket = (ticket: any, index: number) => {
+		ticketDetails[index] = ticket;
 	};
 
 	setInterval(() => {
@@ -400,18 +405,20 @@
 							defaultValue={currentTab}
 							value={currentTab}
 							onValueChange={(e) => (currentTab = e.value)}
-							listClasses="overflow-x-auto overflow-y-hidden hide-scrollbar"
-							listGap="space-x-0"
+							listClasses="overflow-x-auto hide-scrollbar"
+							listGap="space-x-0 mb-5"
 						>
 							{#snippet list()}
 								{#each $form.tabs as _, i}
 									<Tabs.Control
 										value={`tab-${i}`}
-										stateLabelActive="border-t-4 border-x border-primary-500 rounded-b-none"
-										stateLabelInactive="border-b border-surface-50 rounded-b-none w-[4rem] pb-3"
+										stateLabelActive="bg-primary-500"
+										stateLabelInactive="w-[4rem] border-none"
+										padding="p-0"
 									>
 										<span>
 											{i + 1}
+
 											{#if currentTab === `tab-${i}`}
 												<Modal
 													open={openState}
@@ -453,13 +460,14 @@
 										</span>
 									</Tabs.Control>
 								{/each}
-								<Tabs.Control value="add">
-									<button
-										class="bg-surface-50 text-surface-950 rounded-lg px-3 py-2 text-sm"
-										type="button"
-										onclick={() => addFormTab(1)}>Add Registrant</button
-									>
-								</Tabs.Control>
+
+								<button
+									class="bg-surface-50 text-surface-950 relative ml-3 flex-row items-center rounded-md text-sm"
+									type="button"
+									onclick={() => addFormTab()}
+								>
+									<p class="w-30">Add Registrant</p>
+								</button>
 							{/snippet}
 
 							{#snippet content()}
@@ -524,7 +532,6 @@
 																		<input
 																			class="size-4 cursor-pointer"
 																			type="radio"
-																			name={field.name}
 																			value={radioInput}
 																			data-invalid={$errors.tabs?.[i]?.[field.name]}
 																			bind:group={$form.tabs[i][field.name]}
@@ -579,17 +586,10 @@
 															<div class="mb-3 space-y-1">
 																<h1>Select Ticket</h1>
 																<div class="grid grid-cols-2 gap-3">
-																	{#each field.radioInputs as ticket}
-																		<input
-																			type="radio"
-																			name={field.name}
-																			value={ticket.id}
-																			bind:group={$form.tabs[i][field.name]}
-																			class="hidden"
-																		/>
+																	{#each field.ticketData as ticket}
 																		<button
 																			onclick={() => {
-																				selectTicket(ticket);
+																				selectTicket(ticket, i);
 																				$form.tabs[i][field.name] = ticket.id;
 																			}}
 																			disabled={!ticket.quantity || !checkTicketValid(ticket)}
@@ -600,8 +600,21 @@
 																				? 'cursor-not-allowed'
 																				: ''}"
 																		>
-																			<span class="text-sm">{ticket.label}</span><br />
-																			<span class="font-bold">₱{ticket.price}</span>
+																			<div class="flex items-center justify-between">
+																				<div>
+																					<span class="text-sm">{ticket.label}</span><br />
+																					<span class="font-bold">₱{ticket.price}</span>
+																				</div>
+																				{#if $form.tabs[i][field.name] && $form.tabs[i][field.name].includes(ticket.id)}
+																					<input
+																						class="mr-3 size-4"
+																						type="checkbox"
+																						name={field.name}
+																						value={ticket.id}
+																						bind:checked={$form.tabs[i][field.name]}
+																					/>
+																				{/if}
+																			</div>
 
 																			{#if !ticket.quantity}
 																				<div
@@ -625,7 +638,7 @@
 																	{/each}
 																</div>
 															</div>
-															{#if ticketDetails}
+															{#if ticketDetails[i]}
 																<div
 																	class="text-surface-950 bg-surface-50 rounded-t-lg p-5 text-center text-sm"
 																>
@@ -637,12 +650,13 @@
 																	<div class="grid grid-cols-3 gap-20">
 																		<div
 																			class="rounded-sm bg-white p-1"
-																			style="border-color:{ticketDetails.color}; border-left-width: 7px"
+																			style="border-color:{ticketDetails[i]
+																				.color}; border-left-width: 7px"
 																		>
-																			{ticketDetails?.label}
+																			{ticketDetails[i]?.label}
 																		</div>
 																		<div></div>
-																		<div class="text-right">₱{ticketDetails.price}</div>
+																		<div class="text-right">₱{ticketDetails[i].price}</div>
 																	</div>
 																	<div class="grid grid-cols-3">
 																		<div></div>
@@ -658,7 +672,9 @@
 																	<div class="grid grid-cols-3">
 																		<div></div>
 																		<div class="text-left">Total</div>
-																		<div class="text-right font-semibold">₱320</div>
+																		<div class="text-right font-semibold">
+																			₱{ticketDetails[i].price - 20}
+																		</div>
 																	</div>
 																</div>
 															{/if}
