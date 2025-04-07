@@ -1,16 +1,40 @@
-import { events } from '$lib/stores/data';
 import { message, superValidate } from 'sveltekit-superforms/server';
 import { zod } from 'sveltekit-superforms/adapters';
 import { eventSchema } from '$lib/schema/event';
 import { fail } from 'sveltekit-superforms';
+import { apiClient } from '$lib/services/payload.server.js';
+import { error } from '@sveltejs/kit';
+import { handleSvelteError } from '$lib/utils/errorHandler';
 
-export const load = async () => {
+
+export async function load({ url, fetch: svelteKitFetch }) { 
 	const form = await superValidate(zod(eventSchema));
+	const page = Number(url.searchParams.get('page') || '1');
+	const limit = 1000000;
+	const userID = url.searchParams.get('userId');
+  
+	const params = new URLSearchParams({
+	  'where[createdBy][equals]': `${userID}`,
+	  sort: 'date',
+	  limit: limit.toString(),
+	  page: page.toString(),
+	  depth: '1'
+	});
+  
+	try {
+	  const eventsData = await apiClient.get('/events', params, { fetchInstance: svelteKitFetch });
 
-	return {
-		form,
-		events
-	};
+	  console.log(eventsData);
+
+	  return {
+		events: eventsData,
+		form
+	  };
+	} catch (err: unknown) {
+		const { statusCode, errorMessage } = handleSvelteError(err, 'loading events', 'Failed to load events');
+
+		throw error(statusCode, errorMessage);
+	}
 };
 
 export const actions = {
