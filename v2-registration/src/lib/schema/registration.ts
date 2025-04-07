@@ -12,7 +12,7 @@ export const registration = (fields: any): any => {
 			continue;
 		}
 
-		z_object_fields[field.name] = z.string().min(1);
+		z_object_fields[field.name] = z.string().min(1, `${field.label} should not be empty!`);
 	}
 	z_object_fields['payment'] = z.any();
 	return z.object({
