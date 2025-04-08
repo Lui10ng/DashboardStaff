@@ -5,6 +5,7 @@
 	import Modal from '$lib/components/ui/Modal.svelte';
 	import EmailBlastForm from './modal/EmailBlastForm.svelte';
 	import { registrantStore } from '$lib/stores';
+	import { fly } from 'svelte/transition';
 
 	let { data } = $props();
 
@@ -13,7 +14,7 @@
 	});
 </script>
 
-<div class="space-y-8">
+<div class="space-y-8" in:fly={{ y: -50, duration: 200 }}>
 	<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 		<Card icon="fa-solid fa-users text-blue" iconText="Guests" content="250">
 			<Modal>
