@@ -1,0 +1,89 @@
+# docker-compose.yml (for Local Development with Postgres & Redis)
+services:
+  ####################
+  # Payload CMS App (Development Mode)
+  ####################
+  payload:
+    container_name: v2_payload # Optional: Give the container a predictable name
+    build:
+      context: .
+      dockerfile: Dockerfile # Use your project's Dockerfile
+      target: deps # Optional: Target an earlier stage (like 'deps') from your multi-stage Dockerfile
+                   # This stage should have all node_modules including devDependencies
+    ports:
+      - "3000:3000" # Map host port 3000 to container port 3000
+    volumes:
+      # Mount source code for hot-reloading (critical for dev)
+      - .:/app
+      # Prevent node_modules clobbering (see explanation below)
+      - /app/node_modules
+      # If your build outputs to specific dirs needed by dev server, mount them too (less common)
+      # - /app/dist
+      # - /app/.next
+    # Run the development command from your package.json
+    command: npm run dev # Or: yarn dev
+    env_file:
+      - .env # Load variables from .env file
+    environment:
+      NODE_ENV: development
+      # Use Docker service names for database and redis hostnames
+      # Reads from .env first, uses defaults 'postgres:password@postgres:5432/payload' if not set
+      DATABASE_URI: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-payload}
+      # Reads from .env first, uses default 'redis://redis:6379' if not set
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      PAYLOAD_SECRET: ${PAYLOAD_SECRET:-DEFAULT_PAYLOAD_SECRET_CHANGE_ME}
+      NEXT_PUBLIC_SERVER_URL: http://localhost:3000 # For client-side fetches back to Payload
+      # Add any other development-specific variables here
+    depends_on:
+      # Ensure DB and Redis are healthy before Payload starts
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  ####################
+  # PostgreSQL Database Service
+  ####################
+  postgres:
+    container_name: postgres_dev # Optional: Name container
+    image: postgres:14-alpine # Specific version recommended over latest
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432" # Expose port to host (use var from .env or default 5432)
+    environment:
+      # Reads from .env file OR uses defaults after ':-'
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password} # Set a strong password in .env!
+      POSTGRES_DB: ${POSTGRES_DB:-payload}
+    volumes:
+      # Use a named volume to persist database data across container restarts
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-payload}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  ####################
+  # Redis Service
+  ####################
+  redis:
+    container_name: redis_dev # Optional: Name container
+    image: redis:6-alpine # Specific version recommended over latest
+    ports:
+      - "${REDIS_PORT:-6379}:6379" # Expose port to host (use var from .env or default 6379)
+    volumes:
+      # Use a named volume to persist Redis data (optional but good for queues)
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+# Define named volumes used by the services
+volumes:
+  postgres_data:
+  redis_data:
