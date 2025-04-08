@@ -3,7 +3,7 @@ export const load = async () => {
 };
 
 export const actions = {
-	createStaff: async ({ request }) => {
+	inviteStaff: async ({ request }) => {
 		const data = await request.formData();
 		console.log(data);
 	},
