@@ -5,9 +5,6 @@ import { env } from '$env/dynamic/private';
 import { registration } from '$lib/schema/registration';
 import { AWS_URL } from '$env/static/private';
 
-let eventID = '';
-let createdBy = '';
-let webhook = '';
 let eventDetails: any = null;
 
 export const load = async ({ url }) => {
@@ -17,24 +14,7 @@ export const load = async ({ url }) => {
 	if (
 		hostName.includes('.localhost') ||
 		hostName.includes('.test.com') ||
-		hostName.includes('.veent.co')
-	) {
-		const formsResp = await fetch(
-			`${env.PAYLOAD_PUBLIC_SERVER_URL}/api/events?where[subdomain][equals]=${subdomain}&depth=1`,
-			{
-				method: 'GET'
-			}
-		);
-		eventDetails = await formsResp.json();
-
-		eventDetails = eventDetails.docs[0];
-		eventID = eventDetails.id;
-		createdBy = eventDetails.createdBy;
-
-		if (eventDetails.webhook != undefined || eventDetails.webhook != '') {
-			webhook = eventDetails.webhook;
-		}
-	} else if (
+		hostName.includes('.veent.co') ||
 		hostName.includes('veent-registration.vercel.app') ||
 		hostName.includes('veent-registration-git-staging-veent-team.vercel.app')
 	) {
@@ -46,11 +26,6 @@ export const load = async ({ url }) => {
 		);
 		eventDetails = await formsResp.json();
 		eventDetails = eventDetails.docs[0];
-		eventID = eventDetails.id;
-		createdBy = eventDetails.createdBy;
-		if (eventDetails.webhook != undefined || eventDetails.webhook != '') {
-			webhook = eventDetails.webhook;
-		}
 	} else {
 		// redirect(302, 'https://www.veent.io/');
 	}
@@ -87,34 +62,4 @@ export const actions = {
 
 		return message(form, { success: true, message: 'Registration successful!' });
 	}
-};
-
-const doWebhook = async (webhook: any, form: any) => {
-	// console.log("form.data",form.data);
-	try {
-		if (webhook != '' || webhook != undefined) {
-			// console.log(webhook);
-			const response = await fetch(webhook, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify([form.data])
-			});
-			// console.log(await response.text());
-		}
-	} catch (error) {}
-};
-
-const checkPaymentStatus = async (paymongoSecretKey: string, checkoutID: string) => {
-	const res = await fetch(`https://api.paymongo.com/v1/checkout_sessions/${checkoutID}`, {
-		method: 'GET',
-		headers: {
-			accept: 'application/json',
-			'content-type': 'application/json',
-			authorization: 'Basic ' + paymongoSecretKey
-		}
-	});
-	const checkout_sessions = await res.json();
-	return checkout_sessions;
 };
