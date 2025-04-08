@@ -17,6 +17,7 @@
 	import StatusControls from '$lib/components/seat-generator/StatusControls.svelte';
 	import SeatStats from '$lib/components/seat-generator/SeatStats.svelte';
 	import VenueImageUpload from '$lib/components/seat-generator/VenueImageUpload.svelte';
+	import { fly } from 'svelte/transition';
 
 	$effect(() => {
 		ticketStore.set(data.tickets);
@@ -64,7 +65,7 @@
 	});
 </script>
 
-<div class="space-y-8">
+<div class="space-y-8" in:fly={{ y: -50, duration: 200 }}>
 	<div class="mb-4 flex items-center justify-between">
 		<h2 class="text-xl font-semibold">Tickets</h2>
 		<div class="flex gap-2">

@@ -4,6 +4,7 @@
 	import Drawer from '$lib/components/ui/Drawer.svelte';
 	import { enhance } from '$app/forms';
 	import Button from '$lib/components/ui/Button.svelte';
+	import { fly } from 'svelte/transition';
 
 	const pendingStaffStore = $state(pendingStaffMembers);
 	const staffMembersStore = $state(staffMembers);
@@ -156,8 +157,8 @@
 	}
 </script>
 
-<div class="min-h-screen bg-white">
-	<main class="container mx-auto px-4 pb-6">
+<div class="min-h-screen bg-white" in:fly={{ y: -50, duration: 200 }}>
+	<main class="container pb-6">
 		<hr class="my-6 w-full border-t border-gray-200" />
 
 		<div class="rounded-lg bg-white shadow-sm">

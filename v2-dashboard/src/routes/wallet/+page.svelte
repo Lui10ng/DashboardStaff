@@ -5,6 +5,7 @@
 	import Card from '$lib/components/ui/Card.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
 	import { walletTransactionStore } from '$lib/stores';
+	import { fly } from 'svelte/transition';
 
 	let { data } = $props();
 
@@ -13,7 +14,7 @@
 	});
 </script>
 
-<div class="space-y-8">
+<div class="space-y-8" in:fly={{ y: -50, duration: 200 }}>
 	<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 		<Card icon="fa-solid fa-dollar-sign text-green" iconText="Wallet Balance" content="₱32,550.00">
 			<Modal>
@@ -134,7 +135,7 @@
 				</div>
 			{/each}
 			<div class="pb-5 sm:pb-0">
-				<Pagination total={70} />
+				<Pagination />
 			</div>
 		</div>
 	</div>
