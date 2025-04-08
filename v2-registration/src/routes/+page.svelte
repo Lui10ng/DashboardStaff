@@ -8,12 +8,19 @@
 	import { Modal } from '@skeletonlabs/skeleton-svelte';
 	import { regions } from '$lib/static/constant.js';
 	import Tooltip from '$lib/components/Tooltip.svelte';
+	import type { TicketDetail } from '$lib/types';
 
 	let { data } = $props();
 	let currentTab = $state('tab-0');
 	let openState = $state(false);
-	let timeRemaining = $state();
-	let cities = $state([]);
+	let timeRemaining = $state({
+		days: 0,
+		hours: 0,
+		minutes: 0,
+		seconds: 0
+	});
+
+	let cities: string[] = $state([]);
 
 	const { form, errors, enhance, delayed, message } = superForm(data.form, {
 		dataType: 'json'
@@ -24,7 +31,7 @@
 	let formBuilder = $derived(data.formBuilder);
 	let awsUrl = $derived(data.AWS_URL);
 	let serverTime = $derived(data.serverTime);
-	let ticketDetails = $state({});
+	let ticketDetails = $state<TicketDetail[]>([]);
 
 	$effect(() => {
 		const favicon = document.querySelector("link[rel='icon']") as HTMLLinkElement;
@@ -412,7 +419,7 @@
 								{#each $form.tabs as _, i}
 									<Tabs.Control
 										value={`tab-${i}`}
-										stateLabelActive="bg-primary-500"
+										stateLabelActive="bg-primary-500 rounded-b-none"
 										stateLabelInactive="w-[4rem] border-none"
 										padding="p-0"
 									>
@@ -429,7 +436,7 @@
 												>
 													{#snippet trigger()}
 														<p
-															class="flex h-2 w-2 items-center justify-center rounded-full bg-red-700 p-3 font-semibold"
+															class="flex h-2 w-2 items-center justify-center rounded-full bg-red-800 p-3 font-semibold"
 														>
 															x
 														</p>
@@ -607,7 +614,7 @@
 																				</div>
 																				{#if $form.tabs[i][field.name] && $form.tabs[i][field.name].includes(ticket.id)}
 																					<input
-																						class="mr-3 size-4"
+																						class="mr-1 size-6 accent-white checked:bg-transparent"
 																						type="checkbox"
 																						name={field.name}
 																						value={ticket.id}

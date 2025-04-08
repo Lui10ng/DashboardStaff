@@ -22,7 +22,7 @@ export const formatDateTime = (eventStartTime: string, eventEndTime: string) => 
 	return { date: formattedStartDate, time: formattedEndDate };
 };
 
-export const getTimeRemaining = (e: any) => {
+export const getTimeRemaining = (e: string) => {
 	const t = new Date(e).getTime(),
 		n = new Date().getTime(),
 		o = t - n;
