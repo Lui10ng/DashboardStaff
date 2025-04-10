@@ -22,6 +22,8 @@ export const actions = {
 	createEvent: async ({ request }) => {
 		const data = await request.formData();
 
+		console.log('data: ', data);
+
 		const form = await superValidate(data, zod(eventSchema));
 
 		if (!form.valid) {
