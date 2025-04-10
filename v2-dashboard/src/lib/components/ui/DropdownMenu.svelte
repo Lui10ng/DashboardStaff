@@ -28,7 +28,7 @@
 	<DropdownMenu.Trigger class="{className} inline-flex items-center justify-center">
 		<i class="{icon} flex-shrink-0"></i>
 		{#if buttonText}
-			<span class="ml-2">{buttonText}</span>
+			<span>{buttonText}</span>
 		{/if}
 	</DropdownMenu.Trigger>
 	<DropdownMenu.Portal>
@@ -38,9 +38,9 @@
 				class="space-y-2 rounded-lg border border-red-200 bg-white px-4 py-2 shadow-lg {classMenu}"
 			>
 				{#each items as item}
-					<DropdownMenu.Item 
-						textValue={item} 
-						class="cursor-pointer py-2 px-1 hover:bg-gray-100 rounded transition-colors"
+					<DropdownMenu.Item
+						textValue={item}
+						class="cursor-pointer rounded px-1 py-2 transition-colors hover:bg-gray-100"
 						onSelect={() => handleItemSelect(item)}
 					>
 						{item}

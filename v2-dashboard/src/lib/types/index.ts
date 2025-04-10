@@ -51,6 +51,7 @@ export type CardProps = {
 	icon: string;
 	iconText: string;
 	content: string;
+	children: any;
 };
 
 export type EventProps = {

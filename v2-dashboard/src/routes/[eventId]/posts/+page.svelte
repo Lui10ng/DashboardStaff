@@ -1,8 +1,10 @@
 <script>
 	import { enhance } from '$app/forms';
+	import RichTextEditor from '$lib/components/ui/RichText.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
 	import { fly } from 'svelte/transition';
+	import { Dialog } from 'bits-ui';
 </script>
 
 <div class="space-y-5" in:fly={{ y: -50, duration: 200 }}>
@@ -36,12 +38,16 @@
 						placeholder="Add heading"
 					/>
 				</label>
-				<div class="flex justify-center">
+				<RichTextEditor />
+				<div class="mt-5 flex gap-4">
+					<Dialog.Close class="w-full rounded-md border border-gray-400 bg-gray-300 py-2"
+						>Cancel</Dialog.Close
+					>
 					<Button
 						type="submit"
 						onClick={() => {}}
 						label="Save"
-						className="bg-primary text-white py-2 px-5 rounded-md w-40"
+						className="bg-primary text-white py-2 rounded-md w-full"
 					/>
 				</div>
 			</form>
