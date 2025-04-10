@@ -37,9 +37,9 @@ const Events: CollectionConfig = {
   // Creation/Update/Deletion should be limited to Admins or managing users of the linked Organizer.
   access: {
     // read: isAdminOrPublished, // Example: Public sees published, admin sees all
-    create: ({ req: { user } }) => Boolean(user), // Needs refinement - check roles/organizer link
-    update: ({ req: { user } }) => Boolean(user?.roles?.includes('admin')), // Needs refinement
-    delete: ({ req: { user } }) => Boolean(user?.roles?.includes('admin')), // Needs refinement
+    // create: ({ req: { user } }) => Boolean(user), // Needs refinement - check roles/organizer link
+    // update: ({ req: { user } }) => Boolean(user?.roles?.includes('admin')), // Needs refinement
+    // delete: ({ req: { user } }) => Boolean(user?.roles?.includes('admin')), // Needs refinement
   },
   hooks: {
     // Auto-generate slug from name

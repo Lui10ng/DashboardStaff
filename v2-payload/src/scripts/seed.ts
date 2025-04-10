@@ -49,7 +49,7 @@ const seedData = async (): Promise<void> => {
           email: 'admin@example.com',
           password: 'password', // Use a secure password or env var
           name: 'Admin User',
-          roles: ['admin'],
+          // roles: ['admin'],
         //   _verified: true, // Assuming email verification isn't strictly needed for seeding
         }
       });
@@ -62,7 +62,8 @@ const seedData = async (): Promise<void> => {
     const organizerUser = await payload.create({
       collection: 'users', overrideAccess: true,
       data: {
-        email: 'organizer@example.com', password: 'password', name: 'Event Organizer One', roles: ['organizer'],
+        email: 'organizer@example.com', password: 'password', name: 'Event Organizer One', 
+        // roles: ['organizer'],
       }
     });
     console.log('  - Organizer user created.');
@@ -70,7 +71,8 @@ const seedData = async (): Promise<void> => {
     const attendeeUser = await payload.create({
       collection: 'users', overrideAccess: true,
       data: {
-        email: 'attendee@example.com', password: 'password', name: 'Regular Attendee', roles: ['attendee'],
+        email: 'attendee@example.com', password: 'password', name: 'Regular Attendee', 
+        // roles: ['attendee'],
       }
     });
     console.log('  - Attendee user created.');
@@ -116,7 +118,7 @@ const seedData = async (): Promise<void> => {
     await payload.create({ collection: 'events', overrideAccess: true, data: {
       name: 'Payload & SvelteKit Integration Summit',
       slug: formatSlug('Payload & SvelteKit Integration Summit'),
-      status: 'published',
+      // status: 'published',
       startTime: tomorrow.toISOString(),
       endTime: new Date(tomorrow.getTime() + 8 * 60 * 60 * 1000).toISOString(), // 8 hours later
       description: { // Wrap the content in the root object
@@ -150,7 +152,7 @@ const seedData = async (): Promise<void> => {
       organizer: techConfOrg.id,
       venue: techHubVenue.id,
       category: techCategory.id,
-      seatingType: 'general_admission', // Simple seating for this one
+      // seatingType: 'general_admission', // Simple seating for this one
       // seatMap: null, // No seat map needed for GA
       registrationForm: standardTemplate.id, // Use the standard form
       totalCapacity: 150, // Optional overall capacity
@@ -160,7 +162,7 @@ const seedData = async (): Promise<void> => {
     await payload.create({ collection: 'events', overrideAccess: true, data: {
       name: 'Indie Rock Night',
       slug: formatSlug('Indie Rock Night'),
-      status: 'published',
+      // status: 'published',
       startTime: nextWeek.toISOString(),
       endTime: nextWeekEnd.toISOString(),
       description: { // Wrap the content in the root object
@@ -194,7 +196,7 @@ const seedData = async (): Promise<void> => {
       organizer: techConfOrg.id, // Same organizer for simplicity
       venue: concertHallVenue.id,
       category: musicCategory.id,
-      seatingType: 'general_admission', // Could be 'reserved_seating' if a SeatMap was created and linked
+      // seatingType: 'general_admission', // Could be 'reserved_seating' if a SeatMap was created and linked
       registrationForm: standardTemplate.id, // Use same form template
     }});
     console.log('  - Music event created.');
