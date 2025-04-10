@@ -5,7 +5,8 @@
 		disabled = false,
 		type = 'button' as 'button' | 'submit' | 'reset',
 		icon = '',
-		onClick
+		onClick,
+		children = null
 	} = $props();
 </script>
 
@@ -18,6 +19,9 @@
 	{#if icon}
 		<i class={icon}></i>
 	{/if}
-	<slot />
+	{#if children}
+		{@render children()}
+	{/if}
+
 	{label}
 </button>

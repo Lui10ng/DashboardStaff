@@ -6,6 +6,8 @@
 	import { goto } from '$app/navigation';
 	import { eventListStore } from '$lib/stores/eventList.svelte.ts';
 	import { fly } from 'svelte/transition';
+	import Drawer from '$lib/components/ui/Drawer.svelte';
+	import CreateUpdateEvent from '$lib/components/dataDisplay/CreateUpdateEvent.svelte';
 
 	let { data } = $props();
 
@@ -27,10 +29,6 @@
 
 	const handleEvent = (id: string) => {
 		goto(`${id}/registrants`);
-	};
-
-	const handleCreateEvent = () => {
-		goto('/create');
 	};
 
 	// Pagination state
@@ -102,14 +100,18 @@
 		<h1 class="text-2xl font-semibold sm:text-3xl sm:font-bold">Welcome back, Aero Dev!</h1>
 		<p class="text-gray-500">Manage your events and track their performance</p>
 	</div>
-	<div class="mb-6 flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
-		<Button
-			onClick={handleCreateEvent}
-			label="Create Event"
-			icon="ri-add-line"
-			className="bg-red-600 text-white rounded-lg px-4 py-2 hover:bg-red-700"
-		/>
-	</div>
+	<Drawer
+		contentBaseClass="bg-white p-10 space-y-4 shadow-xl w-full h-[90svh] overflow-y-auto"
+		buttonLabel="Create Event"
+		buttonClass="bg-primary text-white rounded-lg px-4 py-2"
+		buttonIcon="fa-solid fa-plus"
+		justify="justify-end"
+		alignment="items-end"
+		positionIn={{ y: 600, duration: 200 }}
+		positionOut={{ y: 600, duration: 200 }}
+	>
+		<CreateUpdateEvent data={data.form} />
+	</Drawer>
 
 	<div class="overflow-hidden rounded-xl border border-gray-200 shadow-sm">
 		<!-- Event List Items -->
