@@ -1,21 +1,10 @@
 <script lang="ts">
 	import 'leaflet/dist/leaflet.css';
 	import 'leaflet-geosearch/dist/geosearch.css';
-
-	// date picker
-	import AirDatepicker, {
-		type AirDatepickerOptions,
-		type AirDatepickerPosition
-	} from 'air-datepicker';
-	import 'air-datepicker/air-datepicker.css';
-	import localeEn from 'air-datepicker/locale/en';
-
-	import { DEFAULT_DATE_FORMAT } from '$lib/utils/datetime';
-	import RichText from '../ui/RichText.svelte';
-
 	import { FileUpload } from '@skeletonlabs/skeleton-svelte';
 	import { superForm } from 'sveltekit-superforms';
-	import { DatePicker } from 'bits-ui';
+	import DatePicker from '$lib/components/ui/DatePicker.svelte';
+	import RichText from '$lib/components/ui/RichText.svelte';
 
 	let { data } = $props();
 
@@ -27,12 +16,6 @@
 	let isLoadingSuggestions = $state(false);
 	let L: any;
 	let searchTimeout: ReturnType<typeof setTimeout>;
-
-	let startDate = $state('');
-	let endDate = $state('');
-
-	let startDatePicker: AirDatepicker<HTMLElement> | undefined;
-	let endDatePicker: AirDatepicker<HTMLElement> | undefined;
 
 	$effect(async () => {
 		// Initialize map
@@ -48,97 +31,11 @@
 			attribution: '© OpenStreetMap contributors'
 		}).addTo(map);
 
-		// Initialize datepickers
-		const commonOptions: AirDatepickerOptions = {
-			locale: localeEn,
-			dateFormat: DEFAULT_DATE_FORMAT,
-			isMobile: true,
-			autoClose: true,
-			position: 'bottom left' as AirDatepickerPosition,
-			classes: 'custom-datepicker',
-			buttons: [
-				{
-					content: 'Today',
-					onClick: (dp) => {
-						const today = new Date();
-						dp.selectDate(today);
-						dp.setViewDate(today);
-					}
-				},
-				{
-					content: 'Clear',
-					onClick: (dp) => {
-						dp.clear();
-						if (dp.$el.id === 'start-date') {
-							startDate = '';
-						} else if (dp.$el.id === 'end-date') {
-							endDate = '';
-						}
-						dp.hide();
-					}
-				}
-			],
-			minDate: new Date(),
-			onSelect: ({ date }) => {
-				if (!date) return;
-				const formattedDate = date instanceof Date ? date.toISOString().split('T')[0] : '';
-				if (startDatePicker && date === startDatePicker.selectedDates[0]) {
-					startDate = formattedDate;
-				} else if (endDatePicker && date === endDatePicker.selectedDates[0]) {
-					endDate = formattedDate;
-				}
-			}
-		};
-
-		// Initialize start date picker
-		startDatePicker = new AirDatepicker('#start-date', {
-			...commonOptions,
-			onSelect: ({ date }) => {
-				if (!date) return;
-				const selectedDate = date instanceof Date ? date : date[0];
-				startDate = selectedDate.toISOString().split('T')[0];
-
-				// Update end date picker min date
-				if (endDatePicker) {
-					endDatePicker.update({
-						minDate: selectedDate
-					});
-
-					// If end date is before start date, update it
-					const endSelectedDate = endDatePicker.selectedDates[0];
-					if (endSelectedDate && endSelectedDate < selectedDate) {
-						endDatePicker.selectDate(selectedDate);
-					}
-				}
-			}
-		});
-
-		// Initialize end date picker
-		endDatePicker = new AirDatepicker('#end-date', {
-			...commonOptions,
-			onSelect: ({ date }) => {
-				if (!date) return;
-				const selectedDate = date instanceof Date ? date : date[0];
-				endDate = selectedDate.toISOString().split('T')[0];
-			}
-		});
-
-		// Set initial dates if needed
-		if (startDate) {
-			startDatePicker.selectDate(new Date(startDate));
-		}
-		if (endDate) {
-			endDatePicker.selectDate(new Date(endDate));
-		}
-
 		return () => {
 			map.remove();
 			if (searchTimeout) {
 				clearTimeout(searchTimeout);
 			}
-			// Cleanup datepickers
-			startDatePicker?.destroy();
-			endDatePicker?.destroy();
 		};
 	});
 
@@ -275,17 +172,7 @@
 					<label for="startDate" class="text-sm font-medium text-gray-700">Start</label>
 				</div>
 				<div class="grid grid-cols-2 gap-4">
-					<div class="relative">
-						<input
-							id="start-date"
-							type="text"
-							name="startDate"
-							bind:value={$form.startDate}
-							readonly
-							placeholder="Select start date"
-							class="focus:border-blue w-full cursor-pointer appearance-none rounded-xl border border-gray-200 px-4 py-4 text-gray-500 focus:border focus:outline-none"
-						/>
-					</div>
+					<DatePicker name="startDate" />
 					<div class="relative">
 						<label for="startTime" class="sr-only">Start Time</label>
 						<input
@@ -294,7 +181,7 @@
 							name="startTime"
 							value="08:00"
 							placeholder="Select end time"
-							class="w-full appearance-none rounded-xl border border-gray-200 px-4 py-4 text-gray-500 focus:outline-none"
+							class="w-full appearance-none rounded-xl border border-gray-200 px-4 py-3 text-gray-500 focus:outline-none"
 						/>
 					</div>
 				</div>
@@ -310,17 +197,7 @@
 					<label for="endDate" class="text-sm font-medium text-gray-700">End</label>
 				</div>
 				<div class="grid grid-cols-2 gap-4">
-					<div class="relative">
-						<input
-							id="end-date"
-							type="text"
-							name="endDate"
-							bind:value={$form.endDate}
-							readonly
-							placeholder="Select end date"
-							class="focus:border-blue w-full cursor-pointer appearance-none rounded-xl border border-gray-200 px-4 py-4 text-gray-500 focus:border focus:outline-none"
-						/>
-					</div>
+					<DatePicker name="endDate" />
 					<div class="relative">
 						<label for="endTime" class="sr-only">End Time</label>
 						<input
