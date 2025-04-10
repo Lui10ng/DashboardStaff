@@ -20,6 +20,8 @@
 		seconds: 0
 	});
 
+	let bgImage = $state('/images/dummy-bg1.jpg');
+
 	let cities: string[] = $state([]);
 
 	const { form, errors, enhance, delayed, message } = superForm(data.form, {
@@ -191,146 +193,157 @@
 			</nav>
 		</header>
 
-		<div class="mb-5 mt-7 sm:mb-12">
-			<div class="mx-auto grid w-[90%] grid-cols-12 gap-y-8 sm:gap-x-8 lg:w-[75%] 2xl:w-[60%]">
-				<div
-					class="animated-poster order-last col-span-12 flex flex-col justify-between transition-transform
-				 delay-100 duration-500 ease-in-out lg:order-first lg:col-span-6"
-				>
-					<div>
-						{#if eventDetails.eventLogo}
+		<div class= "relative min-h-screen pt-20">
+
+					<div
+						class="absolute inset-0 bg-cover bg-center bg-no-repeat blur-[2px]"
+						style="background-image: url({bgImage}); ;"
+					>
+						<div class="absolute inset-0 bg-[#000000]/80"></div>
+					</div>
+			<div class="relative  mb-5 mt-7 sm:mb-12">
+				<div class="mx-auto grid w-[90%] grid-cols-12 gap-y-8 sm:gap-x-8 lg:w-[75%] 2xl:w-[60%]">
+					<div
+						class="animated-poster order-last col-span-12 flex flex-col justify-between transition-transform
+					delay-100 duration-500 ease-in-out lg:order-first lg:col-span-6"
+					>
+						<div>
+							{#if eventDetails.eventLogo}
+								<img
+									class="w-[270px] py-5"
+									src={awsUrl + eventDetails.eventLogo.url}
+									alt={eventDetails.eventLogo.alt}
+								/>
+							{:else}
+								<h2 class="h2 mb-8 text-3xl 2xl:text-4xl">
+									{eventDetails.fullEventName}
+								</h2>
+							{/if}
+							<p class="text-xl">
+								{#if eventDetails.eventDescription}
+									{@html eventDetails.eventDescription}
+								{:else}
+									Go to your dashboard and add your content here!
+								{/if}
+							</p>
+							<div class="flex max-w-[500px] items-center justify-between gap-3 py-5">
+								{#if eventDetails.disableRegistration}
+									<button class="bg-surface-500 text-surface-50 btn rounded border p-2 px-5 text-2xl">
+										{eventDetails.registerButtonLabel}
+									</button>
+								{/if}
+								{#if eventDetails.donations}
+									{#if eventDetails.disableRegistration}
+										<div>OR</div>
+									{/if}
+
+									<button
+										class="bg-surface-500 text-surface-50 w-full max-w-xs whitespace-normal break-words rounded border p-2 px-5 text-center text-2xl"
+									>
+										{eventDetails.forms.donateButtonText
+											? eventDetails.forms.donateButtonText
+											: 'Donate Now'}
+									</button>
+								{/if}
+							</div>
+						</div>
+
+						<div class="card bg-secondary-100 dark:bg-surface-900 w-full px-5 py-5 sm:px-10 sm:py-7">
+							{#if !eventDetails.noExpiryEvent}
+								<h6 class="font-medium">Date</h6>
+								<h4 class="h4">
+									{formatDateTime(eventDetails.dateTime, eventDetails.dateTimeEnd).date}
+								</h4>
+								<h6 class="font-medium">Time</h6>
+								<h4 class="h4">
+									{formatDateTime(eventDetails.dateTime, eventDetails.dateTimeEnd).time}
+								</h4>
+							{/if}
+							<h6 class="font-medium">Venue</h6>
+							<h4 class="h4">{eventDetails.fullEventAddress}</h4>
+						</div>
+					</div>
+					<div class="col-span-12 lg:col-span-6">
+						{#if eventDetails.poster}
 							<img
-								class="w-[270px] py-5"
-								src={awsUrl + eventDetails.eventLogo.url}
-								alt={eventDetails.eventLogo.alt}
+								class="border-primary-500 min-w-[100%] rounded-md border-2"
+								src={awsUrl + eventDetails.poster.url}
+								alt={eventDetails.poster.alt}
 							/>
 						{:else}
-							<h2 class="h2 mb-8 text-3xl 2xl:text-4xl">
-								{eventDetails.fullEventName}
-							</h2>
+							<img class="min-w-[100%]" src="/defaultPoster.jpg" alt="bg" />
 						{/if}
-						<p class="text-xl">
-							{#if eventDetails.eventDescription}
-								{@html eventDetails.eventDescription}
-							{:else}
-								Go to your dashboard and add your content here!
-							{/if}
-						</p>
-						<div class="flex max-w-[500px] items-center justify-between gap-3 py-5">
-							{#if eventDetails.disableRegistration}
-								<button class="bg-surface-500 text-surface-50 btn rounded border p-2 px-5 text-2xl">
-									{eventDetails.registerButtonLabel}
-								</button>
-							{/if}
-							{#if eventDetails.donations}
-								{#if eventDetails.disableRegistration}
-									<div>OR</div>
-								{/if}
+					</div>
+				</div>
 
-								<button
-									class="bg-surface-500 text-surface-50 w-full max-w-xs whitespace-normal break-words rounded border p-2 px-5 text-center text-2xl"
+				<div class="mt-12 sm:mt-16">
+					<div class="grid grid-cols-12">
+						{#if !eventDetails.noExpiryEvent}
+							{#if timeRemaining['days'] == 0 && timeRemaining['hours'] == 0 && timeRemaining['minutes'] == 0 && timeRemaining['seconds'] == 0}
+								<div
+									class="card bg-secondary-100 dark:bg-tertiary-950 col-span-12 mx-auto inline-flex w-[90%] justify-between rounded-md p-5 px-[10%] text-center text-lg font-bold shadow-2xl sm:py-10 lg:w-[75%] 2xl:w-[60%]"
 								>
-									{eventDetails.forms.donateButtonText
-										? eventDetails.forms.donateButtonText
-										: 'Donate Now'}
-								</button>
+									<h2 class="h2 w-full">Event has started!</h2>
+								</div>
+							{:else}
+								<div
+									class="bg-secondary-100 dark:bg-tertiary-950 card animated-countdown col-span-12 mx-auto inline-flex w-[90%] justify-between p-5 text-center text-lg font-bold shadow-2xl transition-transform delay-100 duration-500 ease-in-out
+						
+						sm:py-10 md:px-[10%] lg:w-[75%] 2xl:w-[60%] 2xl:px-[5%]"
+								>
+									<div class="col-span-4 hidden self-center sm:block">Event starts in</div>
+									<div class="col-span-2">
+										DAYS
+										<div
+											class="bg-primary-500 text-surface-50 mx-auto mt-1 w-[60px] rounded-md px-2 py-2 text-4xl"
+										>
+											{timeRemaining['days']}
+										</div>
+									</div>
+									<div class="col-span-2">
+										HOURS
+										<div
+											class="bg-primary-500 text-surface-50 mx-auto mt-1 w-[60px] rounded-md px-2 py-2 text-4xl"
+										>
+											{timeRemaining['hours']}
+										</div>
+									</div>
+									<div class="col-span-2">
+										MINUTES
+										<div
+											class="bg-primary-500 text-surface-50 mx-auto mt-1 w-[60px] rounded-md px-2 py-2 text-4xl"
+										>
+											{timeRemaining['minutes']}
+										</div>
+									</div>
+									<div class="col-span-2">
+										SECONDS
+										<div
+											class="bg-primary-500 text-surface-50 mx-auto mt-1 w-[60px] rounded-md px-2 py-2 text-4xl"
+										>
+											{timeRemaining['seconds']}
+										</div>
+									</div>
+								</div>
+							{/if}
+						{/if}
+						<div
+							class="animated-description col-span-12 mx-auto mt-10 w-full px-[10%] transition-opacity delay-100
+							
+					duration-1000 ease-in-out md:w-[80%] lg:w-[75%] 2xl:w-[55%]"
+						>
+							{#if eventDetails.eventDescription2}
+								<div class="flex w-full items-center justify-center">
+									{@html eventDetails.eventDescription2}
+								</div>
 							{/if}
 						</div>
 					</div>
-
-					<div class="card bg-secondary-100 dark:bg-surface-900 w-full px-5 py-5 sm:px-10 sm:py-7">
-						{#if !eventDetails.noExpiryEvent}
-							<h6 class="font-medium">Date</h6>
-							<h4 class="h4">
-								{formatDateTime(eventDetails.dateTime, eventDetails.dateTimeEnd).date}
-							</h4>
-							<h6 class="font-medium">Time</h6>
-							<h4 class="h4">
-								{formatDateTime(eventDetails.dateTime, eventDetails.dateTimeEnd).time}
-							</h4>
-						{/if}
-						<h6 class="font-medium">Venue</h6>
-						<h4 class="h4">{eventDetails.fullEventAddress}</h4>
-					</div>
-				</div>
-				<div class="col-span-12 lg:col-span-6">
-					{#if eventDetails.poster}
-						<img
-							class="border-primary-500 min-w-[100%] rounded-md border-2"
-							src={awsUrl + eventDetails.poster.url}
-							alt={eventDetails.poster.alt}
-						/>
-					{:else}
-						<img class="min-w-[100%]" src="/defaultPoster.jpg" alt="bg" />
-					{/if}
 				</div>
 			</div>
+	</div>
 
-			<div class="mt-12 sm:mt-16">
-				<div class="grid grid-cols-12">
-					{#if !eventDetails.noExpiryEvent}
-						{#if timeRemaining['days'] == 0 && timeRemaining['hours'] == 0 && timeRemaining['minutes'] == 0 && timeRemaining['seconds'] == 0}
-							<div
-								class="card bg-secondary-100 dark:bg-tertiary-950 col-span-12 mx-auto inline-flex w-[90%] justify-between rounded-md p-5 px-[10%] text-center text-lg font-bold shadow-2xl sm:py-10 lg:w-[75%] 2xl:w-[60%]"
-							>
-								<h2 class="h2 w-full">Event has started!</h2>
-							</div>
-						{:else}
-							<div
-								class="bg-secondary-100 dark:bg-tertiary-950 card animated-countdown col-span-12 mx-auto inline-flex w-[90%] justify-between p-5 text-center text-lg font-bold shadow-2xl transition-transform delay-100 duration-500 ease-in-out
-					
-					 sm:py-10 md:px-[10%] lg:w-[75%] 2xl:w-[60%] 2xl:px-[5%]"
-							>
-								<div class="col-span-4 hidden self-center sm:block">Event starts in</div>
-								<div class="col-span-2">
-									DAYS
-									<div
-										class="bg-primary-500 text-surface-50 mx-auto mt-1 w-[60px] rounded-md px-2 py-2 text-4xl"
-									>
-										{timeRemaining['days']}
-									</div>
-								</div>
-								<div class="col-span-2">
-									HOURS
-									<div
-										class="bg-primary-500 text-surface-50 mx-auto mt-1 w-[60px] rounded-md px-2 py-2 text-4xl"
-									>
-										{timeRemaining['hours']}
-									</div>
-								</div>
-								<div class="col-span-2">
-									MINUTES
-									<div
-										class="bg-primary-500 text-surface-50 mx-auto mt-1 w-[60px] rounded-md px-2 py-2 text-4xl"
-									>
-										{timeRemaining['minutes']}
-									</div>
-								</div>
-								<div class="col-span-2">
-									SECONDS
-									<div
-										class="bg-primary-500 text-surface-50 mx-auto mt-1 w-[60px] rounded-md px-2 py-2 text-4xl"
-									>
-										{timeRemaining['seconds']}
-									</div>
-								</div>
-							</div>
-						{/if}
-					{/if}
-					<div
-						class="animated-description col-span-12 mx-auto mt-10 w-full px-[10%] transition-opacity delay-100
-						
-				 duration-1000 ease-in-out md:w-[80%] lg:w-[75%] 2xl:w-[55%]"
-					>
-						{#if eventDetails.eventDescription2}
-							<div class="flex w-full items-center justify-center">
-								{@html eventDetails.eventDescription2}
-							</div>
-						{/if}
-					</div>
-				</div>
-			</div>
-		</div>
+		<!-- last ni -->
 
 		<div id="announcement" class="postPage">
 			<div class="mx-auto w-[90%] lg:w-[75%] 2xl:w-[60%]">
