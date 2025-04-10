@@ -50,7 +50,7 @@ const TicketTypes: CollectionConfig = {
     {
       type: 'row', fields: [ // Price & Currency
         { name: 'price', label: 'Price', type: 'number', required: true, min: 0, admin: { width: '50%', step: 0.01 } },
-        // { name: 'currency', label: 'Currency', type: 'select', required: true, options: [ /* USD, PHP, EUR, etc. */ ], defaultValue: 'USD', admin: { width: '50%' } },
+        { name: 'currency', label: 'Currency', type: 'select', enumName: 'CurrencyType', required: true, options: [ { label: 'USD', value: 'USD' }, { label: 'PHP', value: 'PHP' }, { label: 'EUR', value: 'EUR' } ], defaultValue: 'USD', admin: { width: '50%' } },
       ],
     },
     {
@@ -74,14 +74,14 @@ const TicketTypes: CollectionConfig = {
         },
       ],
     },
-    // {
-    //   name: 'status', label: 'Status', type: 'select',
-    //   options: [ /* Active / On Sale, Inactive / Off Sale */ ], // As defined before
-    //   defaultValue: 'active', required: true, admin: { position: 'sidebar' },
-    // },
+    {
+      name: 'status', label: 'Status', type: 'select', enumName: 'TicketStatus',
+      options: [ { label: 'Active / On Sale', value: 'active' }, { label: 'Inactive / Off Sale', value: 'inactive' } ], // As defined before
+      defaultValue: 'active', required: true, admin: { position: 'sidebar' },
+    },
     // Optional: Min/Max per order for this specific type
-    // { name: 'minOrderQuantity', type: 'number', defaultValue: 1, min: 1 },
-    // { name: 'maxOrderQuantity', type: 'number', min: 1 },
+    { name: 'minOrderQuantity', type: 'number', defaultValue: 1, min: 1 },
+    { name: 'maxOrderQuantity', type: 'number', min: 1 },
   ],
   timestamps: true,
 };

@@ -87,11 +87,11 @@ const Tickets: CollectionConfig = {
       required: true, unique: true, index: true,
       admin: { readOnly: true, description: 'Unique identifier for check-in/QR code.' },
     },
-    // {
-    //   name: 'checkInStatus', label: 'Check-In Status', type: 'select',
-    //   options: [ { label: 'Pending Check-In', value: 'pending' }, { label: 'Checked In', value: 'checked_in' }, { label: 'Invalid / Denied', value: 'invalid' }],
-    //   defaultValue: 'pending', required: true, index: true,
-    // },
+    {
+      name: 'checkInStatus', label: 'Check-In Status', type: 'select', enumName: 'CheckInStatus',
+      options: [ { label: 'Pending Check-In', value: 'pending' }, { label: 'Checked In', value: 'checked_in' }, { label: 'Invalid / Denied', value: 'invalid' }],
+      defaultValue: 'pending', required: true, index: true,
+    },
     { name: 'checkedInAt', label: 'Checked-In At', type: 'date', admin: { readOnly: true, date: { pickerAppearance: 'dayAndTime' } } },
     { name: 'checkedInBy', label: 'Checked-In By Staff', type: 'relationship', relationTo: 'users', admin: { readOnly: true } },
 

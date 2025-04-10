@@ -12,12 +12,6 @@ const EventAnnouncements: CollectionConfig = {
     defaultColumns: ['title', 'event', 'status', 'publishDate', 'updatedAt'],
     listSearchableFields: ['title', 'content'], // Assuming 'content' is richText searchable
     group: 'Organizers & Events',
-    // filters: {
-    //     status: {
-    //         label: 'Status',
-    //         options: [{label: 'Draft', value: 'draft'}, {label: 'Published', value: 'published'}]
-    //     }
-    // }
   },
   // Access Control Notes:
   // - Public might read 'published' announcements.
@@ -57,21 +51,22 @@ const EventAnnouncements: CollectionConfig = {
       type: 'richText', // Allows formatted text, images, links etc.
       required: true,
     },
-    // {
-    //   name: 'status',
-    //   label: 'Status',
-    //   type: 'select',
-    //   options: [
-    //     // { label: 'Draft', value: 'draft' },
-    //     // { label: 'Published', value: 'published' },
-    //   ],
-    //   // defaultValue: 'draft',
-    //   required: true,
-    //   index: true,
-    //   admin: {
-    //     position: 'sidebar',
-    //   },
-    // },
+    {
+      name: 'status',
+      label: 'Status',
+      type: 'select',
+      options: [
+        { label: 'Draft', value: 'draft' },
+        { label: 'Published', value: 'published' },
+      ],
+      defaultValue: 'draft',
+      enumName: 'AnnouncementStatus',
+      required: true,
+      index: true,
+      admin: {
+        position: 'sidebar',
+      },
+    },
     {
       name: 'publishDate',
       label: 'Publish Date/Time',

@@ -61,24 +61,25 @@ const Users: CollectionConfig = {
       // Make required if using Payload's local auth primarily.
       // required: true,
     },
-    // {
-    //   name: 'roles',
-    //   label: 'Roles',
-    //   type: 'select',
-    //   hasMany: true, // Allow multiple roles per user
-    //   required: true,
-    //   defaultValue: [USER_ROLES.ATTENDEE], // Default new signups to 'attendee'
-    //   options: Object.entries(USER_ROLES).map(([key, value]) => ({ label: key.replace('_', ' '), value })),
-    //   // Access control on the field itself: only Admins can modify roles
-    //   access: {
-    //     read: ({ req: { user } }) => true, // Everyone can see their own roles (and admins see all)
-    //     // create: isAdmin,
-    //     // update: isAdmin,
-    //   },
-    //   admin: {
-    //     description: 'Assign roles that grant specific permissions throughout the application.',
-    //   }
-    // },
+    {
+      name: 'roles',
+      label: 'Roles',
+      type: 'select',
+      enumName: 'UserRole',
+      hasMany: true, // Allow multiple roles per user
+      required: true,
+      defaultValue: [USER_ROLES.ATTENDEE], // Default new signups to 'attendee'
+      options: Object.entries(USER_ROLES).map(([key, value]) => ({ label: key.replace('_', ' '), value })),
+      // Access control on the field itself: only Admins can modify roles
+      access: {
+        read: ({ req: { user } }) => true, // Everyone can see their own roles (and admins see all)
+        // create: isAdmin,
+        // update: isAdmin,
+      },
+      admin: {
+        description: 'Assign roles that grant specific permissions throughout the application.',
+      }
+    },
     {
       name: 'clerkId', // Example field if using Clerk Auth
       label: 'Clerk User ID',

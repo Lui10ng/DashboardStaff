@@ -41,23 +41,23 @@ const Promotions: CollectionConfig = {
       admin: { description: 'The code users enter (forced uppercase). e.g., EARLYBIRD20' },
     },
     { name: 'description', label: 'Internal Description', type: 'textarea', required: true },
-    // {
-    //   name: 'status', label: 'Status', type: 'select', index: true,
-    //   options: [ { label: 'Active', value: 'active' }, { label: 'Inactive', value: 'inactive' }, { label: 'Expired', value: 'expired' } ],
-    //   defaultValue: 'active', required: true, admin: { position: 'sidebar' }
-    // },
+    {
+      name: 'status', label: 'Status', type: 'select', enumName: 'PromotionStatus', index: true,
+      options: [ { label: 'Active', value: 'active' }, { label: 'Inactive', value: 'inactive' }, { label: 'Expired', value: 'expired' } ],
+      defaultValue: 'active', required: true, admin: { position: 'sidebar' }
+    },
     // --- Discount ---
-    // { type: 'row', fields: [
-    //     { name: 'discountType', label: 'Type', type: 'select', options: [ { label: 'Percentage Off (%)', value: 'percentage' }, { label: 'Fixed Amount Off', value: 'fixed_amount' } ], required: true, admin: { width: '50%' } },
-    //     { name: 'discountValue', label: 'Value', type: 'number', required: true, min: 0, admin: { width: '50%', step: 0.01, description: '% or fixed amount' } },
-    //   ],
-    // },
-    // {
-    //   name: 'currency', label: 'Currency (for Fixed Amount)', type: 'select',
-    //   options: [ /* USD, PHP, EUR, etc. */ ],
-    //   admin: { condition: (data) => data.discountType === 'fixed_amount' },
-    // //   validate: (value, { siblingData }) => (siblingData.discountType === 'fixed_amount' && !value) ? 'Currency required for fixed amount discounts.' : true,
-    // },
+    { type: 'row', fields: [
+        { name: 'discountType', label: 'Type', type: 'select', enumName: 'DiscountType', options: [ { label: 'Percentage Off (%)', value: 'percentage' }, { label: 'Fixed Amount Off', value: 'fixed_amount' } ], required: true, admin: { width: '50%' } },
+        { name: 'discountValue', label: 'Value', type: 'number', required: true, min: 0, admin: { width: '50%', step: 0.01, description: '% or fixed amount' } },
+      ],
+    },
+    {
+      name: 'currency', label: 'Currency (for Fixed Amount)', type: 'select', enumName: 'CurrencyType',
+      options: [ { label: 'USD', value: 'USD' }, { label: 'PHP', value: 'PHP' }, { label: 'EUR', value: 'EUR' } ],
+      admin: { condition: (data) => data.discountType === 'fixed_amount' },
+    //   validate: (value, { siblingData }) => (siblingData.discountType === 'fixed_amount' && !value) ? 'Currency required for fixed amount discounts.' : true,
+    },
     // --- Rules & Limits ---
     { name: 'usageLimit', label: 'Total Usage Limit', type: 'number', min: 0, admin: { description: 'Optional: Max total uses. Blank for unlimited.' } },
     { type: 'row', fields: [

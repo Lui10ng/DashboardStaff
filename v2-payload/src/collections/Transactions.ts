@@ -64,26 +64,27 @@ const Transactions: CollectionConfig = {
         position: 'sidebar',
       },
     },
-    // {
-    //   name: 'type',
-    //   label: 'Transaction Type',
-    //   type: 'select',
-    //   required: true,
-    //   index: true,
-    //   options: [
-    //     { label: 'Ticket Sale', value: 'ticket_sale' }, // Income for organizer
-    //     { label: 'Donation', value: 'donation' },       // Income for organizer
-    //     { label: 'Sale Refund', value: 'refund_sale' }, // Expense for organizer
-    //     { label: 'Donation Refund', value: 'refund_donation' }, // Expense for organizer
-    //     { label: 'Platform Fee', value: 'platform_fee' },   // Expense for organizer (your platform's cut)
-    //     { label: 'Payment Processor Fee', value: 'payment_fee' },// Expense for organizer (e.g., Stripe fee)
-    //     { label: 'Organizer Payout', value: 'payout' },      // Expense for organizer (money sent to them)
-    //     { label: 'Payout Fee', value: 'payout_fee' },      // Expense for organizer (cost of sending payout)
-    //     { label: 'Adjustment Credit', value: 'adj_credit' }, // Manual admin adjustment (+)
-    //     { label: 'Adjustment Debit', value: 'adj_debit' },  // Manual admin adjustment (-)
-    //   ],
-    //   admin: { width: '50%' },
-    // },
+    {
+      name: 'type',
+      label: 'Transaction Type',
+      type: 'select',
+      enumName: 'TransactionType',
+      required: true,
+      index: true,
+      options: [
+        { label: 'Ticket Sale', value: 'ticket_sale' }, // Income for organizer
+        { label: 'Donation', value: 'donation' },       // Income for organizer
+        { label: 'Sale Refund', value: 'refund_sale' }, // Expense for organizer
+        { label: 'Donation Refund', value: 'refund_donation' }, // Expense for organizer
+        { label: 'Platform Fee', value: 'platform_fee' },   // Expense for organizer (your platform's cut)
+        { label: 'Payment Processor Fee', value: 'payment_fee' },// Expense for organizer (e.g., Stripe fee)
+        { label: 'Organizer Payout', value: 'payout' },      // Expense for organizer (money sent to them)
+        { label: 'Payout Fee', value: 'payout_fee' },      // Expense for organizer (cost of sending payout)
+        { label: 'Adjustment Credit', value: 'adj_credit' }, // Manual admin adjustment (+)
+        { label: 'Adjustment Debit', value: 'adj_debit' },  // Manual admin adjustment (-)
+      ],
+      admin: { width: '50%' },
+    },
     // --- Financial Value ---
     {
       name: 'amount',
@@ -96,13 +97,13 @@ const Transactions: CollectionConfig = {
         description: 'Value of the transaction. Positive for income (sales, donations), Negative for expenses (refunds, fees, payouts).',
       },
     },
-    // {
-    //   name: 'currency',
-    //   label: 'Currency',
-    //   type: 'text', // Store as text (e.g., 'USD', 'PHP') - ensure consistency
-    //   required: true,
-    //   admin: { width: '30%' },
-    // },
+    {
+      name: 'currency',
+      label: 'Currency',
+      type: 'text', // Store as text (e.g., 'USD', 'PHP') - ensure consistency
+      required: true,
+      admin: { width: '30%' },
+    },
     // --- Context & References ---
     {
       name: 'description',

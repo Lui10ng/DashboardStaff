@@ -166,6 +166,7 @@ export interface EventAnnouncement {
     };
     [k: string]: unknown;
   };
+  status: 'draft' | 'published';
   /**
    * Optional: Set a specific time for when this announcement is considered published (can be used for sorting/filtering). Defaults to creation time if published immediately.
    */
@@ -183,6 +184,7 @@ export interface Event {
   id: number;
   name: string;
   slug: string;
+  status: 'Draft' | 'Published' | 'Cancelled' | 'Archived';
   startTime: string;
   endTime: string;
   description?: {
@@ -204,6 +206,10 @@ export interface Event {
   venue: number | Venue;
   category?: (number | null) | EventCategory;
   eventImages?: (number | Media)[] | null;
+  /**
+   * Select the seating arrangement type.
+   */
+  seatingType: 'general_admission' | 'reserved_seating';
   /**
    * Select the seat map layout for this event.
    */
@@ -349,6 +355,10 @@ export interface OrganizerPhoto {
 export interface User {
   id: number;
   name?: string | null;
+  /**
+   * Assign roles that grant specific permissions throughout the application.
+   */
+  roles: ('admin' | 'organizer' | 'attendee' | 'check-in-staff')[];
   /**
    * Internal ID linking to the Clerk authentication provider.
    */
@@ -593,12 +603,16 @@ export interface TicketType {
   name: string;
   description?: string | null;
   price: number;
+  currency: 'USD' | 'PHP' | 'EUR';
   /**
    * Total inventory count FOR THIS SPECIFIC ticket type.
    */
   quantityAvailable: number;
   salesStart?: string | null;
   salesEnd?: string | null;
+  status: 'active' | 'inactive';
+  minOrderQuantity?: number | null;
+  maxOrderQuantity?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -615,6 +629,13 @@ export interface Promotion {
    */
   code: string;
   description: string;
+  status: 'active' | 'inactive' | 'expired';
+  discountType: 'percentage' | 'fixed_amount';
+  /**
+   * % or fixed amount
+   */
+  discountValue: number;
+  currency?: ('USD' | 'PHP' | 'EUR') | null;
   /**
    * Optional: Max total uses. Blank for unlimited.
    */
@@ -689,6 +710,7 @@ export interface Ticket {
    * Unique identifier for check-in/QR code.
    */
   ticketCode: string;
+  checkInStatus: 'pending' | 'checked_in' | 'invalid';
   checkedInAt?: string | null;
   checkedInBy?: (number | null) | User;
   /**
@@ -712,10 +734,22 @@ export interface Transaction {
   id: number;
   organizer: number | Organizer;
   transactionDate: string;
+  type:
+    | 'ticket_sale'
+    | 'donation'
+    | 'refund_sale'
+    | 'refund_donation'
+    | 'platform_fee'
+    | 'payment_fee'
+    | 'payout'
+    | 'payout_fee'
+    | 'adj_credit'
+    | 'adj_debit';
   /**
    * Value of the transaction. Positive for income (sales, donations), Negative for expenses (refunds, fees, payouts).
    */
   amount: number;
+  currency: string;
   /**
    * Brief description (e.g., "Sale for Order #123", "Stripe Fee for ch_xyz")
    */
@@ -856,6 +890,7 @@ export interface EventAnnouncementsSelect<T extends boolean = true> {
   event?: T;
   title?: T;
   content?: T;
+  status?: T;
   publishDate?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -877,6 +912,7 @@ export interface EventCategoriesSelect<T extends boolean = true> {
 export interface EventsSelect<T extends boolean = true> {
   name?: T;
   slug?: T;
+  status?: T;
   startTime?: T;
   endTime?: T;
   description?: T;
@@ -884,6 +920,7 @@ export interface EventsSelect<T extends boolean = true> {
   venue?: T;
   category?: T;
   eventImages?: T;
+  seatingType?: T;
   seatMap?: T;
   totalCapacity?: T;
   registrationForm?: T;
@@ -1023,6 +1060,10 @@ export interface OrganizersSelect<T extends boolean = true> {
 export interface PromotionsSelect<T extends boolean = true> {
   code?: T;
   description?: T;
+  status?: T;
+  discountType?: T;
+  discountValue?: T;
+  currency?: T;
   usageLimit?: T;
   validFrom?: T;
   validUntil?: T;
@@ -1103,6 +1144,7 @@ export interface TicketsSelect<T extends boolean = true> {
   ticketType?: T;
   attendee?: T;
   ticketCode?: T;
+  checkInStatus?: T;
   checkedInAt?: T;
   checkedInBy?: T;
   assignedSeat?:
@@ -1124,9 +1166,13 @@ export interface TicketTypesSelect<T extends boolean = true> {
   name?: T;
   description?: T;
   price?: T;
+  currency?: T;
   quantityAvailable?: T;
   salesStart?: T;
   salesEnd?: T;
+  status?: T;
+  minOrderQuantity?: T;
+  maxOrderQuantity?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1137,7 +1183,9 @@ export interface TicketTypesSelect<T extends boolean = true> {
 export interface TransactionsSelect<T extends boolean = true> {
   organizer?: T;
   transactionDate?: T;
+  type?: T;
   amount?: T;
+  currency?: T;
   description?: T;
   relatedOrder?: T;
   relatedUser?: T;
@@ -1152,6 +1200,7 @@ export interface TransactionsSelect<T extends boolean = true> {
  */
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
+  roles?: T;
   clerkId?: T;
   updatedAt?: T;
   createdAt?: T;
