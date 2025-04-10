@@ -16,7 +16,8 @@ RUN \
    elif [ -f package-lock.json ]; then npm ci; \
    elif [ -f pnpm-lock.yaml ]; then \
      npm install -g pnpm@9 && \
-     pnpm i --frozen-lockfile; \
+     pnpm i --frozen-lockfile --stream; \
+     pnpm rebuild; \
    else echo "Lockfile not found." && exit 1; \
    fi
 
@@ -38,6 +39,7 @@ RUN \
    elif [ -f pnpm-lock.yaml ]; then \
      npm install -g pnpm@9 && \
      pnpm run build; \
+     pnpm rebuild; \
    else echo "Lockfile not found." && exit 1; \
    fi
 

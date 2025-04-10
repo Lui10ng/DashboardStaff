@@ -7,11 +7,52 @@ import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
 
-import { Users } from './collections/Users'
-import { Media } from './collections/Media'
+import { s3Storage } from '@payloadcms/storage-s3'
+
+import EventAnnouncements from './collections/EventAnnouncements'
+import EventCategories from './collections/EventCategories'
+import Events from './collections/Events'
+import Media from './collections/Media'
+import Orders from './collections/Orders'
+import OrganizerPhotos from './collections/OrganizerPhotos'
+import Organizers from './collections/Organizers'
+import Promotions from './collections/Promotions'
+import Registrants from './collections/Registrants'
+import RegistrationFormTemplates from './collections/RegistrationFormTemplates'
+import SeatMaps from './collections/SeatMaps'
+import Tickets from './collections/Tickets'
+import TicketTypes from './collections/TicketTypes'
+import Transactions from './collections/Transactions'
+import Users from './collections/Users'
+import Venues from './collections/Venues'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
+const isDev = (process.env.NODE_ENV === 'development')
+
+// Define plugins conditionally
+const conditionalPlugins = [
+  (!isDev) ? s3Storage({
+      collections: {
+        'media': true,
+      },
+      config: {
+        credentials: {
+          accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? '',
+          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? '',
+        },
+        region: 'ap-southeast-1',
+        endpoint: "https://sgp1.digitaloceanspaces.com",
+      },
+      bucket: 'veent',
+      acl: "public-read",
+    })
+    : null,
+  // Add other conditional plugins here if needed
+]
+
+// Filter out null values
+const activePlugins = conditionalPlugins.filter(plugin => plugin !== null)
 
 export default buildConfig({
   admin: {
@@ -20,7 +61,24 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media],
+  collections: [
+    EventAnnouncements,
+    EventCategories,
+    Events,
+    Media,
+    Orders,
+    OrganizerPhotos,
+    Organizers,
+    Promotions,
+    Registrants,
+    RegistrationFormTemplates,
+    SeatMaps,
+    Tickets,
+    TicketTypes,
+    Transactions,
+    Users,
+    Venues,
+  ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
@@ -34,6 +92,6 @@ export default buildConfig({
   sharp,
   plugins: [
     payloadCloudPlugin(),
-    // storage-adapter-placeholder
+    ...activePlugins
   ],
 })
