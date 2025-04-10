@@ -28,10 +28,14 @@ const RegistrationFormTemplates: CollectionConfig = {
   // Creating/modifying form structures should be highly restricted (e.g., Admins only).
   // Reading might be allowed for Organizers when selecting a template for an event.
   access: {
-    read: ({ req: { user } }) => Boolean(user), // Allow logged-in users (e.g., Organizers) to see/select templates
+    // read: ({ req: { user } }) => Boolean(user), // Allow logged-in users (e.g., Organizers) to see/select templates
     // create: isAdmin,
     // update: isAdmin,
     // delete: isAdmin,
+    read: () => true,
+    create: () => true,
+    update: () => true,
+    delete: () => true,
   },
   fields: [
     {

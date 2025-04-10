@@ -15,6 +15,9 @@ const Venues: CollectionConfig = {
   // Public read often needed. Create/Update might be admin-only or restricted roles.
   access: {
     read: () => true, // Public can view venue details
+    create: () => true,
+    update: () => true,
+    delete: () => true,
     // create: ({ req: { user } }) => user?.roles?.includes('admin'), // Example: Only admins create
     // update: ({ req: { user } }) => user?.roles?.includes('admin'), // Example: Only admins update
     // delete: ({ req: { user } }) => user?.roles?.includes('admin'), // Example: Only admins delete

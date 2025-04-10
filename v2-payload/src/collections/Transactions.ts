@@ -34,8 +34,12 @@ const Transactions: CollectionConfig = {
   access: {
     // read: isAdminOrLinkedOrganizer('organizer'), // Custom function: isAdmin or user manages linked organizer
     // create: isAdmin, // Only system processes (running as admin/trusted) should create transactions
-    update: () => false, // Prevent updates
+    // update: () => false, // Prevent updates
     // delete: isAdmin, // Allow only admins to delete, if ever necessary
+    read: () => true,
+    create: () => true,
+    update: () => true,
+    delete: () => true,
   },
   fields: [
     // --- Core Transaction Details ---

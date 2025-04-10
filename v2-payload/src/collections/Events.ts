@@ -40,6 +40,10 @@ const Events: CollectionConfig = {
     // create: ({ req: { user } }) => Boolean(user), // Needs refinement - check roles/organizer link
     // update: ({ req: { user } }) => Boolean(user?.roles?.includes('admin')), // Needs refinement
     // delete: ({ req: { user } }) => Boolean(user?.roles?.includes('admin')), // Needs refinement
+    read: () => true,
+    create: () => true,
+    update: () => true,
+    delete: () => true,
   },
   hooks: {
     // Auto-generate slug from name

@@ -20,7 +20,10 @@ const Orders: CollectionConfig = {
   // - Admins can see all. Organizers might see orders for their events.
   access: {
     // read: isOwnerOrAdmin_Complex('orderedBy', 'guestEmail'), // Custom function needed
+    read: () => true,
     create: () => true, // Allow programmatic creation via checkout endpoint (auth handled there)
+    update: () => true,
+    delete: () => true, 
     // update: isAdmin, // Only admins or system processes update orders
     // delete: isAdmin, // Restrict deletion
   },

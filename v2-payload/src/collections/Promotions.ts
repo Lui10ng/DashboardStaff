@@ -17,6 +17,10 @@ const Promotions: CollectionConfig = {
     // create: isAdmin,
     // update: isAdmin,
     // delete: isAdmin,
+    read: () => true,
+    create: () => true,
+    update: () => true,
+    delete: () => true,
   },
   hooks: {
     // Force code to uppercase for easier case-insensitive lookup

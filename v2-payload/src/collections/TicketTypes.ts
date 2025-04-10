@@ -14,11 +14,15 @@ const TicketTypes: CollectionConfig = {
     // Consider adding filters for Event in the list view
   },
   access: {
-    read: () => true, // Public needs to see ticket types/prices
+    // read: () => true, // Public needs to see ticket types/prices
     // Write access controlled by association with the Event (e.g., Event Organizer or Admin)
-    create: ({ req: { user } }) => Boolean(user), // Placeholder - Implement isEventManagerOrAdmin
-    update: ({ req: { user } }) => Boolean(user), // Placeholder - Implement isEventManagerOrAdmin
+    // create: ({ req: { user } }) => Boolean(user), // Placeholder - Implement isEventManagerOrAdmin
+    // update: ({ req: { user } }) => Boolean(user), // Placeholder - Implement isEventManagerOrAdmin
     // delete: isAdmin,                      // Placeholder - Implement isEventManagerOrAdmin or isAdmin
+    read: () => true,
+    create: () => true,
+    update: () => true,
+    delete: () => true,
   },
   fields: [
     {

@@ -44,6 +44,10 @@ const Users: CollectionConfig = {
     // --- Role-based access ---
     // Example: Only Admins can change the 'roles' field
     // admin: ({ req: { user } }) => user?.roles?.includes(USER_ROLES.ADMIN),
+    read: () => true,
+    create: () => true,
+    update: () => true,
+    delete: () => true,
   },
   fields: [
     // Default fields Payload adds: email, password (hashed), etc.

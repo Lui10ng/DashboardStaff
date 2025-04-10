@@ -17,6 +17,9 @@ const EventCategories: CollectionConfig = {
   // Public read access is usually appropriate for filtering/display.
   access: {
     read: () => true, // Public can view categories
+    create: () => true,
+    update: () => true,
+    delete: () => true,
     // create: ({ req: { user } }) => user?.roles?.includes('admin'), // Example: Only admins create
     // update: ({ req: { user } }) => user?.roles?.includes('admin'), // Example: Only admins update
     // delete: ({ req: { user } }) => user?.roles?.includes('admin'), // Example: Only admins delete

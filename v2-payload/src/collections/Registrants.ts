@@ -25,10 +25,14 @@ const Registrants: CollectionConfig = {
   // - The registered user (if applicable) should see their own submission.
   // - Guests need a secure way (unique link?) to view/manage their submission if allowed.
   access: {
-    read: ({ req: { user } }) => true, // Placeholder - Needs refinement (e.g., isAdminOrEventOrganiserOrOwner)
+    // read: ({ req: { user } }) => true, // Placeholder - Needs refinement (e.g., isAdminOrEventOrganiserOrOwner)
     // create: isAdmin, // Only system/admin creates this programmatically
     // update: isAdmin, // Restrict updates
     // delete: isAdmin, // Restrict deletion
+    read: () => true,
+    create: () => true,
+    update: () => true,
+    delete: () => true,
   },
   fields: [
     // --- Links to Context ---

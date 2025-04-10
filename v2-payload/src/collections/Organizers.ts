@@ -17,8 +17,11 @@ const Organizers: CollectionConfig = {
   // Public read for profiles. Create might be open or restricted.
   // Update/Delete restricted to linked Managing Users or Admins.
   access: {
-    read: () => true, // Public can view organizer profiles
-    create: ({ req: { user } }) => Boolean(user), // Allow logged-in users to create (consider adding creator to managingUsers via hook)
+    read: () => true, // Public can view organizer profiles    read: () => true,
+    create: () => true,
+    update: () => true,
+    delete: () => true,
+    // create: ({ req: { user } }) => Boolean(user), // Allow logged-in users to create (consider adding creator to managingUsers via hook)
     // update: isAdminOrSelf('managingUsers'), // Custom check: isAdmin OR user is in managingUsers
     // delete: isAdmin, // Only Admins can delete profiles
   },

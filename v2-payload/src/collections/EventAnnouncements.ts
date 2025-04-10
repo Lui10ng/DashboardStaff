@@ -24,9 +24,13 @@ const EventAnnouncements: CollectionConfig = {
   // - Admins and the organizer of the linked event should be able to create/update/delete.
   access: {
     // read: isAdminOrPublished, // Example: Public reads published, admin reads all (needs refinement for event context)
-    create: ({ req: { user } }) => Boolean(user), // Placeholder - restrict to event organizer/admin
-    update: ({ req: { user } }) => Boolean(user), // Placeholder - restrict to event organizer/admin
+    // create: ({ req: { user } }) => Boolean(user), // Placeholder - restrict to event organizer/admin
+    // update: ({ req: { user } }) => Boolean(user), // Placeholder - restrict to event organizer/admin
     // delete: isAdmin, // Placeholder - restrict to event organizer/admin
+    read: () => true,
+    create: () => true,
+    update: () => true,
+    delete: () => true,
   },
   fields: [
     {

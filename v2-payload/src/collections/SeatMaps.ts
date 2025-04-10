@@ -17,10 +17,14 @@ const SeatMaps: CollectionConfig = {
   // Managing complex layouts is typically an Admin task.
   // Organizers may need read access to select a map for their event.
   access: {
-    read: ({ req: { user } }) => Boolean(user), // Allow logged-in users to see/select maps
+    // read: ({ req: { user } }) => Boolean(user), // Allow logged-in users to see/select maps
     // create: isAdmin,
     // update: isAdmin,
     // delete: isAdmin,
+    read: () => true,
+    create: () => true,
+    update: () => true,
+    delete: () => true,
   },
   fields: [
     {

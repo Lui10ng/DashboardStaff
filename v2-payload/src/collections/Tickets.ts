@@ -28,6 +28,10 @@ const Tickets: CollectionConfig = {
     // create: isAdmin, // System/Admin creates programmatically
     // update: ({ req: { user } }) => user?.roles?.includes('admin') || user?.roles?.includes('check-in-staff'), // Example for check-in
     // delete: isAdmin,
+    read: () => true,
+    create: () => true,
+    update: () => true,
+    delete: () => true,
   },
   hooks: {
     // Generate unique ticket code
