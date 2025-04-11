@@ -65,5 +65,10 @@
 		"postgres": "^3.4.5",
 		"svelte-dnd-action": "^0.9.60",
 		"tailwindcss-animate": "^1.0.7"
+	},
+	"pnpm": {
+		"ignoredBuiltDependencies": [
+			"esbuild"
+		]
 	}
 }

@@ -1,17 +1,45 @@
-import { events } from '$lib/stores/data';
 import { message, superValidate } from 'sveltekit-superforms/server';
 import { zod } from 'sveltekit-superforms/adapters';
 import { eventSchema } from '$lib/schema/event';
 import { fail } from 'sveltekit-superforms';
+import { apiClient } from '$lib/services/payload.server.js';
+import { error } from '@sveltejs/kit';
+import { handleSvelteError } from '$lib/utils/errorHandler';
 
-export const load = async () => {
+export async function load({ url, fetch: svelteKitFetch }) {
 	const form = await superValidate(zod(eventSchema));
+	const page = Number(url.searchParams.get('page') || '1');
+	const limit = 1000000;
+	const organizerID = '1';
 
-	return {
-		form,
-		events
-	};
-};
+	const params = new URLSearchParams({
+		'where[organizer.id][equals]': organizerID,
+		sort: 'date',
+		limit: limit.toString(),
+		page: page.toString(),
+		depth: '2'
+	});
+
+	try {
+		const eventsData = await apiClient.get('/events', params, { fetchInstance: svelteKitFetch });
+
+		// console.log(eventsData);
+		console.log(JSON.stringify(eventsData, null, 2));
+
+		return {
+			events: eventsData,
+			form
+		};
+	} catch (err: unknown) {
+		const { statusCode, errorMessage } = handleSvelteError(
+			err,
+			'loading events',
+			'Failed to load events'
+		);
+
+		throw error(statusCode, errorMessage);
+	}
+}
 
 export const actions = {
 	checkAvailableSubdomain: async ({ request }) => {
