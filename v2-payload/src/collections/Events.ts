@@ -266,6 +266,7 @@ const Events: CollectionConfig = {
     }
   ],
   timestamps: true,
+  
 };
 
 export default Events;
