@@ -79,7 +79,7 @@ export type WalletTransactionProps = {
 };
 
 export type Event = {
-	id: string;
+	id: number;
 	title: string;
 	location: string;
 	date: string;
@@ -101,7 +101,7 @@ export interface RequestOptions {
 	headers?: Record<string, string>;
 }
 
-export interface ApiClientOptions extends Omit<RequestOptions, 'params' | 'body'> { }
+export interface ApiClientOptions extends Omit<RequestOptions, 'params' | 'body'> {}
 
 export interface ApiClient {
 	get: <T = unknown>(
@@ -110,22 +110,11 @@ export interface ApiClient {
 		options?: ApiClientOptions
 	) => Promise<T>;
 
-	post: <T = unknown>(
-		path: string,
-		body: unknown,
-		options?: ApiClientOptions
-	) => Promise<T>;
+	post: <T = unknown>(path: string, body: unknown, options?: ApiClientOptions) => Promise<T>;
 
-	patch: <T = unknown>(
-		path: string,
-		body: unknown,
-		options?: ApiClientOptions
-	) => Promise<T>;
+	patch: <T = unknown>(path: string, body: unknown, options?: ApiClientOptions) => Promise<T>;
 
-	del: <T = unknown>(
-		path: string,
-		options?: ApiClientOptions
-	) => Promise<T>;
+	del: <T = unknown>(path: string, options?: ApiClientOptions) => Promise<T>;
 }
 
 export interface PayloadError {

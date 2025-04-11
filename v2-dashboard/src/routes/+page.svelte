@@ -12,7 +12,7 @@
 	let { data } = $props();
 
 	$effect(() => {
-		eventListStore.setEvents(data.events);
+		eventListStore.setEvents(data.events || []);
 	});
 
 	const formatStatus = (status: string) => {

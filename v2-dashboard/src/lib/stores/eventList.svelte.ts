@@ -1,5 +1,18 @@
 import type { Event } from '$lib/types';
 
+const defaultEventValues: Event = {
+	id: 0,
+	title: '',
+	location: '',
+	date: '',
+	status: '',
+	tickets: {
+		sold: 0,
+		total: 0
+	},
+	image: ''
+};
+
 let eventsStore = $state<Event[]>([]);
 let error = $state<string | null>(null);
 
@@ -39,7 +52,10 @@ const filterByStatus = createMemoized((status: string) => {
 function setEvents(newEvent: Event[]) {
 	try {
 		error = null;
-		eventsStore = newEvent;
+		eventsStore = newEvent.map((event) => ({
+			...defaultEventValues,
+			...event
+		}));
 	} catch (e) {
 		error = e instanceof Error ? e.message : 'An unknown error occurred';
 		console.log('set events', error);
