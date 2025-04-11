@@ -1,6 +1,6 @@
 import type { HttpMethod, RequestOptions, ApiClient, PayloadError } from '$lib/types';
 import { isStructuredApiError } from '$lib/utils/errorHandler';
-import { env } from '$env/dynamic/private';
+import { PUBLIC_PAYLOAD_API_URL } from '$env/static/public';
 
 /**
  * Sends a request to the specified path
@@ -9,20 +9,24 @@ import { env } from '$env/dynamic/private';
  * @param options Optional options to customize the request
  * @returns The response data
  */
+
 async function request(method: HttpMethod, path: string, options: RequestOptions = {}) {
 	const { body, params, fetchInstance = fetch, token } = options;
-	const url = new URL('/api', env.PUBLIC_PAYLOAD_API_URL);
-  
+	const url = new URL(`api/${path}`, PUBLIC_PAYLOAD_API_URL);
+
 	if (params) {
-	  url.search = (params instanceof URLSearchParams) ? params.toString() : new URLSearchParams(params).toString();
+		url.search =
+			params instanceof URLSearchParams
+				? params.toString()
+				: new URLSearchParams(params).toString();
 	}
-  
+
 	const headers = new Headers({
-	  'Content-Type': 'application/json',
-	  'Accept': 'application/json',
-	  ...options.headers,
+		'Content-Type': 'application/json',
+		Accept: 'application/json',
+		...options.headers
 	});
-  
+
 	// const authToken = token ?? getAuthToken(fetchInstance);
 	// if (authToken) {
 	//   headers.set('Authorization', `Bearer ${authToken}`);
@@ -34,7 +38,7 @@ async function request(method: HttpMethod, path: string, options: RequestOptions
 		response = await fetchInstance(url.toString(), {
 			method: method.toUpperCase(),
 			headers,
-			body: body ? JSON.stringify(body) : null,
+			body: body ? JSON.stringify(body) : null
 		});
 
 		// --- Centralized Response Checking ---
@@ -53,7 +57,6 @@ async function request(method: HttpMethod, path: string, options: RequestOptions
 					errorMessage = errorData.message; // Use generic message if present
 				}
 			} catch (e) {
-
 				// Ignore JSON parsing errors if response body is not valid JSON
 				console.warn(`Could not parse error response body for ${method} ${path}`);
 			}
@@ -73,14 +76,15 @@ async function request(method: HttpMethod, path: string, options: RequestOptions
 		}
 
 		return await response.json(); // Success
-
 	} catch (error) {
 		console.error(`API Client Fetch Error (${method} ${path}):`, error);
 
 		// Handle Network errors or errors thrown from (!response.ok) block
-		if (isStructuredApiError(error)) { // If it's our structured error, re-throw it
+		if (isStructuredApiError(error)) {
+			// If it's our structured error, re-throw it
 			throw error;
-		} else { // Likely a network error (fetch itself failed) or other unexpected throw
+		} else {
+			// Likely a network error (fetch itself failed) or other unexpected throw
 
 			// Type guard to safely access error properties
 			let errorMessage = 'An unknown error occurred';
@@ -93,7 +97,7 @@ async function request(method: HttpMethod, path: string, options: RequestOptions
 
 			// Optionally, log the original error for more context if it wasn't an Error instance
 			if (!(error instanceof Error)) {
-				console.error("Caught non-Error throwable:", error);
+				console.error('Caught non-Error throwable:', error);
 			}
 			throw { status: 0, message: errorMessage, errors: [], data: {} };
 		}
@@ -102,7 +106,6 @@ async function request(method: HttpMethod, path: string, options: RequestOptions
 
 // Export helper methods
 export const apiClient: ApiClient = {
-
 	/**
 	 * Sends a GET request to the specified path
 	 * @param path The path of the request
@@ -136,5 +139,5 @@ export const apiClient: ApiClient = {
 	 * @param options Optional options to customize the request
 	 * @returns The response data
 	 */
-	del: (path, options = {}) => request('DELETE', path, { ...options }),
-}
+	del: (path, options = {}) => request('DELETE', path, { ...options })
+};

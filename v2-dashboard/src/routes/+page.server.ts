@@ -6,36 +6,40 @@ import { apiClient } from '$lib/services/payload.server.js';
 import { error } from '@sveltejs/kit';
 import { handleSvelteError } from '$lib/utils/errorHandler';
 
-
-export async function load({ url, fetch: svelteKitFetch }) { 
+export async function load({ url, fetch: svelteKitFetch }) {
 	const form = await superValidate(zod(eventSchema));
 	const page = Number(url.searchParams.get('page') || '1');
 	const limit = 1000000;
-	const userID = url.searchParams.get('userId');
-  
+	const organizerID = '1';
+
 	const params = new URLSearchParams({
-	  'where[createdBy][equals]': `${userID}`,
-	  sort: 'date',
-	  limit: limit.toString(),
-	  page: page.toString(),
-	  depth: '1'
+		'where[organizer.id][equals]': organizerID,
+		sort: 'date',
+		limit: limit.toString(),
+		page: page.toString(),
+		depth: '2'
 	});
-  
+
 	try {
-	  const eventsData = await apiClient.get('/events', params, { fetchInstance: svelteKitFetch });
+		const eventsData = await apiClient.get('/events', params, { fetchInstance: svelteKitFetch });
 
-	  console.log(eventsData);
+		// console.log(eventsData);
+		console.log(JSON.stringify(eventsData, null, 2));
 
-	  return {
-		events: eventsData,
-		form
-	  };
+		return {
+			events: eventsData,
+			form
+		};
 	} catch (err: unknown) {
-		const { statusCode, errorMessage } = handleSvelteError(err, 'loading events', 'Failed to load events');
+		const { statusCode, errorMessage } = handleSvelteError(
+			err,
+			'loading events',
+			'Failed to load events'
+		);
 
 		throw error(statusCode, errorMessage);
 	}
-};
+}
 
 export const actions = {
 	checkAvailableSubdomain: async ({ request }) => {

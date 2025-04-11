@@ -55,7 +55,7 @@ const Events: CollectionConfig = {
       index: true, 
       admin: { 
         position: 'sidebar', 
-        readOnly: true
+        // readOnly: true
        } 
     },
     {
