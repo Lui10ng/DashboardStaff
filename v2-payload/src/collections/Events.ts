@@ -7,10 +7,10 @@ import type { User } from '../payload-types';
 const Events: CollectionConfig = {
   slug: 'events',
   admin: {
-    useAsTitle: 'name',
+    useAsTitle: 'title',
     description: 'Core collection for managing individual events.',
-    defaultColumns: ['name', 'status', 'seatingType', 'startTime', 'venue', 'category'],
-    listSearchableFields: ['name', 'description'],
+    defaultColumns: ['title', 'status', 'seatingType', 'startTime', 'venue', 'category'],
+    listSearchableFields: ['title', 'description'],
     group: 'Organizers & Events',
   },
   // Access Control Notes:
@@ -40,8 +40,8 @@ const Events: CollectionConfig = {
   fields: [
     // --- Core Details ---
     { 
-      name: 'name', 
-      label: 'Event Name', 
+      name: 'title', 
+      label: 'Event Title', 
       type: 'text', 
       required: true, 
       index: true
@@ -74,6 +74,7 @@ const Events: CollectionConfig = {
       enumName: 'EventStatus',
       admin: { position: 'sidebar' },
     },
+   
     { type: 'row', fields: [ /* startTime, endTime with validation as before */
         { 
           name: 'startTime', 

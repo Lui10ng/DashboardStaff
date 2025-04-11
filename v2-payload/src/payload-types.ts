@@ -182,7 +182,7 @@ export interface EventAnnouncement {
  */
 export interface Event {
   id: number;
-  name: string;
+  title: string;
   slug: string;
   status: 'Draft' | 'Published' | 'Cancelled' | 'Archived';
   startTime: string;
@@ -910,7 +910,7 @@ export interface EventCategoriesSelect<T extends boolean = true> {
  * via the `definition` "events_select".
  */
 export interface EventsSelect<T extends boolean = true> {
-  name?: T;
+  title?: T;
   slug?: T;
   status?: T;
   startTime?: T;

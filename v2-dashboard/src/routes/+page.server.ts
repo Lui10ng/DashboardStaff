@@ -27,7 +27,7 @@ export async function load({ url, fetch: svelteKitFetch }) {
 		console.log(JSON.stringify(eventsData, null, 2));
 
 		return {
-			events: eventsData,
+			events: eventsData.docs,
 			form
 		};
 	} catch (err: unknown) {
