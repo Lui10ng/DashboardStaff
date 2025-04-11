@@ -59,6 +59,16 @@ const Events: CollectionConfig = {
        } 
     },
     {
+      name: 'location',
+      label: 'Location',
+      type: 'text',
+      required: true,
+      defaultValue: '',
+      admin: {
+        position: 'sidebar'
+      }
+    },
+    {
       name: 'status', 
       label: 'Status', 
       type: 'select', 

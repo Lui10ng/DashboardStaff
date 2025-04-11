@@ -184,6 +184,7 @@ export interface Event {
   id: number;
   title: string;
   slug: string;
+  location: string;
   status: 'Draft' | 'Published' | 'Cancelled' | 'Archived';
   startTime: string;
   endTime: string;
@@ -912,6 +913,7 @@ export interface EventCategoriesSelect<T extends boolean = true> {
 export interface EventsSelect<T extends boolean = true> {
   title?: T;
   slug?: T;
+  location?: T;
   status?: T;
   startTime?: T;
   endTime?: T;
