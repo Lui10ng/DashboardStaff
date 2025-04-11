@@ -70,7 +70,7 @@ const Events: CollectionConfig = {
          'Cancelled', 
          'Archived'
       ],
-      defaultValue: 'Draft',
+      defaultValue: 'Published',
       enumName: 'EventStatus',
       admin: { position: 'sidebar' },
     },
