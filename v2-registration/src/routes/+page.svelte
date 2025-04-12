@@ -113,7 +113,23 @@
 	  });
 	}
 	
-	// Set an initial selected ticket
+	// Helper function to get appropriate CSS class for ticket background
+	function getTicketClass(ticket) {
+	  const classes = {
+		'vvip': 'bg-amber-900 border-l-amber-600 text-white',
+		'vip': 'bg-yellow-400 border-l-orange-500 text-black',
+		'patronA': 'bg-yellow-400 border-l-orange-500 text-black',
+		'patronB': 'bg-white border-l-green-500 text-black',
+		'lowerBox': 'bg-purple-900 border-l-purple-500 text-white',
+		'upperBox': 'bg-teal-800 border-l-teal-400 text-white',
+		'standingA': 'bg-white border-l-red-600 text-black',
+		'standingB': 'bg-white border-l-red-600 text-black'
+	  };
+	  
+	  return classes[ticket.id] || '';
+	}
+	
+	// Set an initial selected ticket when component mounts
 	onMount(() => {
 	  const defaultTicket = ticketTypes.find(t => t.id === 'vip' && t.available);
 	  if (defaultTicket) {
@@ -135,505 +151,157 @@
 	  }
 	});
 	
-	// Helper function to get appropriate CSS class for ticket background
-	function getTicketClass(ticket) {
-	  const classes = {
-		'vvip': 'vvip',
-		'vip': 'vip',
-		'patronA': 'patron-a',
-		'patronB': 'patron-b',
-		'lowerBox': 'lower-box',
-		'upperBox': 'upper-box',
-		'standingA': 'standing-a',
-		'standingB': 'standing-b'
-	  };
-	  
-	  return classes[ticket.id] || '';
-	}
-	
 	// Watch for changes in quantity and recalculate
 	$: {
 	  if (selectedTicket) {
 		calculateTotal();
 	  }
 	}
-  </script>
-  
-  <div class="booking-container">
-	<h1>Booking Details</h1>
-	
-	<section class="ticket-section">
-	  <h2>Select Tickets</h2>
-	  
-	  <div class="ticket-grid">
-		{#each ticketTypes as ticket, index}
-		  <!-- Render different ticket layouts based on availability and status -->
-		  {#if ticket.soldOut}
-			<!-- Sold Out Ticket -->
-			<div class="ticket {getTicketClass(ticket)} sold-out">
-			  <div class="ticket-content">
-				<h3>{ticket.name}</h3>
-				<p class="price">₱ {ticket.price.toLocaleString()}</p>
-			  </div>
-			  <div class="sold-out-overlay">SOLD OUT</div>
-			</div>
-		  {:else if ticket.availableIn}
-			<!-- Time-restricted Ticket -->
-			<div class="ticket {getTicketClass(ticket)}">
-			  <div class="ticket-content">
-				<h3>{ticket.name}</h3>
-				<p class="price">₱ {ticket.price.toLocaleString()}</p>
-			  </div>
-			  <div class="available-overlay">
-				AVAILABLE IN<br />
-				{ticket.availableIn}
-			  </div>
-			</div>
-		  {:else}
-			<!-- Available Ticket -->
-			<div 
-			  class="ticket {getTicketClass(ticket)}" 
-			  class:selected={selectedTicket?.id === ticket.id} 
-			  on:click={() => selectTicket(ticket)}
-			>
-			  <div class="ticket-content">
-				<h3>{ticket.name}</h3>
-				<p class="price">₱ {ticket.price.toLocaleString()}</p>
-				{#if ticket.remainingTickets !== undefined}
-				  <p class="remaining">Ticket left: {ticket.remainingTickets}/{ticket.totalTickets}</p>
-				{/if}
-			  </div>
-			  {#if selectedTicket?.id === ticket.id}
-				<div class="checkmark">✓</div>
-			  {/if}
-			</div>
-		  {/if}
-		{/each}
-	  </div>
-	  
-	  <!-- Date restricted tickets (**unnecessary**)
-	  <div class="date-restriction-grid">
-		<div class="date-restriction">
-		  <p>ONLY AVAILABLE BETWEEN</p>
-		  <p class="dates">{restrictedDates.start} and {restrictedDates.end}</p>
-		</div>
-		
-		<div class="date-restriction">
-		  <p>ONLY AVAILABLE BETWEEN</p>
-		  <p class="dates">{restrictedDates.start} and {restrictedDates.end}</p>
-		</div>
-	  </div>
-	</section>-->
-	
-	<!-- Voucher Section -->
-	<section class="voucher-section">
-	  <h2>Voucher (Optional)</h2>
-	  
-	  <form id="voucherForm" method="POST" action="?/validateVoucher">
-		<div class="voucher-input-group">
-		  <input 
-			type="text" 
-			name="voucher"
-			placeholder="Enter voucher code" 
-			bind:value={voucherCode}
-		  />
-		  
-		  <input type="hidden" name="ticketId" value={selectedTicket?.id || ''} />
-		  
-		  <button 
-			type="button" 
-			class="apply-voucher" 
-			on:click={checkVoucher} 
-			disabled={isCheckingVoucher || !voucherCode.trim() || !selectedTicket}
-		  >
-			{isCheckingVoucher ? 'Checking...' : 'Apply'}
-		  </button>
-		</div>
-		
-		{#if voucherMessage}
-		  <div class="voucher-message" class:voucher-valid={voucherStatus} class:voucher-invalid={voucherStatus === false}>
-			{voucherMessage}
-		  </div>
-		{/if}
-	  </form>
-	</section>
-	
-	<!-- Quantity and Total Section -->
-	<section class="checkout-section">
-	  <div class="quantity-control">
-		<span>Quantity</span>
-		<div class="quantity-buttons">
-		  <button on:click={() => adjustQuantity(-1)} disabled={quantity <= 1}>−</button>
-		  <span>{quantity}</span>
-		  <button on:click={() => adjustQuantity(1)} disabled={selectedTicket && quantity >= selectedTicket.remainingTickets}>+</button>
-		</div>
-	  </div>
-	  
-	  <p class="registration-note">Single registration will be used</p>
-	  
-	  {#if discount > 0}
-		<div class="pricing-breakdown">
-		  <div class="pricing-row">
-			<span>Subtotal:</span>
-			<span>₱ {(selectedTicket?.price * quantity).toLocaleString()}</span>
-		  </div>
-		  <div class="pricing-row discount">
-			<span>Discount:</span>
-			<span>- ₱ {discount.toLocaleString()}</span>
-		  </div>
-		</div>
-	  {/if}
-	  
-	  <div class="total">
-		<span>Total:</span>
-		<span class="total-price">₱ {total.toLocaleString()}</span>
-	  </div>
-	  
-	  <button class="next-button" on:click={handleNext} disabled={!selectedTicket}>
-		NEXT
-	  </button>
-	</section>
-  </div>
-  
+</script>
+
+<svelte:head>
   <style>
-	/* Base styles */
-	:global(body) {
-	  margin: 0;
-	  padding: 0;
-	  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
-	  background-color: #1e293b;
-	  color: white;
-	}
-	
-	.booking-container {
-	  max-width: 800px;
-	  margin: 0 auto;
-	  padding: 20px;
-	}
-	
-	h1 {
-	  font-size: 1.5rem;
-	  margin-bottom: 1.5rem;
-	}
-	
-	h2 {
-	  font-size: 1.25rem;
-	  margin-bottom: 1rem;
-	}
-	
-	/* Ticket grid */
-	.ticket-grid {
-	  display: grid;
-	  grid-template-columns: 1fr 1fr;
-	  gap: 15px;
-	  margin-bottom: 15px;
-	}
-	
-	.ticket {
-	  position: relative;
-	  border-radius: 4px;
-	  overflow: hidden;
-	  min-height: 100px;
-	  cursor: pointer;
-	  transition: transform 0.2s;
-	  border-left: 4px solid;
-	}
-	
-	.ticket:hover:not(.sold-out) {
-	  transform: translateY(-2px);
-	}
-	
-	.ticket-content {
-	  padding: 15px;
-	}
-	
-	.ticket h3 {
-	  margin: 0 0 5px 0;
-	}
-	
-	.price {
-	  font-size: 1.5rem;
-	  font-weight: bold;
-	  margin: 0;
-	}
-	
-	.remaining {
-	  font-size: 0.8rem;
-	  margin: 5px 0 0 0;
-	}
-	
-	/* Ticket types styling */
-	.vvip {
-	  background-color: #8B4513;
-	  border-left-color: #CD853F;
-	  color: white;
-	}
-	
-	.vip {
-	  background-color: #FFD700;
-	  border-left-color: #FFA500;
-	  color: black;
-	}
-	
-	.patron-a {
-	  background-color: #FFD700;
-	  border-left-color: #FFA500;
-	  color: black;
-	}
-	
-	.patron-b {
-	  background-color: white;
-	  border-left-color: #4CAF50;
-	  color: black;
-	}
-	
-	.lower-box {
-	  background-color: #800080;
-	  border-left-color: #9932CC;
-	  color: white;
-	}
-	
-	.upper-box {
-	  background-color: #008080;
-	  border-left-color: #00CED1;
-	  color: white;
-	}
-	
-	.standing-a, .standing-b {
-	  background-color: white;
-	  color: black;
-	}
-	
-	.standing-a {
-	  border-left-color: #FF0000;
-	}
-	
-	.standing-b {
-	  border-left-color: #FF0000;
-	}
-	
-	/* Overlays */
-	.sold-out-overlay {
-	  position: absolute;
-	  top: 0;
-	  left: 0;
-	  right: 0;
-	  bottom: 0;
-	  background-color: rgba(0, 0, 0, 0.7);
-	  display: flex;
-	  align-items: center;
-	  justify-content: center;
-	  font-weight: bold;
-	  font-size: 1.2rem;
-	}
-	
-	.available-overlay {
-	  position: absolute;
-	  top: 0;
-	  left: 0;
-	  right: 0;
-	  bottom: 0;
-	  background-color: rgba(0, 0, 0, 0.7);
-	  display: flex;
-	  align-items: center;
-	  justify-content: center;
-	  flex-direction: column;
-	  text-align: center;
-	  font-weight: bold;
-	}
-	
-	.checkmark {
-	  position: absolute;
-	  top: 10px;
-	  right: 10px;
-	  color: green;
-	  font-size: 1.5rem;
-	}
-	
-	/* Date restriction section */
-	.date-restriction-grid {
-	  display: grid;
-	  grid-template-columns: 1fr 1fr;
-	  gap: 15px;
-	  margin-bottom: 20px;
-	}
-	
-	.date-restriction {
-	  background-color: rgba(0, 0, 0, 0.7);
-	  border-radius: 4px;
-	  padding: 15px;
-	  text-align: center;
-	}
-	
-	.date-restriction p {
-	  margin: 0;
-	  font-size: 0.85rem;
-	}
-	
-	.dates {
-	  font-weight: bold;
-	}
-	
-	/* Voucher section */
-	.voucher-section {
-	  margin-bottom: 20px;
-	}
-	
-	.voucher-input-group {
-	  display: flex;
-	  gap: 10px;
-	}
-	
-	input {
-	  flex: 1;
-	  padding: 12px;
-	  border: none;
-	  border-radius: 4px;
-	  background-color: #D3D3D3;
-	  color: #333;
-	  font-size: 1rem;
-	}
-	
-	.apply-voucher {
-	  padding: 0 20px;
-	  background-color: #4CAF50;
-	  color: white;
-	  border: none;
-	  border-radius: 4px;
-	  font-weight: bold;
-	  cursor: pointer;
-	  transition: background-color 0.2s;
-	}
-	
-	.apply-voucher:hover:not(:disabled) {
-	  background-color: #45a049;
-	}
-	
-	.apply-voucher:disabled {
-	  background-color: #cccccc;
-	  cursor: not-allowed;
-	  opacity: 0.7;
-	}
-	
-	.voucher-message {
-	  margin-top: 10px;
-	  padding: 8px;
-	  border-radius: 4px;
-	  font-size: 0.9rem;
-	}
-	
-	.voucher-valid {
-	  background-color: rgba(76, 175, 80, 0.2);
-	  color: #4CAF50;
-	}
-	
-	.voucher-invalid {
-	  background-color: rgba(244, 67, 54, 0.2);
-	  color: #F44336;
-	}
-	
-	/* Checkout section */
-	.checkout-section {
-	  background-color: black;
-	  border-radius: 4px;
-	  padding: 20px;
-	}
-	
-	.quantity-control {
-	  display: flex;
-	  justify-content: space-between;
-	  align-items: center;
-	  margin-bottom: 15px;
-	}
-	
-	.quantity-buttons {
-	  display: flex;
-	  align-items: center;
-	  background-color: #424242;
-	  border-radius: 20px;
-	}
-	
-	.quantity-buttons button {
-	  width: 36px;
-	  height: 36px;
-	  border-radius: 50%;
-	  border: none;
-	  background-color: transparent;
-	  color: white;
-	  font-size: 1.2rem;
-	  cursor: pointer;
-	}
-	
-	.quantity-buttons button:disabled {
-	  opacity: 0.5;
-	  cursor: not-allowed;
-	}
-	
-	.quantity-buttons span {
-	  width: 40px;
-	  text-align: center;
-	}
-	
-	.registration-note {
-	  color: #888;
-	  font-size: 0.8rem;
-	  margin-bottom: 15px;
-	}
-	
-	.pricing-breakdown {
-	  margin-bottom: 15px;
-	  border-bottom: 1px solid #333;
-	  padding-bottom: 10px;
-	}
-	
-	.pricing-row {
-	  display: flex;
-	  justify-content: space-between;
-	  margin-bottom: 5px;
-	  font-size: 0.9rem;
-	  color: #aaa;
-	}
-	
-	.discount {
-	  color: #4CAF50;
-	}
-	
-	.total {
-	  display: flex;
-	  justify-content: space-between;
-	  align-items: center;
-	  margin-bottom: 20px;
-	}
-	
-	.total-price {
-	  font-size: 1.5rem;
-	  font-weight: bold;
-	}
-	
-	.next-button {
-	  width: 100%;
-	  padding: 15px;
-	  background-color: #E53935;
-	  color: white;
-	  border: none;
-	  border-radius: 4px;
-	  font-size: 1rem;
-	  font-weight: bold;
-	  cursor: pointer;
-	  transition: background-color 0.2s;
-	}
-	
-	.next-button:hover:not(:disabled) {
-	  background-color: #D32F2F;
-	}
-	
-	.next-button:disabled {
-	  opacity: 0.7;
-	  cursor: not-allowed;
-	}
-	
-	/* Selected ticket styling */
-	.selected {
-	  box-shadow: 0 0 0 2px #4CAF50;
-	}
+    /* Add global styles for backdrop blur */
+    .overlay-blur {
+      backdrop-filter: blur(3px);
+      background-color: rgba(0, 0, 0, 0.4) !important;
+    }
   </style>
+</svelte:head>
+
+<div class="max-w-3xl mx-auto p-5 text-white">
+  <h1 class="text-2xl mb-6">Booking Details</h1>
+  
+  <section class="mb-5">
+    <h2 class="text-xl mb-4">Select Tickets</h2>
+    
+    <div class="grid grid-cols-2 gap-4 mb-4">
+      {#each ticketTypes as ticket, index}
+        <!-- Render different ticket layouts based on availability and status -->
+        {#if ticket.soldOut}
+          <!-- Sold Out Ticket -->
+          <div class="relative overflow-hidden min-h-24 rounded border-l-4 {getTicketClass(ticket)}">
+            <div class="p-4">
+              <h3 class="m-0 mb-1">{ticket.name}</h3>
+              <p class="text-2xl font-bold m-0">₱ {ticket.price.toLocaleString()}</p>
+            </div>
+            <div class="absolute inset-0 overlay-blur flex items-center justify-center font-bold text-lg">
+              SOLD OUT
+            </div>
+          </div>
+        {:else if ticket.availableIn}
+          <!-- Time-restricted Ticket -->
+          <div class="relative overflow-hidden min-h-24 rounded border-l-4 {getTicketClass(ticket)}">
+            <div class="p-4">
+              <h3 class="m-0 mb-1">{ticket.name}</h3>
+              <p class="text-2xl font-bold m-0">₱ {ticket.price.toLocaleString()}</p>
+            </div>
+            <div class="absolute inset-0 overlay-blur flex flex-col items-center justify-center font-bold text-center">
+              AVAILABLE IN<br />
+              {ticket.availableIn}
+            </div>
+          </div>
+        {:else}
+          <!-- Available Ticket -->
+          <div 
+            class="relative overflow-hidden min-h-24 rounded border-l-4 {getTicketClass(ticket)} cursor-pointer transition transform hover:-translate-y-0.5 {selectedTicket?.id === ticket.id ? 'ring-2 ring-green-500' : ''}"
+            on:click={() => selectTicket(ticket)}
+          >
+            <div class="p-4">
+              <h3 class="m-0 mb-1">{ticket.name}</h3>
+              <p class="text-2xl font-bold m-0">₱ {ticket.price.toLocaleString()}</p>
+              {#if ticket.remainingTickets !== undefined}
+                <p class="text-xs mt-1 mb-0">Ticket left: {ticket.remainingTickets}/{ticket.totalTickets}</p>
+              {/if}
+            </div>
+            {#if selectedTicket?.id === ticket.id}
+              <div class="absolute top-2 right-2 text-green-500 text-2xl">✓</div>
+            {/if}
+          </div>
+        {/if}
+      {/each}
+    </div>
+  </section>
+  
+  <!-- Voucher Section -->
+  <section class="mb-5">
+    <h2 class="text-xl mb-4">Voucher (Optional)</h2>
+    
+    <form id="voucherForm" method="POST" action="?/validateVoucher">
+      <div class="flex gap-2">
+        <input 
+          type="text" 
+          name="voucher"
+          placeholder="Enter voucher code" 
+          bind:value={voucherCode}
+          class="flex-1 p-3 border-none rounded bg-gray-300 text-gray-800 text-base"
+        />
+        
+        <input type="hidden" name="ticketId" value={selectedTicket?.id || ''} />
+        
+        <button 
+          type="button" 
+          class="px-5 bg-green-500 text-white border-none rounded font-bold cursor-pointer transition hover:bg-green-600 disabled:bg-gray-400 disabled:opacity-70 disabled:cursor-not-allowed"
+          on:click={checkVoucher} 
+          disabled={isCheckingVoucher || !voucherCode.trim() || !selectedTicket}
+        >
+          {isCheckingVoucher ? 'Checking...' : 'Apply'}
+        </button>
+      </div>
+      
+      {#if voucherMessage}
+        <div class="mt-2 p-2 rounded text-sm {voucherStatus ? 'bg-green-500 bg-opacity-20 text-green-500' : 'bg-red-500 bg-opacity-20 text-red-500'}">
+          {voucherMessage}
+        </div>
+      {/if}
+    </form>
+  </section>
+  
+  <!-- Quantity and Total Section -->
+  <section class="bg-black rounded p-5">
+    <div class="flex justify-between items-center mb-4">
+      <span>Quantity</span>
+      <div class="flex items-center bg-gray-700 rounded-full">
+        <button 
+          class="w-9 h-9 rounded-full bg-transparent text-white text-lg cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          on:click={() => adjustQuantity(-1)} 
+          disabled={quantity <= 1}
+        >−</button>
+        <span class="w-10 text-center">{quantity}</span>
+        <button 
+          class="w-9 h-9 rounded-full bg-transparent text-white text-lg cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          on:click={() => adjustQuantity(1)} 
+          disabled={selectedTicket && quantity >= selectedTicket.remainingTickets}
+        >+</button>
+      </div>
+    </div>
+    
+    <p class="text-gray-500 text-xs mb-4">Single registration will be used</p>
+    
+    {#if discount > 0}
+      <div class="mb-4 border-b border-gray-700 pb-2">
+        <div class="flex justify-between mb-1 text-sm text-gray-400">
+          <span>Subtotal:</span>
+          <span>₱ {(selectedTicket?.price * quantity).toLocaleString()}</span>
+        </div>
+        <div class="flex justify-between text-sm text-green-500">
+          <span>Discount:</span>
+          <span>- ₱ {discount.toLocaleString()}</span>
+        </div>
+      </div>
+    {/if}
+    
+    <div class="flex justify-between items-center mb-5">
+      <span>Total:</span>
+      <span class="text-2xl font-bold">₱ {total.toLocaleString()}</span>
+    </div>
+    
+    <button 
+      class="w-full py-4 bg-red-600 text-white border-none rounded text-base font-bold cursor-pointer transition hover:bg-red-700 disabled:opacity-70 disabled:cursor-not-allowed"
+      on:click={handleNext} 
+      disabled={!selectedTicket}
+    >
+      NEXT
+    </button>
+  </section>
+</div>
