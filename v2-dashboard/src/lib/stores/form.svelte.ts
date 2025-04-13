@@ -1,7 +1,7 @@
-
 import type { FormData } from '../../routes/[eventId]/form/types';
 
 let initialFormData: FormData = {
+    id: 1, // Default ID for the initial form
     title: 'Registration Form',
     description: 'Please fill out this registration form',
     formBuilder: []
