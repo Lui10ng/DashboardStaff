@@ -1,10 +1,49 @@
-<script>
+<script lang="ts">
 	import { enhance } from '$app/forms';
 	import RichTextEditor from '$lib/components/ui/RichText.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
 	import { fly } from 'svelte/transition';
 	import { Dialog } from 'bits-ui';
+
+	let sampleImages = $state([
+		{
+			id: 1,
+			url: '/images/background.png',
+			fallback: 'https://via.placeholder.com/300'
+		},
+		{ id: 2, url: '/images/veent-logo.svg' },
+		{ id: 3, url: 'placeholder3.jpg', name: 'Jhone' },
+		{ id: 4, url: 'placeholder4.jpg', name: 'Jack' }
+	]);
+
+	let isMoving = $state(false);
+	let movingIndex = $state<number | null>(null);
+
+	async function moveImage(currentIndex: number, direction: 'left' | 'right') {
+		const newIndex = direction === 'left' ? currentIndex - 1 : currentIndex + 1;
+
+		// Check if the move is valid
+		if (newIndex >= 0 && newIndex < sampleImages.length) {
+			isMoving = true;
+			movingIndex = currentIndex;
+
+			try {
+				await new Promise((resolve) => setTimeout(resolve, 500));
+
+				const newImages = [...sampleImages];
+
+				[newImages[currentIndex], newImages[newIndex]] = [
+					newImages[newIndex],
+					newImages[currentIndex]
+				];
+				sampleImages = newImages;
+			} finally {
+				isMoving = false;
+				movingIndex = null;
+			}
+		}
+	}
 </script>
 
 <div class="space-y-5" in:fly={{ y: -50, duration: 200 }}>
@@ -53,4 +92,72 @@
 			</form>
 		{/snippet}
 	</Modal>
+	<div class="mt-6 flex gap-2" in:fly={{ x: 0, duration: 200 }}>
+		{#each sampleImages as image, index (image.id)}
+			<div
+				class="relative h-80 w-80 overflow-hidden rounded-md border border-black"
+				transition:fly={{ x: 0, duration: 200 }}
+			>
+				{#if index > 0 && index < sampleImages.length - 1}
+					<button
+						class="absolute left-1 top-1 flex h-10 w-10 items-center justify-center rounded-sm bg-red-500 text-white transition-colors hover:bg-red-300 disabled:opacity-50"
+						onclick={() => moveImage(index, 'left')}
+						disabled={isMoving}
+					>
+						{#if isMoving && movingIndex === index}
+							<div
+								class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
+							/>
+						{:else}
+							<i class="fa-solid fa-arrow-left" />
+						{/if}
+					</button>
+					<button
+						class="absolute right-1 top-1 flex h-10 w-10 items-center justify-center rounded-sm bg-red-500 text-white transition-colors hover:bg-red-300 disabled:opacity-50"
+						onclick={() => moveImage(index, 'right')}
+						disabled={isMoving}
+					>
+						{#if isMoving && movingIndex === index}
+							<div
+								class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
+							/>
+						{:else}
+							<i class="fa-solid fa-arrow-right" />
+						{/if}
+					</button>
+				{:else}
+					<button
+						class={`absolute top-1 ${index === sampleImages.length - 1 ? 'left-1' : 'right-1'}
+						flex h-10 w-10 items-center justify-center rounded-sm bg-red-500 text-white transition-colors hover:bg-red-300 disabled:opacity-50`}
+						onclick={() => moveImage(index, index === sampleImages.length - 1 ? 'left' : 'right')}
+						disabled={isMoving}
+					>
+						{#if isMoving && movingIndex === index}
+							<div
+								class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
+							/>
+						{:else}
+							<i
+								class={`fa-solid ${
+									index === sampleImages.length - 1 ? 'fa-arrow-left' : 'fa-arrow-right'
+								}`}
+							/>
+						{/if}
+					</button>
+				{/if}
+				<div class="flex h-full w-full items-center justify-center bg-gray-100">
+					<img
+						src={image.url}
+						alt={image.name || 'Image'}
+						onerror={(e: Event) => {
+							const target = e.target as HTMLImageElement;
+							if (target && image.fallback) target.src = image.fallback;
+						}}
+						class="h-full w-full object-cover"
+					/>
+					<p class="text-sm text-gray-600">{image.name}</p>
+				</div>
+			</div>
+		{/each}
+	</div>
 </div>
