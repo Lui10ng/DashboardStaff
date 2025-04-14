@@ -5,6 +5,7 @@
 	import { enhance } from '$app/forms';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { fly } from 'svelte/transition';
+	import { stateDrawer } from '$lib/stores/state.svelte.ts';
 
 	const pendingStaffStore = $state(pendingStaffMembers);
 	const staffMembersStore = $state(staffMembers);
@@ -29,6 +30,7 @@
 	let showOthersInput = $state(false);
 	let otherAttendanceValue = $state('');
 	let showCopyPopup = $state(false);
+	const drawerState = $derived(stateDrawer.open);
 
 	function navigateTo(path: string) {
 		if (path) {
@@ -155,6 +157,10 @@
 	function handleClosePopup() {
 		showCopyPopup = false;
 	}
+
+	const handleOpenDrawer = () => {
+		return (stateDrawer.open = true);
+	};
 </script>
 
 <div class="min-h-screen bg-white" in:fly={{ y: -50, duration: 200 }}>
@@ -170,10 +176,15 @@
 					<p class="text-sm">Your Staff History</p>
 				</div>
 				<div class="flex w-full flex-col space-y-3 md:w-auto md:flex-row md:space-x-3 md:space-y-0">
+					<Button
+						label="Edit Scanner"
+						icon="fa-solid fa-pen"
+						className="bg-primary text-white rounded-lg px-4 py-2"
+						onClick={() => handleOpenDrawer()}
+					/>
 					<Drawer
+						isOpen={drawerState}
 						contentBaseClass="bg-white p-4 space-y-4 shadow-xl w-full sm:w-[35rem] h-svh"
-						buttonLabel="Edit Scanner"
-						buttonIcon="fa-solid fa-pen"
 						justify="justify-end"
 						alignment="items-start"
 						positionIn={{ x: 480, duration: 200 }}

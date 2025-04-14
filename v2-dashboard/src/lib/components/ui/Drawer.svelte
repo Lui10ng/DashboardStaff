@@ -1,12 +1,9 @@
 <script lang="ts">
 	import { Modal } from '@skeletonlabs/skeleton-svelte';
-	import Button from '$lib/components/ui/Button.svelte';
+	import { stateDrawer } from '$lib/stores/state.svelte.ts';
 
 	let {
-		initialDrawerState = false,
-		buttonLabel = 'Add Ticket',
-		buttonIcon = 'fa-solid fa-plus text-sm',
-		buttonClass = 'bg-gray-200 px-4 py-2 rounded-md',
+		isOpen,
 		contentBaseClass = '',
 		justify = '',
 		alignment = '',
@@ -16,22 +13,14 @@
 		children
 	} = $props();
 
-	let drawerState = $state(initialDrawerState);
-
-	const handleOpenDrawer = () => {
-		drawerState = true;
-	};
-
 	const handleCloseDrawer = () => {
-		drawerState = false;
+		stateDrawer.open = false;
 	};
 </script>
 
-<Button label={buttonLabel} icon={buttonIcon} className={buttonClass} onClick={handleOpenDrawer} />
-
 <Modal
-	open={drawerState}
-	onOpenChange={(e) => (drawerState = e.open)}
+	open={isOpen}
+	onOpenChange={handleCloseDrawer}
 	contentBase={contentBaseClass}
 	positionerJustify={justify}
 	positionerAlign={alignment}

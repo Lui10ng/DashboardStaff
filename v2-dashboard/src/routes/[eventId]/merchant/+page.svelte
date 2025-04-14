@@ -18,6 +18,15 @@
 	import SeatStats from '$lib/components/seat-generator/SeatStats.svelte';
 	import VenueImageUpload from '$lib/components/seat-generator/VenueImageUpload.svelte';
 	import { fly } from 'svelte/transition';
+	import { stateDrawer } from '$lib/stores/state.svelte.ts';
+
+	// Get server data
+	let { data } = $props();
+
+	const drawerState = $derived(stateDrawer.open);
+
+	// Track initialization state
+	let initialized = $state(false);
 
 	$effect(() => {
 		ticketStore.set(data.tickets);
@@ -41,12 +50,6 @@
 		return 'text-gray-400';
 	};
 
-	// Get server data
-	let { data } = $props();
-
-	// Track initialization state
-	let initialized = $state(false);
-
 	// Initialize data with effect (runs once on component creation)
 	$effect(() => {
 		if (initialized) return;
@@ -63,16 +66,25 @@
 		// Mark as initialized
 		initialized = true;
 	});
+
+	const handleOpenDrawer = () => {
+		return (stateDrawer.open = true);
+	};
 </script>
 
 <div class="space-y-8" in:fly={{ y: -50, duration: 200 }}>
 	<div class="mb-4 flex items-center justify-between">
 		<h2 class="text-xl font-semibold">Tickets</h2>
 		<div class="flex gap-2">
+			<Button
+				label="Add Ticket"
+				icon="fa-solid fa-plus text-sm"
+				className="bg-gray-200 px-4 py-2 rounded-md"
+				onClick={() => handleOpenDrawer()}
+			/>
 			<Drawer
+				isOpen={drawerState}
 				contentBaseClass="bg-white p-4 space-y-4 shadow-xl w-full h-[90vh] rounded-t-xl overflow-y-auto"
-				buttonLabel="Add Ticket"
-				buttonIcon="fa-solid fa-plus text-sm"
 				alignment="items-end"
 				positionIn={{ y: 600, duration: 200 }}
 				positionOut={{ y: 600, duration: 200 }}

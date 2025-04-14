@@ -6,7 +6,9 @@ export const eventSchema = z.object({
 	location: z.string().min(1, 'Location is required'),
 	richText: z.string().min(1, 'Description is required'),
 	startDate: z.string().min(1, 'Start date is required'),
+	startTime: z.string().min(1, 'Start time is required'),
 	endDate: z.string().min(1, 'End date is required'),
+	endTime: z.string().min(1, 'End time is required'),
 	logo: z
 		.instanceof(File, { message: 'Please upload a file.' })
 		.refine((image) => image.size < 10 * 1024 * 1024, 'Max 10MB upload size.')

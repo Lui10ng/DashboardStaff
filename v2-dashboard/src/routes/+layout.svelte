@@ -6,6 +6,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
 	import { page } from '$app/stores';
+	import { ToastProvider } from '@skeletonlabs/skeleton-svelte';
 
 	let { children } = $props();
 
@@ -55,8 +56,14 @@
 
 <div class="bg-white">
 	<div class="mx-auto max-w-7xl px-5 pb-8 pt-6">
-		<Tooltip.Provider>
-			{@render children()}
-		</Tooltip.Provider>
+		<ToastProvider
+			placement="top-end"
+			stateSuccess="bg-green-500 text-white text-base p-2"
+			stateError="bg-red-500 text-white text-base p-2"
+		>
+			<Tooltip.Provider>
+				{@render children()}
+			</Tooltip.Provider>
+		</ToastProvider>
 	</div>
 </div>
