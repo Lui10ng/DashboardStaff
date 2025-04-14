@@ -73,7 +73,7 @@
 		$form.location = event.detail;
 	};
 
-	const handleEvent = (id: string) => {
+	const handleEvent = (id: number) => {
 		goto(`${id}/registrants`);
 	};
 
@@ -87,29 +87,29 @@
 		currentPage = 1;
 	};
 
-	const handleScanQR = (id: string) => {
+	const handleScanQR = (id: number) => {
 		console.log(`Scan QR for event ${id}`);
 	};
 
-	const handleTickets = (id: string) => {
+	const handleTickets = (id: number) => {
 		console.log(`View tickets for event ${id}`);
 	};
 
-	const handleCopyLink = (id: string) => {
+	const handleCopyLink = (id: number) => {
 		console.log(`Copy link for event ${id}`);
 	};
 
-	const handleShare = (id: string) => {
+	const handleShare = (id: number) => {
 		console.log(`Share event ${id}`);
 	};
 
 	// Handle duplicating an event
-	const handleDuplicateEvent = (id: string) => {
+	const handleDuplicateEvent = (id: number) => {
 		console.log(`Duplicating event ${id}`);
 		// Code to duplicate the event would go here
 	};
 
-	const handleDropdownSelection = (item: string, eventId: string) => {
+	const handleDropdownSelection = (item: string, eventId: number) => {
 		switch (item) {
 			case 'Scanner':
 				handleScanQR(eventId);
@@ -371,12 +371,12 @@
 						{/if}
 					</div>
 
-					<button
+					<Button
 						type="submit"
-						class="bg-primary w-full rounded-lg py-4 text-white transition-colors"
-					>
-						Create Event
-					</button>
+						onClick
+						label="Create Event"
+						className="bg-primary w-full rounded-lg py-4 text-white transition-colors"
+					/>
 				</div>
 			</div>
 		</form>
