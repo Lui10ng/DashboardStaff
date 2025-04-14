@@ -150,20 +150,21 @@ export const actions = {
         });
       }
       
+      // Calculate subtotal first
+      const subtotal = ticket.price * quantity;
+      
       // Process voucher if provided
       let discount = 0;
       if (voucherCode) {
         try {
-          const voucherResult = await validateVoucher(voucherCode, ticketId);
+          // Pass quantity to validateVoucher
+          const voucherResult = await validateVoucher(voucherCode, ticketId, quantity);
           discount = voucherResult.discount;
         } catch (error) {
           // If voucher is invalid, continue without discount
           console.error('Voucher validation error:', error);
         }
       }
-      
-      // Calculate subtotal
-      const subtotal = ticket.price * quantity;
       
       // Calculate total with discount
       const total = subtotal - discount;
@@ -198,6 +199,7 @@ export const actions = {
     const formData = await request.formData();
     const voucherCode = formData.get('voucher')?.toString();
     const ticketId = formData.get('ticketId')?.toString();
+    const quantity = parseInt(formData.get('quantity')?.toString() || '1');
     
     if (!voucherCode) {
       return fail(400, { voucherError: 'No voucher provided' });
@@ -208,8 +210,8 @@ export const actions = {
     }
     
     try {
-      // Check if voucher is valid
-      const result = await validateVoucher(voucherCode, ticketId);
+      // Check if voucher is valid, pass quantity
+      const result = await validateVoucher(voucherCode, ticketId, quantity);
       
       return {
         voucherValid: true,
@@ -240,7 +242,7 @@ async function getTicketFromDatabase(ticketId) {
   return tickets.find(t => t.id === ticketId);
 }
 
-async function validateVoucher(code, ticketId) {
+async function validateVoucher(code, ticketId, quantity = 1) {
   // In a real app, check database for valid vouchers
   const validVouchers = {
     'DISCOUNT40': { 
@@ -276,8 +278,11 @@ async function validateVoucher(code, ticketId) {
     throw new Error('Invalid ticket selection');
   }
   
-  // Calculate discount amount based on ticket price
-  const discountAmount = Math.round(ticket.price * voucher.discountRate);
+  // Calculate subtotal (price × quantity)
+  const subtotal = ticket.price * quantity;
+  
+  // Calculate discount amount based on subtotal
+  const discountAmount = Math.round(subtotal * voucher.discountRate);
   
   return {
     discount: discountAmount,

@@ -1,4 +1,3 @@
-
 <script>
 	import { onMount } from 'svelte';
 	import { enhance } from '$app/forms';
@@ -70,9 +69,11 @@
     // Ensure form has the current values
     const voucherInput = form.querySelector('input[name="voucher"]');
     const ticketInput = form.querySelector('input[name="ticketId"]');
+    const quantityInput = form.querySelector('input[name="quantity"]');
     
     if (voucherInput) voucherInput.value = voucherCode;
     if (ticketInput) ticketInput.value = selectedTicket?.id || '';
+    if (quantityInput) quantityInput.value = quantity.toString();
     
     // Submit the form using the action
     form.requestSubmit();
@@ -108,6 +109,11 @@
 	  if (newQuantity >= 1 && (!selectedTicket || newQuantity <= selectedTicket.remainingTickets)) {
 		quantity = newQuantity;
 		calculateTotal();
+		
+		// Re-check voucher when quantity changes to update discount
+		if (voucherCode && selectedTicket) {
+		  checkVoucher();
+		}
 	  }
 	}
 	
@@ -291,6 +297,7 @@
     />
     
     <input type="hidden" name="ticketId" value={selectedTicket?.id || ''} />
+    <input type="hidden" name="quantity" value={quantity} />
     
     <button 
       type="submit" 
