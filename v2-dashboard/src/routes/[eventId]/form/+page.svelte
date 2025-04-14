@@ -6,6 +6,7 @@
 	import { fly } from 'svelte/transition';
 
 	const { data } = $props();
+	console.log('Received data from server:', data);
 
 	let isEditMode = $state(false);
 	let formResponses = $state<Record<string, any>>({});
@@ -17,27 +18,35 @@
 		{ fieldType: 'longText', label: 'Long Text', icon: 'fa-paragraph' },
 		{ fieldType: 'email', label: 'Email', icon: 'fa-envelope' },
 		{ fieldType: 'phone', label: 'Phone', icon: 'fa-phone' },
-		{ fieldType: 'number', label: 'Number', icon: 'fa-hashtag' },
 		{ fieldType: 'date', label: 'Date', icon: 'fa-calendar' },
+		{ fieldType: 'time', label: 'Time', icon: 'fa-clock' },
 		{ fieldType: 'multipleChoice', label: 'Multiple Choice', icon: 'fa-list-ul' },
 		{ fieldType: 'checkbox', label: 'Checkbox', icon: 'fa-check-square' },
 		{ fieldType: 'dropdown', label: 'Dropdown', icon: 'fa-chevron-down' },
 		{ fieldType: 'file', label: 'File Upload', icon: 'fa-upload' },
-		{ fieldType: 'time', label: 'Time', icon: 'fa-clock' },
 		{ fieldType: 'region', label: 'Region & City', icon: 'fa-map-marker-alt' }
 	];
 
 	$effect(() => {
-		formStore.setFormData(
-			data?.formData || {
+		console.log('Effect running with data:', data);
+		if (data?.formData) {
+			console.log('Setting form data:', data.formData);
+			formStore.setFormData(data.formData);
+		} else {
+			console.log('No form data received, using default');
+			formStore.setFormData({
+				id: 1, // Default ID for new forms
 				title: 'Registration Form',
 				description: 'Please fill out this registration form',
 				formBuilder: []
-			}
-		);
+			});
+		}
 	});
 
 	let formData = $derived(formStore.getFormData());
+	$effect(() => {
+		console.log('Current formData:', formData);
+	});
 
 	interface Region {
 		id: string;
@@ -132,8 +141,30 @@
 		}
 	}
 
-	function deleteField(id: string) {
-		formData.formBuilder = formData.formBuilder.filter((field) => field.id !== id);
+	async function deleteField(id: string) {
+		try {
+			const formDataToSubmit = new FormData();
+			formDataToSubmit.append('formId', formData.id.toString());
+			formDataToSubmit.append('fieldId', id);
+
+			const response = await fetch('?/deleteField', {
+				method: 'POST',
+				body: formDataToSubmit
+			});
+
+			const result = await response.json();
+			console.log('Delete response:', result);
+
+			if (result.type === 'success' && result.status === 200) {
+				formData.formBuilder = formData.formBuilder.filter((field) => field.id !== id);
+				console.log('Field deleted successfully');
+			} else {
+				throw new Error(result.error || 'Failed to delete field');
+			}
+		} catch (error) {
+			console.error('Error deleting field:', error);
+			alert('Failed to delete field. Please try again.');
+		}
 	}
 
 	function updateField(updatedField: FormField) {
@@ -146,17 +177,75 @@
 		isEditMode = !isEditMode;
 	}
 
-	function handleSaveChanges() {
-		formData.formBuilder = formData.formBuilder.map((field) => ({
-			...field,
-			id: field.id || crypto.randomUUID()
-		}));
+	async function handleSaveChanges() {
+		try {
+			formData.formBuilder = formData.formBuilder.map((field) => ({
+				...field,
+				id: field.id || crypto.randomUUID()
+			}));
 
-		isEditMode = false;
+			const formDataToSubmit = new FormData();
+			formDataToSubmit.append('formData', JSON.stringify(formData));
+
+			const response = await fetch('?/saveForm', {
+				method: 'POST',
+				body: formDataToSubmit
+			});
+
+			const result = await response.json();
+			console.log('Save response:', result);
+
+			// Check if response indicates success
+			if (result.type === 'success' && result.status === 200) {
+				console.log('Form saved successfully');
+				isEditMode = false;
+			} else {
+				throw new Error(result.error || 'Failed to save form');
+			}
+		} catch (error) {
+			console.error('Error saving form:', error);
+			alert('Failed to save form changes. Please try again.');
+		}
 	}
 
 	function handleCancel() {
 		isEditMode = false;
+	}
+
+	function getInputType(fieldType: FieldType, name: string): string {
+		// Special handling for known field names
+		if (name === 'phone') {
+			return 'tel';
+		}
+
+		switch (fieldType) {
+			case 'email':
+				return 'email';
+			case 'phone':
+				return 'tel';
+			case 'date':
+				return 'date';
+			case 'file':
+				return 'file';
+			case 'text':
+			default:
+				return 'text';
+		}
+	}
+
+	function getFieldPlaceholder(name: string): string {
+		switch (name) {
+			case 'firstName':
+				return 'First name';
+			case 'lastName':
+				return 'Last name';
+			case 'contactNumber':
+				return '9XX XXX XXXX';
+			case 'email':
+				return 'Email address';
+			default:
+				return '';
+		}
 	}
 
 	function validateField(field: FormField, value: any): string | null {
@@ -164,21 +253,16 @@
 			return `${field.label} is required`;
 		}
 
-		switch (field.fieldType) {
+		switch (field.name) {
 			case 'email':
 				if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
 					return 'Please enter a valid email address';
 				}
 				break;
-			case 'phone':
+			case 'contactNumber':
 				const phoneNumber = value?.replace(/[^0-9]/g, '');
 				if (value && !/^[0-9]{10}$/.test(phoneNumber)) {
 					return 'Please enter a valid 10-digit phone number';
-				}
-				break;
-			case 'number':
-				if (value && isNaN(Number(value))) {
-					return 'Please enter a valid number';
 				}
 				break;
 		}
@@ -250,21 +334,6 @@
 			});
 
 			console.log('Updated form fields:', formData.formBuilder);
-		}
-	}
-
-	function getInputType(fieldType: FieldType): string {
-		switch (fieldType) {
-			case 'email':
-				return 'email';
-			case 'number':
-				return 'number';
-			case 'date':
-				return 'date';
-			case 'file':
-				return 'file';
-			default:
-				return 'text';
 		}
 	}
 </script>
@@ -372,16 +441,7 @@
 								<p class="text-sm text-red-500">{validationErrors[field.id]}</p>
 							{/if}
 
-							{#if field.fieldType === 'firstName' || field.fieldType === 'lastName'}
-								<input
-									type="text"
-									id={field.id}
-									class="w-full rounded-md border p-2"
-									placeholder={field.fieldType === 'firstName' ? 'First name' : 'Last name'}
-									required={field.required}
-									bind:value={formResponses[field.id]}
-								/>
-							{:else if field.fieldType === 'phone'}
+							{#if field.name === 'contactNumber'}
 								<div class="relative">
 									<span class="absolute left-3 top-2">+63</span>
 									<input
@@ -394,122 +454,14 @@
 										bind:value={formResponses[field.id]}
 									/>
 								</div>
-							{:else if field.fieldType === 'number'}
-								<div class="relative">
-									<span class="absolute left-3 top-2">₱</span>
-									<input
-										type="number"
-										id={field.id}
-										class="w-full rounded-md border p-2 pl-8"
-										placeholder="0.00"
-										step="0.01"
-										required={field.required}
-										bind:value={formResponses[field.id]}
-									/>
-								</div>
-							{:else if field.fieldType === 'multipleChoice'}
-								<div class="flex flex-wrap gap-4">
-									{#each field.options || [] as option, i}
-										<label class="inline-flex cursor-pointer items-center">
-											<input
-												type="radio"
-												id={`${field.id}_${i}`}
-												name={field.id}
-												value={option}
-												required={field.required}
-												bind:group={formResponses[field.id]}
-												class="mr-2 cursor-pointer"
-											/>
-											<span>{option}</span>
-										</label>
-									{/each}
-								</div>
-							{:else if field.fieldType === 'checkbox'}
-								<div class="flex flex-wrap gap-4">
-									{#each field.options || [] as option, i}
-										<label class="inline-flex cursor-pointer items-center">
-											<input
-												type="checkbox"
-												id={`${field.id}_${i}`}
-												value={option}
-												bind:group={formResponses[field.id]}
-												class="mr-2 cursor-pointer"
-											/>
-											<span>{option}</span>
-										</label>
-									{/each}
-								</div>
-							{:else if field.fieldType === 'dropdown'}
-								<select
-									id={field.id}
-									class="w-full rounded-md border p-2"
-									required={field.required}
-									bind:value={formResponses[field.id]}
-								>
-									{#each field.options || [] as option}
-										<option value={option}>{option}</option>
-									{/each}
-								</select>
-							{:else if field.fieldType === 'region'}
-								<select
-									id={field.id}
-									class="w-full cursor-pointer rounded-md border p-2"
-									required={field.required}
-									bind:value={formResponses[field.id]}
-									on:change={(e) => handleRegionChange(e, field.id)}
-								>
-									<option value="">Select Region</option>
-									{#each regions as region}
-										<option value={region.name}>{region.name}</option>
-									{/each}
-								</select>
-							{:else if field.fieldType === 'city'}
-								<select
-									id={field.id}
-									class="w-full cursor-pointer rounded-md border p-2"
-									required={field.required}
-									bind:value={formResponses[field.id]}
-								>
-									<option value="">Select City/Municipality</option>
-									{#each field.options || [] as city}
-										<option value={city}>{city}</option>
-									{/each}
-								</select>
-							{:else if field.fieldType === 'shortText'}
-								<input
-									id={field.id}
-									type="text"
-									maxlength="50"
-									class="w-full rounded-md border p-2"
-									required={field.required}
-									bind:value={formResponses[field.id]}
-									placeholder={field.description}
-								/>
-							{:else if field.fieldType === 'longText'}
-								<textarea
-									id={field.id}
-									class="w-full rounded-md border p-2"
-									required={field.required}
-									bind:value={formResponses[field.id]}
-									placeholder={field.description}
-									rows="4"
-								></textarea>
-							{:else if field.fieldType === 'time'}
-								<input
-									id={field.id}
-									type="time"
-									class="w-full rounded-md border p-2"
-									required={field.required}
-									bind:value={formResponses[field.id]}
-								/>
 							{:else}
 								<input
 									id={field.id}
-									type={getInputType(field.fieldType)}
+									type={getInputType(field.fieldType, field.name)}
 									class="w-full rounded-md border p-2"
+									placeholder={getFieldPlaceholder(field.name)}
 									required={field.required}
 									bind:value={formResponses[field.id]}
-									placeholder={field.description}
 								/>
 							{/if}
 						</div>

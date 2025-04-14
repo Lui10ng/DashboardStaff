@@ -25,34 +25,36 @@ import TicketTypes from './collections/TicketTypes'
 import Transactions from './collections/Transactions'
 import Users from './collections/Users'
 import Venues from './collections/Venues'
+import Forms from './collections/Forms'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
-const isDev = (process.env.NODE_ENV === 'development')
+const isDev = process.env.NODE_ENV === 'development'
 
 // Define plugins conditionally
 const conditionalPlugins = [
-  (!isDev) ? s3Storage({
-      collections: {
-        'media': true,
-      },
-      config: {
-        credentials: {
-          accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? '',
-          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? '',
+  !isDev
+    ? s3Storage({
+        collections: {
+          media: true,
         },
-        region: 'ap-southeast-1',
-        endpoint: "https://sgp1.digitaloceanspaces.com",
-      },
-      bucket: 'veent',
-      acl: "public-read",
-    })
+        config: {
+          credentials: {
+            accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? '',
+            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? '',
+          },
+          region: 'ap-southeast-1',
+          endpoint: 'https://sgp1.digitaloceanspaces.com',
+        },
+        bucket: 'veent',
+        acl: 'public-read',
+      })
     : null,
   // Add other conditional plugins here if needed
 ]
 
 // Filter out null values
-const activePlugins = conditionalPlugins.filter(plugin => plugin !== null)
+const activePlugins = conditionalPlugins.filter((plugin) => plugin !== null)
 
 export default buildConfig({
   admin: {
@@ -78,6 +80,7 @@ export default buildConfig({
     Transactions,
     Users,
     Venues,
+    Forms,
   ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
@@ -88,16 +91,9 @@ export default buildConfig({
     pool: {
       connectionString: process.env.DATABASE_URI || '',
     },
-    push: false
+    push: false,
   }),
   sharp,
-  plugins: [
-    payloadCloudPlugin(),
-    ...activePlugins
-  ],
-  cors: [
-  'http://localhost:5173', 
-  'http://localhost:5174', 
-  'http://localhost:1344',
-  ]
+  plugins: [payloadCloudPlugin(), ...activePlugins],
+  cors: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:1344'],
 })

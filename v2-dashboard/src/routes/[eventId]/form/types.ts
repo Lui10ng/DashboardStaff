@@ -2,7 +2,6 @@ export type FieldType =
 	| 'text'
 	| 'email'
 	| 'phone'
-	| 'number'
 	| 'date'
 	| 'time'
 	| 'multipleChoice'
@@ -23,10 +22,11 @@ export interface FormField {
 	required: boolean;
 	fieldType: FieldType;
 	options?: string[];
-	description?: string;
+	description?: string | null;
 }
 
 export interface FormData {
+	id: number;
 	title: string;
 	description: string;
 	formBuilder: FormField[];

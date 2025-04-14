@@ -83,6 +83,7 @@ export interface Config {
     transactions: Transaction;
     users: User;
     venues: Venue;
+    forms: Form;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -105,6 +106,7 @@ export interface Config {
     transactions: TransactionsSelect<false> | TransactionsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     venues: VenuesSelect<false> | VenuesSelect<true>;
+    forms: FormsSelect<false> | FormsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -772,6 +774,55 @@ export interface Transaction {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "forms".
+ */
+export interface Form {
+  id: number;
+  title: string;
+  description?: string | null;
+  formBuilder?:
+    | {
+        name: string;
+        label: string;
+        required?: boolean | null;
+        fieldType:
+          | 'text'
+          | 'email'
+          | 'phone'
+          | 'number'
+          | 'date'
+          | 'time'
+          | 'multipleChoice'
+          | 'checkbox'
+          | 'dropdown'
+          | 'file'
+          | 'shortText'
+          | 'longText'
+          | 'region'
+          | 'city';
+        id: string | null;
+        options?:
+          | {
+              value?: string | null;
+              id?: string | null;
+            }[]
+          | null;
+        description?: string | null;
+      }[]
+    | null;
+  responses?:
+    | {
+        fieldId: string;
+        value?: string | null;
+        submittedAt?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -840,6 +891,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'venues';
         value: number | Venue;
+      } | null)
+    | ({
+        relationTo: 'forms';
+        value: number | Form;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1237,6 +1292,40 @@ export interface VenuesSelect<T extends boolean = true> {
   images?: T;
   seatingChartNotes?: T;
   defaultSeatMap?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "forms_select".
+ */
+export interface FormsSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  formBuilder?:
+    | T
+    | {
+        name?: T;
+        label?: T;
+        required?: T;
+        fieldType?: T;
+        id?: T;
+        options?:
+          | T
+          | {
+              value?: T;
+              id?: T;
+            };
+        description?: T;
+      };
+  responses?:
+    | T
+    | {
+        fieldId?: T;
+        value?: T;
+        submittedAt?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
