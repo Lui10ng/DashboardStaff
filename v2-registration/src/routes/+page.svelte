@@ -1,40 +1,40 @@
-<!-- src/routes/booking/+page.svelte -->
+
 <script>
 	import { onMount } from 'svelte';
 	import { enhance } from '$app/forms';
 	
-	// Use data from the server (provided via +page.server.ts)
+
 	export let data;
 	export let form;
 	
-	// Reactive state
+
 	let selectedTicket = null;
 	let quantity = 5;
 	let voucherCode = '';
 	let total = 0;
 	let discount = 0;
 	let voucherMessage = '';
-	let voucherStatus = null; // null: not tried, true: valid, false: invalid
+	let voucherStatus = null; 
 	let isCheckingVoucher = false;
 	
-	// Get ticket data from server
+
 	const ticketTypes = data.ticketTypes;
 	const restrictedDates = data.restrictedDates;
 	
-	// Select a ticket and update the total
+
 	function selectTicket(ticket) {
 	  if (!ticket.available || ticket.soldOut) return;
 	  
 	  selectedTicket = ticket;
 	  calculateTotal();
 	  
-	  // Reset voucher when ticket type changes
+
 	  if (voucherCode) {
 		checkVoucher();
 	  }
 	}
 	
-	// Calculate the total based on selected ticket, quantity, and discounts
+
 	function calculateTotal() {
 	  if (selectedTicket) {
 		const subtotal = selectedTicket.price * quantity;
@@ -45,47 +45,62 @@
 	  }
 	}
 	
-	// Check voucher validity
+
 	async function checkVoucher() {
-	  if (!selectedTicket || !voucherCode.trim()) {
-		voucherStatus = false;
-		voucherMessage = 'Please enter a voucher code and select a ticket';
-		discount = 0;
-		calculateTotal();
-		return;
-	  }
-	  
-	  isCheckingVoucher = true;
-	  
-	  try {
-		const response = await fetch('/booking?/validateVoucher', {
-		  method: 'POST',
-		  body: new FormData(document.getElementById('voucherForm')),
-		  headers: {
-			'Accept': 'application/json'
-		  }
-		});
-		
-		const result = await response.json();
-		
-		if (result.voucherValid) {
-		  voucherStatus = true;
-		  voucherMessage = `Voucher applied! You saved ₱${result.discount.toLocaleString()}`;
-		  discount = result.discount;
-		} else {
-		  voucherStatus = false;
-		  voucherMessage = result.voucherError || 'Invalid voucher code';
-		  discount = 0;
-		}
-	  } catch (error) {
-		voucherStatus = false;
-		voucherMessage = 'Error checking voucher';
-		discount = 0;
-	  } finally {
-		isCheckingVoucher = false;
-		calculateTotal();
-	  }
-	}
+  if (!selectedTicket || !voucherCode.trim()) {
+    voucherStatus = false;
+    voucherMessage = 'Please enter a voucher code and select a ticket';
+    discount = 0;
+    calculateTotal();
+    return;
+  }
+  
+  isCheckingVoucher = true;
+  voucherStatus = null;
+  voucherMessage = 'Checking voucher...';
+  
+  try {
+    // Instead of using fetch directly, use SvelteKit's form action with enhance
+    // This uses the native SvelteKit approach for form handling
+    const form = document.getElementById('voucherForm');
+    if (!form) {
+      throw new Error('Voucher form not found');
+    }
+    
+    // Ensure form has the current values
+    const voucherInput = form.querySelector('input[name="voucher"]');
+    const ticketInput = form.querySelector('input[name="ticketId"]');
+    
+    if (voucherInput) voucherInput.value = voucherCode;
+    if (ticketInput) ticketInput.value = selectedTicket?.id || '';
+    
+    // Submit the form using the action
+    form.requestSubmit();
+    
+    // We'll rely on the form action to update the state through the form variable
+    // The rest of this function is just for timeout handling
+    
+    // Set a timeout to handle case where form submission takes too long
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Voucher check timed out')), 5000);
+    });
+    
+    // This is just a placeholder - the actual update will come from the form binding
+    await Promise.race([
+      new Promise(resolve => setTimeout(resolve, 500)), // Small delay to allow form action to process
+      timeoutPromise
+    ]);
+    
+  } catch (error) {
+    console.error('Voucher check error:', error);
+    voucherStatus = false;
+    voucherMessage = 'Error checking voucher: ' + (error.message || 'Unknown error');
+    discount = 0;
+  } finally {
+    isCheckingVoucher = false;
+    calculateTotal();
+  }
+}
 	
 	// Increase or decrease quantity
 	function adjustQuantity(amount) {
@@ -96,14 +111,14 @@
 	  }
 	}
 	
-	// Handle the next button click
+
 	function handleNext() {
 	  if (!selectedTicket) {
 		alert('Please select a ticket type');
 		return;
 	  }
 	  
-	  // Proceed to next step
+	
 	  console.log('Proceeding to next step with:', {
 		ticket: selectedTicket,
 		quantity: quantity,
@@ -113,7 +128,7 @@
 	  });
 	}
 	
-	// Helper function to get appropriate CSS class for ticket background
+
 	function getTicketClass(ticket) {
 	  const classes = {
 		'vvip': 'bg-amber-900 border-l-amber-600 text-white',
@@ -129,20 +144,19 @@
 	  return classes[ticket.id] || '';
 	}
 	
-	// Set an initial selected ticket when component mounts
+
 	onMount(() => {
 	  const defaultTicket = ticketTypes.find(t => t.id === 'vip' && t.available);
 	  if (defaultTicket) {
 		selectTicket(defaultTicket);
 	  }
-	  
-	  // Check for form.voucherError from server response
+
 	  if (form?.voucherError) {
 		voucherStatus = false;
 		voucherMessage = form.voucherError;
 	  }
 	  
-	  // Check for successful voucher validation from server
+
 	  if (form?.voucherValid) {
 		voucherStatus = true;
 		voucherMessage = `Voucher applied! You saved ₱${form.discount.toLocaleString()}`;
@@ -151,7 +165,7 @@
 	  }
 	});
 	
-	// Watch for changes in quantity and recalculate
+
 	$: {
 	  if (selectedTicket) {
 		calculateTotal();
@@ -161,7 +175,7 @@
 
 <svelte:head>
   <style>
-    /* Add global styles for backdrop blur */
+
     .overlay-blur {
       backdrop-filter: blur(3px);
       background-color: rgba(0, 0, 0, 0.4) !important;
@@ -177,9 +191,9 @@
     
     <div class="grid grid-cols-2 gap-4 mb-4">
       {#each ticketTypes as ticket, index}
-        <!-- Render different ticket layouts based on availability and status -->
+    
         {#if ticket.soldOut}
-          <!-- Sold Out Ticket -->
+
           <div class="relative overflow-hidden min-h-24 rounded border-l-4 {getTicketClass(ticket)}">
             <div class="p-4">
               <h3 class="m-0 mb-1">{ticket.name}</h3>
@@ -190,7 +204,7 @@
             </div>
           </div>
         {:else if ticket.availableIn}
-          <!-- Time-restricted Ticket -->
+
           <div class="relative overflow-hidden min-h-24 rounded border-l-4 {getTicketClass(ticket)}">
             <div class="p-4">
               <h3 class="m-0 mb-1">{ticket.name}</h3>
@@ -202,7 +216,7 @@
             </div>
           </div>
         {:else}
-          <!-- Available Ticket -->
+
           <div 
             class="relative overflow-hidden min-h-24 rounded border-l-4 {getTicketClass(ticket)} cursor-pointer transition transform hover:-translate-y-0.5 {selectedTicket?.id === ticket.id ? 'ring-2 ring-green-500' : ''}"
             on:click={() => selectTicket(ticket)}
@@ -223,41 +237,79 @@
     </div>
   </section>
   
-  <!-- Voucher Section -->
+
   <section class="mb-5">
     <h2 class="text-xl mb-4">Voucher (Optional)</h2>
     
-    <form id="voucherForm" method="POST" action="?/validateVoucher">
-      <div class="flex gap-2">
-        <input 
-          type="text" 
-          name="voucher"
-          placeholder="Enter voucher code" 
-          bind:value={voucherCode}
-          class="flex-1 p-3 border-none rounded bg-gray-300 text-gray-800 text-base"
-        />
-        
-        <input type="hidden" name="ticketId" value={selectedTicket?.id || ''} />
-        
-        <button 
-          type="button" 
-          class="px-5 bg-green-500 text-white border-none rounded font-bold cursor-pointer transition hover:bg-green-600 disabled:bg-gray-400 disabled:opacity-70 disabled:cursor-not-allowed"
-          on:click={checkVoucher} 
-          disabled={isCheckingVoucher || !voucherCode.trim() || !selectedTicket}
-        >
-          {isCheckingVoucher ? 'Checking...' : 'Apply'}
-        </button>
-      </div>
+    <form 
+  id="voucherForm" 
+  method="POST" 
+  action="?/validateVoucher"
+  use:enhance={({ formData }) => {
+    // Set loading state
+    isCheckingVoucher = true;
+    
+    return async ({ result }) => {
+      // Handle response from server action
+      isCheckingVoucher = false;
       
-      {#if voucherMessage}
-        <div class="mt-2 p-2 rounded text-sm {voucherStatus ? 'bg-green-500 bg-opacity-20 text-green-500' : 'bg-red-500 bg-opacity-20 text-red-500'}">
-          {voucherMessage}
-        </div>
-      {/if}
-    </form>
+      if (result.type === 'success') {
+        if (result.data && result.data.voucherValid) {
+          voucherStatus = true;
+          voucherMessage = `Voucher applied! You saved ₱${result.data.discount.toLocaleString()}`;
+          discount = result.data.discount;
+        } else if (result.data && result.data.voucherError) {
+          voucherStatus = false;
+          voucherMessage = result.data.voucherError;
+          discount = 0;
+        } else {
+          voucherStatus = false;
+          voucherMessage = 'Server returned invalid response';
+          discount = 0;
+        }
+      } else if (result.type === 'failure') {
+        voucherStatus = false;
+        voucherMessage = result.data?.voucherError || 'Invalid voucher code';
+        discount = 0;
+      } else {
+        voucherStatus = false;
+        voucherMessage = 'Unexpected server response';
+        discount = 0;
+      }
+      
+      calculateTotal();
+    };
+  }}
+>
+  <div class="flex gap-2">
+    <input 
+      type="text" 
+      name="voucher"
+      placeholder="Enter voucher code" 
+      bind:value={voucherCode}
+      class="flex-1 p-3 border-none rounded bg-gray-300 text-gray-800 text-base"
+    />
+    
+    <input type="hidden" name="ticketId" value={selectedTicket?.id || ''} />
+    
+    <button 
+      type="submit" 
+      class="px-5 bg-green-500 text-white border-none rounded font-bold cursor-pointer transition hover:bg-green-600 disabled:bg-gray-400 disabled:opacity-70 disabled:cursor-not-allowed"
+      disabled={isCheckingVoucher || !voucherCode.trim() || !selectedTicket}
+    >
+      {isCheckingVoucher ? 'Checking...' : 'Apply'}
+    </button>
+  </div>
+  
+  {#if voucherMessage}
+    <div class="mt-2 p-2 rounded text-sm {voucherStatus ? 'bg-green-500 bg-opacity-20 text-black' : 'bg-red-500 bg-opacity-20 text-gray-900'}">
+      {voucherMessage}
+    </div>
+  {/if}
+</form>
   </section>
   
-  <!-- Quantity and Total Section -->
+
   <section class="bg-black rounded p-5">
     <div class="flex justify-between items-center mb-4">
       <span>Quantity</span>
