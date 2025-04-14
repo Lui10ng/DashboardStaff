@@ -373,7 +373,7 @@
 
 					<Button
 						type="submit"
-						onClick
+						onClick={() => {}}
 						label="Create Event"
 						className="bg-primary w-full rounded-lg py-4 text-white transition-colors"
 					/>
