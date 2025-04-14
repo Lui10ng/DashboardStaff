@@ -50,14 +50,40 @@ export const actions = {
 	createEvent: async ({ request }) => {
 		const data = await request.formData();
 
-		console.log('data: ', data);
-
 		const form = await superValidate(data, zod(eventSchema));
 
 		if (!form.valid) {
 			return fail(400, { form });
 		}
-		console.log(form);
+
+		const formData = {
+			title: form.data.event,
+			slug: form.data.subdomain,
+			location: form.data.location,
+			status: 'Published',
+			startTime: new Date(`${form.data.startDate}T${form.data.startTime}:00Z`).toISOString(),
+			endTime: new Date(`${form.data.endDate}T${form.data.endTime}:00Z`).toISOString(),
+			// description: form.data.richText, // use lexical richtext
+			organizer: { id: 1 },
+			venue: { id: 1 },
+			seatingType: 'general_admission',
+			registrationForm: {
+				id: 1
+			}
+		};
+
+		try {
+			const response = await apiClient.post('/events', formData);
+			console.log('response: ', response);
+
+			return message(form, { success: true, message: 'Event created successfully' });
+		} catch (err: unknown) {
+			const { statusCode, errorMessage } = handleSvelteError(
+				err,
+				'creating event',
+				'Failed to create event'
+			);
+		}
 	},
 
 	updateEvent: async ({ request }) => {
