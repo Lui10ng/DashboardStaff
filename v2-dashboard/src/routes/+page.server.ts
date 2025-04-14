@@ -2,13 +2,23 @@ import { message, superValidate } from 'sveltekit-superforms/server';
 import { zod } from 'sveltekit-superforms/adapters';
 import { eventSchema } from '$lib/schema/event';
 import { fail } from 'sveltekit-superforms';
-import { apiClient } from '$lib/services/payload.server.js';
+import { createApiClient } from '$lib/services/payload.server.js';
 import { error } from '@sveltejs/kit';
 import { handleSvelteError } from '$lib/utils/errorHandler';
+import { redirect } from '@sveltejs/kit';
+import type { ServerLoadEvent } from '@sveltejs/kit';
 
-export async function load({ url, fetch: svelteKitFetch }) {
+export async function load(event: ServerLoadEvent) {
+	const authObject = await event.locals.auth();
+
+	if (!authObject || !authObject.sessionId) {
+		return redirect(307, '/sign-in');
+	}
+
+	const apiClient = createApiClient(event);
+
 	const form = await superValidate(zod(eventSchema));
-	const page = Number(url.searchParams.get('page') || '1');
+	const page = Number(event.url.searchParams.get('page') || '1');
 	const limit = 1000000;
 	const organizerID = '1';
 
@@ -21,7 +31,7 @@ export async function load({ url, fetch: svelteKitFetch }) {
 	});
 
 	try {
-		const eventsData = await apiClient.get('/events', params, { fetchInstance: svelteKitFetch });
+		const eventsData = await apiClient.get('/events', params);
 
 		return {
 			events: eventsData.docs,

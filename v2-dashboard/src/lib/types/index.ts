@@ -113,6 +113,8 @@ export interface ApiClient {
 	del: <T = unknown>(path: string, options?: ApiClientOptions) => Promise<T>;
 }
 
+export type ClientOptions = Omit<RequestOptions, 'fetchInstance' | 'token'>;
+
 export interface PayloadError {
 	message?: string;
 	errors?: { field: string; message: string }[];
