@@ -1,10 +1,9 @@
 <script lang="ts">
 	import '../app.css';
 	import '@fortawesome/fontawesome-free/css/all.min.css';
-	import { Tooltip } from 'bits-ui';
+	import { Tooltip, DropdownMenu } from 'bits-ui';
 	import { goto } from '$app/navigation';
 	import Button from '$lib/components/ui/Button.svelte';
-	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
 	import { page } from '$app/stores';
 	import type { Snippet } from 'svelte';
 	import { ClerkProvider } from 'svelte-clerk/client';
@@ -46,31 +45,43 @@
 					className="flex items-center gap-2 hover:text-primary text-gray-600 font-semibold
 					{!$page.url.pathname.includes('wallet') ? 'text-primary' : ''}"
 				/>
-				<Button
-					label="Wallet"
-					onClick={wallet}
-					type="button"
-					icon="fa-solid fa-wallet"
-					className="flex items-center gap-2 hover:text-primary text-gray-600 font-semibold 
-					{$page.url.pathname.includes('wallet') ? 'text-primary' : ''}"
-				/>
+				<SignedIn>
+					<Button
+						label="Wallet"
+						onClick={wallet}
+						type="button"
+						icon="fa-solid fa-wallet"
+						className="flex items-center gap-2 hover:text-primary text-gray-600 font-semibold 
+						{$page.url.pathname.includes('wallet') ? 'text-primary' : ''}"
+					/>
+				</SignedIn>	
 			</div>
 		</div>
-		<!-- <div class="sticky right-0">
-			<SignedIn>
-				<SignOutButton />
-			</SignedIn>
-			<SignedOut>
-				<SignInButton />
-			</SignedOut>
-		</div> -->
-		<DropdownMenu
-			className="bg-primary h-10 w-10 rounded-full border text-white"
-			classMenu="mt-3"
-			alignContent="end"
-			buttonText="AD"
-			items={['option 1', 'option 2', 'option 3']}
-		/>
+		<header class="prose text-sm flex items-center justify-between bg-white">
+			<div class="ml-auto">
+				<SignedOut>
+					<SignInButton>
+						<button class="w-full text-left px-4 py-2 bg-[#d12f2b] text-white rounded hover:bg-red-700 transition">
+							Sign in
+						</button>	
+					</SignInButton>
+				</SignedOut>
+				<SignedIn>
+					<DropdownMenu.Root>
+						<DropdownMenu.Trigger>
+							<button class="rounded-full border px-3 py-1 transition hover:bg-gray-100">
+								Account
+							</button>
+						</DropdownMenu.Trigger>
+						<DropdownMenu.Content>
+							<DropdownMenu.Item>
+								<SignOutButton redirectUrl="/sign-in">Sign out</SignOutButton>
+							</DropdownMenu.Item>
+						</DropdownMenu.Content>
+					</DropdownMenu.Root>
+				</SignedIn>
+			</div>
+		</header>
 	</div>
 
 	<div class="bg-white">

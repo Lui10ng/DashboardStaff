@@ -1,5 +1,6 @@
 // src/collections/Users.ts (Illustrative Customizations)
 import type { CollectionConfig } from 'payload';
+import clerkOrPayloadAdminStrategy from '../auth/clerk-strategy';
 // import { isAdmin, isAdminOrSelf } from '../access/isAdminOrSelf'; // Assuming these access helpers exist
 
 // Define Roles - use const for consistency
@@ -14,8 +15,11 @@ type UserRole = typeof USER_ROLES[keyof typeof USER_ROLES];
 
 const Users: CollectionConfig = {
   slug: 'users',
-  // --- Payload Auth Configuration ---
   auth: {
+    disableLocalStrategy: true,
+    strategies: [
+      clerkOrPayloadAdminStrategy,
+    ],
     // If using JWT (Payload's default)
     tokenExpiration: 7200, // seconds - e.g., 2 hours
     // verify: true, // Enable email verification if needed

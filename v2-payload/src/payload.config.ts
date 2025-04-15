@@ -27,6 +27,8 @@ import Users from './collections/Users'
 import Venues from './collections/Venues'
 import Forms from './collections/Forms'
 
+import { clerkWebhookHandler } from './webhooks/clerk-webhook';
+
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 const isDev = process.env.NODE_ENV === 'development'
@@ -96,4 +98,12 @@ export default buildConfig({
   sharp,
   plugins: [payloadCloudPlugin(), ...activePlugins],
   cors: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:1344'],
+  endpoints: [
+    {
+      path: '/webhooks/clerk',
+      method: 'post',
+      handler: clerkWebhookHandler,
+    }
+    // ... other endpoints
+  ],
 })
