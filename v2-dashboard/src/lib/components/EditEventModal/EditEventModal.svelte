@@ -3,6 +3,7 @@
     import { X } from 'lucide-svelte';
     import { Modal } from '@skeletonlabs/skeleton-svelte';
 	import { enhance } from '$app/forms';
+  import RichText from '../ui/RichText.svelte';
   
     let drawerState = $state(false);
   
@@ -147,7 +148,7 @@
           <div class="">
             {#if $activeTab === 'edit'}
             <form 
-            action="?/updateEventDetails"
+            action="/?/updateEventDetails"
 	          method="POST"
 	          use:enhance
             >
@@ -254,34 +255,9 @@
                     </div>
                   </div>
                 </div>
-                <div class="lg:col-span-1 lg:w-full mb-4">
+                <div class="lg:col-span-1 lg:w-full mb-30 h-80">
                   <label for="event-description" class="block text-sm font-medium text-gray-700 mb-2">Event description</label>
-                  <div class="mt-1 flex space-x-2 rounded-t-md border border-b-0 border-gray-300 bg-gray-50 p-2">
-                    <button class="p-1 hover:bg-gray-200 rounded">
-                      <img src="/icons/b-50.png" alt="Bold Icon" class="h-4 w-4 text-gray-500" />
-                    </button>
-                    <button class="p-1 hover:bg-gray-200 rounded">
-                      <img src="/icons/italic-24.png" alt="Italic Icon" class="h-4 w-4 text-gray-500" />
-                    </button>
-                    <button class="p-1 hover:bg-gray-200 rounded">
-                      <img src="/icons/underline-50.png" alt="Underline Icon" class="h-4 w-4 text-gray-500" />
-                    </button>
-                    <button class="p-1 hover:bg-gray-200 rounded">
-                      <img src="/icons/list-50.png" alt="number list Icon" class="h-4 w-4 text-gray-500" />
-                    </button>
-                    <button class="p-1 hover:bg-gray-200 rounded">
-                      <img src="/icons/list-24.png" alt="bullet list Icon" class="h-4 w-4 text-gray-500" />
-                    </button>
-                    <button class="p-1 hover:bg-gray-200 rounded">
-                      <img src="/icons/link-50.png" alt="Link Icon" class="h-4 w-4 text-gray-500" />
-                    </button>
-                  </div>
-                  <textarea
-                    id="event-description"
-                    class="block w-full h-64 rounded-md border border-gray-300 px-3 py-2 focus:outline-none"
-                    rows="8"
-                    name="Event Description"
-                  ></textarea>
+                  <RichText />
                 </div> 
               </div>
               <!-- Footer (Responsive Buttons) -->
@@ -301,7 +277,7 @@
             </form>
             {:else if $activeTab === 'visual'}
 <form 
-  action="?/updateVisuals"
+  action="/?/updateVisuals"
   method="POST"
   use:enhance
   enctype="multipart/form-data"
@@ -324,7 +300,7 @@
       {:else}
         <p class="text-gray-500 text-sm">Select Theme Image</p>
       {/if}
-      <input type="file" id="themeInput" class="hidden" accept="image/*" on:change={(e) => displayImage(e, "themeImg")} />
+      <input name="Theme Input" type="file" id="themeInput" class="hidden" accept="image/*" on:change={(e) => displayImage(e, "themeImg")} />
     </div>
   </div>
 
@@ -341,7 +317,7 @@
           {:else}
             <p class="text-gray-500 text-sm">Select Logo Image</p>
           {/if}
-          <input type="file" id="logoInput" class="hidden" accept="image/*" on:change={(e) => displayImage(e, "logoImg")} />
+          <input name="Logo Input" type="file" id="logoInput" class="hidden" accept="image/*" on:change={(e) => displayImage(e, "logoImg")} />
         </div>
       </div>
     
@@ -358,7 +334,7 @@
           {:else}
             <p class="text-gray-500 text-sm">Select Event Logo Image</p>
           {/if}
-          <input type="file" id="eventLogoInput" class="hidden" accept="image/*" on:change={(e) => displayImage(e, "eventLogoImg")} />
+          <input name="Event Logo Input" type="file" id="eventLogoInput" class="hidden" accept="image/*" on:change={(e) => displayImage(e, "eventLogoImg")} />
         </div>
       </div>
 
@@ -374,7 +350,7 @@
           {:else}
             <p class="text-gray-500 text-sm">Select Poster Image</p>
           {/if}
-          <input type="file" id="posterInput" class="hidden" accept="image/*" on:change={(e) => displayImage(e, "posterImg")} />
+          <input name="Poster Input" type="file" id="posterInput" class="hidden" accept="image/*" on:change={(e) => displayImage(e, "posterImg")} />
         </div>
       </div>
 
@@ -390,7 +366,7 @@
           {:else}
             <p class="text-gray-500 text-sm">Select Background Image</p>
           {/if}
-          <input type="file" id="backgroundInput" class="hidden" accept="image/*" on:change={(e) => displayImage(e, "backgroundImg")} />
+          <input name="Background Input" type="file" id="backgroundInput" class="hidden" accept="image/*" on:change={(e) => displayImage(e, "backgroundImg")} />
         </div>
       </div>
     
@@ -420,7 +396,7 @@
 </form>
     {:else if $activeTab === 'contacts'}
             <form 
-            action="?/updateContacts"
+            action="/?/updateContacts"
 	          method="POST"
 	          use:enhance
 	          enctype="multipart/form-data"
@@ -495,7 +471,7 @@
             </form>
             {:else if $activeTab === 'registration'}
             <form 
-            action="?/updateRegistrationInstruction"
+            action="/?/updateRegistrationInstruction"
 	          method="POST"
 	          use:enhance
 	          enctype="multipart/form-data"
@@ -529,34 +505,9 @@
                       <input name="Registration Instruction IMG" id="imageUpload" type="file" accept="image/*" class="hidden" on:change={handleFileUpload} />
                     </div>
                   </div>
-                  <div class="w-full lg:w-3/5 mb-4">
-                    <label for="event-description" class="block text-sm font-medium text-gray-700 mb-2">Event description</label>
-                    <div class="mt-1 flex space-x-2 rounded-t-md border border-b-0 border-gray-300 bg-gray-50 p-2">
-                      <button class="p-1 hover:bg-gray-200 rounded">
-                        <img src="/icons/b-50.png" alt="Bold Icon" class="h-4 w-4 text-gray-500" />
-                      </button>
-                      <button class="p-1 hover:bg-gray-200 rounded">
-                        <img src="/icons/italic-24.png" alt="Italic Icon" class="h-4 w-4 text-gray-500" />
-                      </button>
-                      <button class="p-1 hover:bg-gray-200 rounded">
-                        <img src="/icons/underline-50.png" alt="Underline Icon" class="h-4 w-4 text-gray-500" />
-                      </button>
-                      <button class="p-1 hover:bg-gray-200 rounded">
-                        <img src="/icons/list-50.png" alt="number list Icon" class="h-4 w-4 text-gray-500" />
-                      </button>
-                      <button class="p-1 hover:bg-gray-200 rounded">
-                        <img src="/icons/list-24.png" alt="bullet list Icon" class="h-4 w-4 text-gray-500" />
-                      </button>
-                      <button class="p-1 hover:bg-gray-200 rounded">
-                        <img src="/icons/link-50.png" alt="Link Icon" class="h-4 w-4 text-gray-500" />
-                      </button>
-                    </div>
-                    <textarea
-                      id="registration-instruction"
-                      name="Instruction"
-                      class="block w-full h-64 rounded-b-md border border-gray-300 px-3 py-2 focus:outline-none"
-                      rows="8"
-                    ></textarea>
+                  <div class="w-full lg:w-3/5 mb-30 h-80">
+                      <label for="event-description" class="block text-sm font-medium text-gray-700 mb-2">Event description</label>
+                      <RichText />
                   </div>
                 </div>
               </div>
