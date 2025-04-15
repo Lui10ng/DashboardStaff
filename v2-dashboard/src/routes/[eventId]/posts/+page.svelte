@@ -5,6 +5,8 @@
 	import Modal from '$lib/components/ui/Modal.svelte';
 	import { fly } from 'svelte/transition';
 	import { Dialog } from 'bits-ui';
+	import ImageUploader from '$lib/components/ui/ImageUploader.svelte';
+
 
 	let sampleImages = $state([
 		{
@@ -68,6 +70,7 @@
 		{/snippet}
 		{#snippet content()}
 			<form class="mt-4 flex flex-col space-y-5" action="?/createPost" method="POST" use:enhance>
+					<ImageUploader />
 				<label for="" class="space-y-1">
 					<h1>Heading</h1>
 					<input
