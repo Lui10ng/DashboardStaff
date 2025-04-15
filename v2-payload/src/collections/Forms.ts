@@ -1,10 +1,11 @@
-import { CollectionConfig } from 'payload/types'
+import type { CollectionConfig } from 'payload'
 
 const Forms: CollectionConfig = {
   slug: 'forms',
   admin: {
     useAsTitle: 'title',
     group: 'Configuration',
+    defaultColumns: ['title', 'eventId', 'description', 'createdAt'],
   },
   access: {
     read: () => true,
@@ -14,15 +15,52 @@ const Forms: CollectionConfig = {
   },
   fields: [
     {
+      name: 'eventId',
+      type: 'relationship',
+      relationTo: 'events',
+      required: false,
+      hasMany: false,
+      admin: {
+        position: 'sidebar',
+        description: 'The event this form belongs to',
+      },
+      hooks: {
+        beforeChange: [
+          ({ value, operation }) => {
+            console.log('Forms collection - eventId beforeChange:', {
+              value,
+              operation,
+            })
+            return value
+          },
+        ],
+        afterChange: [
+          ({ value, operation }) => {
+            console.log('Forms collection - eventId afterChange completed:', {
+              value,
+              operation,
+            })
+            return value
+          },
+        ],
+      },
+    },
+    {
       name: 'title',
       type: 'text',
       required: true,
       defaultValue: 'Registration Form',
+      admin: {
+        description: 'Form title that will be displayed to users',
+      },
     },
     {
       name: 'description',
       type: 'text',
       defaultValue: 'Please fill out this registration form',
+      admin: {
+        description: 'A brief description of what this form is for',
+      },
     },
     {
       name: 'formBuilder',
