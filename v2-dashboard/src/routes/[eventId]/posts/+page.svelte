@@ -7,16 +7,25 @@
 	import { Dialog } from 'bits-ui';
 	import ImageUploader from '$lib/components/ui/ImageUploader.svelte';
 
-
 	let sampleImages = $state([
 		{
 			id: 1,
-			url: '/images/background.png',
-			fallback: 'https://via.placeholder.com/300'
+			url: 'https://veent.sgp1.cdn.digitaloceanspaces.com/media/475124993_639454641846376_711577880836547120_n-400x400.jpg'
 		},
-		{ id: 2, url: '/images/veent-logo.svg' },
-		{ id: 3, url: 'placeholder3.jpg', name: 'Jhone' },
-		{ id: 4, url: 'placeholder4.jpg', name: 'Jack' }
+		{
+			id: 2,
+			url: 'https://veent.sgp1.cdn.digitaloceanspaces.com/media/476390380_590873343768999_2162506272708969218_n-400x400.jpg'
+		},
+		{
+			id: 3,
+			url: 'https://veent.sgp1.cdn.digitaloceanspaces.com/media/58826fbf-b69d-450b-ba29-582d24390a62-400x400.jpg',
+			name: 'Jhone'
+		},
+		{
+			id: 4,
+			url: 'https://veent.sgp1.cdn.digitaloceanspaces.com/media/476492613_601747789308459_774602919831942051_n-400x424.jpg',
+			name: 'icon'
+		}
 	]);
 
 	let isMoving = $state(false);
@@ -70,7 +79,7 @@
 		{/snippet}
 		{#snippet content()}
 			<form class="mt-4 flex flex-col space-y-5" action="?/createPost" method="POST" use:enhance>
-					<ImageUploader />
+				<ImageUploader />
 				<label for="" class="space-y-1">
 					<h1>Heading</h1>
 					<input
