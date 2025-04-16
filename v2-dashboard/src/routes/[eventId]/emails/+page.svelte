@@ -165,28 +165,3 @@
 		{/snippet}
 	</Modal>
 </div>
-
-<style>
-	/* Custom scrollbar styling */
-	:global(.modal-content) {
-		scrollbar-width: thin;
-		scrollbar-color: #cbd5e1 transparent;
-	}
-
-	:global(.modal-content::-webkit-scrollbar) {
-		width: 6px;
-	}
-
-	:global(.modal-content::-webkit-scrollbar-track) {
-		background: transparent;
-	}
-
-	:global(.modal-content::-webkit-scrollbar-thumb) {
-		background-color: #cbd5e1;
-		border-radius: 6px;
-	}
-
-	:global(.modal-content::-webkit-scrollbar-thumb:hover) {
-		background-color: #94a3b8;
-	}
-</style>
