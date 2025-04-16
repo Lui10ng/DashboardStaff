@@ -1,56 +1,7 @@
 <script lang="ts">
-<script lang="ts">
+	import Modal from '$lib/components/ui/Modal.svelte';
+	import RichText from '$lib/components/ui/RichText.svelte';
 	import { fly } from 'svelte/transition';
-	import Modal from '$lib/components/ui/Modal.svelte';
-	import RichText from '$lib/components/ui/RichText.svelte';
-
-	let emailData = $state({
-		to: '',
-		from: '',
-		cc: '',
-		bcc: '',
-		subject: ' '
-	});
-
-	let availableInputs = $state([
-		{ label: 'First name', key: ' First name' },
-		{ label: 'Last name', key: 'first name' },
-		{ label: 'Contact Number', key: 'Contact Number' },
-		{ label: 'Email', key: 'Email' },
-		{ label: 'Region', key: 'Region' },
-		{ label: 'Qr Code', key: 'Qr Code' },
-		{ label: 'Ticket Info', key: 'Ticket Info' },
-		{ label: 'Payment Info', key: 'Payment Info' }
-	]);
-
-	let emailBody = $state(` `);
-
-	function insertInput(key: string) {
-		emailBody = emailBody + `{{${key}}}`;
-	}
-
-	function saveEmail() {
-		let { to, from, cc, bcc, subject } = emailData;
-		let body = $state.snapshot(emailBody);
-		console.log('Saving Email:', { to, from, cc, bcc, subject, body });
-	}
-
-	async function handleSubmit(event: SubmitEvent) {
-		event.preventDefault();
-
-		try {
-			const formData = {
-				...emailData,
-				body: emailBody
-			};
-
-			console.log('Form submitted:', formData);
-		} catch (error) {
-			console.error('Error submitting form:', error);
-		}
-	}
-	import Modal from '$lib/components/ui/Modal.svelte';
-	import RichText from '$lib/components/ui/RichText.svelte';
 
 	let emailData = $state({
 		to: '',
