@@ -5,7 +5,7 @@
 	import { enhance } from '$app/forms';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { fly } from 'svelte/transition';
-	import { stateDrawer } from '$lib/stores/state.svelte.ts';
+	import { staffDrawer } from '$lib/stores/state.svelte.ts';
 
 	const pendingStaffStore = $state(pendingStaffMembers);
 	const staffMembersStore = $state(staffMembers);
@@ -30,7 +30,7 @@
 	let showOthersInput = $state(false);
 	let otherAttendanceValue = $state('');
 	let showCopyPopup = $state(false);
-	const drawerState = $derived(stateDrawer.open);
+	const drawerState = $derived(staffDrawer.open);
 
 	function navigateTo(path: string) {
 		if (path) {
@@ -159,7 +159,7 @@
 	}
 
 	const handleOpenDrawer = () => {
-		return (stateDrawer.open = true);
+		return (staffDrawer.open = true);
 	};
 </script>
 

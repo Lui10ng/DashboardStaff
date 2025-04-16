@@ -18,12 +18,12 @@
 	import SeatStats from '$lib/components/seat-generator/SeatStats.svelte';
 	import VenueImageUpload from '$lib/components/seat-generator/VenueImageUpload.svelte';
 	import { fly } from 'svelte/transition';
-	import { stateDrawer } from '$lib/stores/state.svelte.ts';
+	import { ticketDrawer } from '$lib/stores/state.svelte.ts';
 
 	// Get server data
 	let { data } = $props();
 
-	const drawerState = $derived(stateDrawer.open);
+	const drawerState = $derived(ticketDrawer.open);
 
 	// Track initialization state
 	let initialized = $state(false);
@@ -68,7 +68,7 @@
 	});
 
 	const handleOpenDrawer = () => {
-		return (stateDrawer.open = true);
+		return (ticketDrawer.open = true);
 	};
 </script>
 
