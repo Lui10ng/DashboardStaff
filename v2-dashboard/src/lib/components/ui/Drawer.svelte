@@ -40,7 +40,7 @@
 				<i class="fa-solid fa-xmark text-2xl"></i>
 			</button>
 		</header>
-		<div class="mx-auto max-w-7xl">
+		<div class="mx-auto max-w-7xl px-5">
 			<h1 class="text-2xl font-bold">{title}</h1>
 			{@render children()}
 		</div>
