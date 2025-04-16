@@ -22,7 +22,7 @@
 		{ label: 'Payment Info', key: 'Payment Info' }
 	]);
 
-	let emailBody = $state (` `);
+	let emailBody = $state(` `);
 
 	function insertInput(key: string) {
 		emailBody = emailBody + `{{${key}}}`;
@@ -34,8 +34,19 @@
 		console.log('Saving Email:', { to, from, cc, bcc, subject, body });
 	}
 
-	function handleSubmit(arg0: HTMLFormElement): any {
-		throw new Error('Function not implemented.');
+	async function handleSubmit(event: SubmitEvent) {
+		event.preventDefault();
+
+		try {
+			const formData = {
+				...emailData,
+				body: emailBody
+			};
+
+			console.log('Form submitted:', formData);
+		} catch (error) {
+			console.error('Error submitting form:', error);
+		}
 	}
 </script>
 
@@ -67,8 +78,8 @@
 			<form
 				class="modal-content mt-4 flex max-h-[calc(90vh-120px)] flex-col space-y-5 overflow-y-auto"
 				action="?/createEmail"
-				method="Email"
-				use:handleSubmit
+				method="POST"
+				on:submit={handleSubmit}
 			>
 				<div class="space-y-5 rounded-md border border-gray-300 p-5">
 					<div class="grid grid-cols-[80px_1fr] items-center gap-x-4 gap-y-2">
@@ -121,7 +132,7 @@
 						/>
 					</div>
 					<RichText />
-					<div class="mt-3 mb-4 flex flex-wrap gap-1">
+					<div class="mb-4 mt-3 flex flex-wrap gap-1">
 						{#each availableInputs as input}
 							<button
 								class="rounded-md bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-800 shadow-sm hover:bg-gray-300"
@@ -133,19 +144,18 @@
 					</div>
 					<div class="mt-5 flex gap-2">
 						<button
-							class="rounded-md bg-red-500 px-4 py-2 font-bold text-white shadow-sm hover:bg-red-700 focus:ring focus:ring-red-200 focus:outline-none"
+							class="rounded-md bg-red-500 px-4 py-2 font-bold text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring focus:ring-red-200"
 							on:click={saveEmail}
 						>
 							Save Email
 						</button>
 						<button
-							class="rounded-md bg-gray-300 px-4 py-2 font-semibold text-gray-800 shadow-sm hover:bg-gray-400 focus:ring focus:ring-gray-200 focus:outline-none"
-							
+							class="rounded-md bg-gray-300 px-4 py-2 font-semibold text-gray-800 shadow-sm hover:bg-gray-400 focus:outline-none focus:ring focus:ring-gray-200"
 						>
 							Cancel Edit
 						</button>
 						<button
-							class="rounded-md bg-gray-300 px-4 py-2 font-semibold text-gray-800 shadow-sm hover:bg-gray-400 focus:ring focus:ring-gray-200 focus:outline-none"
+							class="rounded-md bg-gray-300 px-4 py-2 font-semibold text-gray-800 shadow-sm hover:bg-gray-400 focus:outline-none focus:ring focus:ring-gray-200"
 						>
 							Insert Image
 						</button>
