@@ -104,5 +104,21 @@ export const actions = {
 	uploadAwsPoster: async ({ request }) => {
 		const data = await request.formData();
 		console.log(data);
+	},
+	updateEventDetails: async ({ request }) => {
+		const data = await request.formData();
+		console.log(data);
+	},
+	updateVisuals: async ({ request }) => {
+		const data = await request.formData();
+		console.log(data);
+	},
+	updateContacts: async ({ request }) => {
+		const data = await request.formData();
+		console.log(data)
+	},
+	updateRegistrationInstruction: async ({ request }) => {
+		const data = await request.formData();
+		console.log(data);
 	}
 };

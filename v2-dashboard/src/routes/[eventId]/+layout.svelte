@@ -3,17 +3,19 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import { navItems } from '$lib/stores/data';
 	import { page } from '$app/stores';
+	import EditEventModal from '$lib/components/EditEventModal/EditEventModal.svelte';
+
 
 	let { children, data } = $props();
 
 	let event = $derived(data.currentEvent);
 
-	let isModalOpen = $state(false);
-	let activeTab = $state('Registration Instructions');
+	// let isModalOpen = $state(false);
+	// let activeTab = $state('Registration Instructions');
 
-	function setTab(tab: string) {
-		activeTab = tab;
-	}
+	// function setTab(tab: string) {
+	// 	activeTab = tab;
+	// }
 
 	const handleActiveNav = (path: string) => {
 		return $page.url.pathname.includes(path) ? 'bg-primary text-white' : '';
@@ -30,13 +32,7 @@
 		<div class="w-full flex-1">
 			<div class="flex flex-col justify-between gap-2 sm:flex-row sm:items-center sm:gap-0">
 				<h1 class="mb-2 text-2xl font-bold text-gray-900 sm:text-3xl">{event.title}</h1>
-				<button
-					class="flex items-center gap-2 text-red-600 transition-colors hover:text-red-700"
-					onclick={() => (isModalOpen = true)}
-				>
-					Edit Event
-					<i class="fa-solid fa-pen"></i>
-				</button>
+				<EditEventModal />
 			</div>
 			<div class="flex flex-col gap-2 text-gray-600">
 				<div class="flex items-center gap-2">
@@ -79,8 +75,8 @@
 			{/each}
 		</nav>
 	</div>
-
-	{#if isModalOpen}
+</div>
+	<!-- {#if isModalOpen}
 		<div
 			class="fixed inset-0 z-50 flex items-center justify-center overflow-auto p-4 backdrop-blur-md"
 		>
@@ -119,9 +115,9 @@
 				</div>
 
 				<div class="flex-grow overflow-y-auto p-4 sm:p-6">
-					<h2 class="mb-4 text-xl font-semibold">{activeTab}</h2>
+					<h2 class="mb-4 text-xl font-semibold">{activeTab}</h2> -->
 					<!-- Add content for each tab here -->
-				</div>
+				<!-- </div>
 
 				<div class="mt-auto flex justify-end gap-3 p-4">
 					<button
@@ -135,5 +131,5 @@
 			</div>
 		</div>
 	{/if}
-</div>
+</div> -->
 {@render children()}
