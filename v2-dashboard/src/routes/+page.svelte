@@ -209,7 +209,10 @@
 							<label for="startDate" class="text-sm font-medium text-gray-700">Start</label>
 						</div>
 						<div class="grid grid-cols-2 gap-4">
-							<DatePicker name="startDate" />
+							<DatePicker
+								name="startDate"
+								className="h-input rounded-input  flex w-full select-none items-center border px-2 py-4 text-gray-500"
+							/>
 							<div class="relative">
 								<label for="startTime" class="sr-only">Start Time</label>
 								<input
@@ -234,7 +237,10 @@
 							<label for="endDate" class="text-sm font-medium text-gray-700">End</label>
 						</div>
 						<div class="grid grid-cols-2 gap-4">
-							<DatePicker name="endDate" />
+							<DatePicker
+								name="endDate"
+								className="h-input rounded-input  flex w-full select-none items-center border px-2 py-4 text-gray-500"
+							/>
 							<div class="relative">
 								<label for="endTime" class="sr-only">End Time</label>
 								<input

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { DatePicker } from 'bits-ui';
 
-	let { name } = $props();
+	let { name, className } = $props();
 
 	function isDateDisabled(date: any) {
 		const today = new Date();
@@ -16,10 +16,7 @@
 
 <DatePicker.Root weekdayFormat="short" fixedWeeks={true} {isDateDisabled}>
 	<div class="flex w-full flex-col gap-1.5">
-		<DatePicker.Input
-			{name}
-			class="h-input rounded-input border-border-input bg-background focus-within:border-border-input-hover focus-within:shadow-date-field-focus hover:border-border-input-hover flex w-full select-none items-center border px-2 py-4 tracking-[0.01em]  text-gray-500"
-		>
+		<DatePicker.Input {name} class={className}>
 			{#snippet children({ segments })}
 				{#each segments as { part, value }}
 					<div class="inline-block select-none">
