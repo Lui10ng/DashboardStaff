@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Modal } from '@skeletonlabs/skeleton-svelte';
-	import { stateDrawer } from '$lib/stores/state.svelte.ts';
+	import { stateDrawer, staffDrawer, ticketDrawer } from '$lib/stores/state.svelte.ts';
 
 	let {
 		isOpen,
@@ -15,6 +15,8 @@
 
 	const handleCloseDrawer = () => {
 		stateDrawer.open = false;
+		staffDrawer.open = false;
+		ticketDrawer.open = false;
 	};
 </script>
 

@@ -20,7 +20,7 @@
 </script>
 
 <div
-	class="sticky left-0 top-0 flex items-center justify-between border border-gray-200 bg-white p-6 z-50"
+	class="sticky left-0 top-0 flex items-center justify-between border border-gray-200 bg-white p-6"
 >
 	<div class="sm:gap-13 flex gap-5">
 		<Button onClick={home}>
