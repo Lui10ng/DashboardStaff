@@ -1,60 +1,84 @@
 import type { AuthStrategy, AuthStrategyFunctionArgs, AuthStrategyResult, Payload } from 'payload';
-import type { User } from '../payload-types'; // Adjust path if needed
-import { verifyToken } from '@clerk/backend'; // Import JwtPayload type
+import { verifyToken, createClerkClient } from '@clerk/backend'; // Import JwtPayload type
 
 /**
- * Custom Payload Authentication Strategy: 'clerkOrPayloadAdmin'
+ * Payload Authentication Strategy: 'clerkOrPayloadAdmin'
  *
- * This strategy determines if a user is logged in based on two possible methods:
- * 1. Standard Payload Admin UI Login: Checks for Payload's session cookie or
- *    a 'JWT' type Authorization header.
- * 2. Clerk Authentication: Checks for a 'Bearer' type Authorization header
- *    containing a token issued by Clerk.
- *
- * How it decides who is logged in:
- * - First, it looks for signs of a regular Payload login. If found, this
- *   strategy doesn't interfere and lets Payload's default mechanisms handle it.
- *   It effectively says "not me" by returning a null user.
- * - If no Payload login signs are detected, it then looks for a Clerk 'Bearer'
- *   token in the request's 'Authorization' header.
- * - If a Clerk token is found, it's securely verified using your Clerk secret key.
- * - Upon successful verification, it extracts the Clerk User ID (the 'sub' claim).
- * - It then searches your Payload 'users' collection for a user record that has a
- *   'clerkId' field matching the ID from the token. (Crucial: Your 'users'
- *   collection must have this 'clerkId' field!).
- * - If a matching Payload user is found, that user object (with the required
- *   'collection' property added) is returned, granting them access.
- * - If the Clerk token is invalid, expired, doesn't contain a user ID, or if no
- *   corresponding user is found in Payload, the Clerk authentication path fails.
- * - If neither Payload nor Clerk authentication succeeds in identifying a user,
- *   this strategy returns a null user, indicating an overall authentication failure
- *   for the request.
+ * Checks if a user is logged in using either Payload's standard login
+ * (cookie or JWT) or a Clerk login (Bearer token). It tries Payload
+ * first.
  *
  * @type {AuthStrategy}
  */
 const clerkOrPayloadAdminStrategy: AuthStrategy = {
 	name: 'clerkOrPayloadAdmin',
-	authenticate: async ({ headers, payload }: AuthStrategyFunctionArgs): Promise<AuthStrategyResult> => {
-		console.log('clerkOrPayloadAdmin strategy executing (v2 - returning user)...');
 
+	/**
+	 * Tries to log in a user for an incoming request.
+	 *
+	 * How it works:
+	 * 1. **Check Payload Login:** Looks for a Payload cookie or JWT header.
+	 *    - If found, tries Payload's own login check (`payload.auth`).
+	 *    - If Payload login works, returns the Payload user.
+	 *    - If Payload login fails (even with cookie/JWT), stops and
+	 *      returns `null` (no user). Clerk is NOT checked.
+	 * 2. **Check Clerk Login:** If no Payload cookie/JWT was found, looks
+	 *    for a Clerk `Bearer` token in the `Authorization` header.
+	 *    - If found, verifies the token with Clerk.
+	 *    - If valid, gets the Clerk user ID.
+	 *    - Searches for a Payload user with a matching `clerkId`.
+	 *      (Your 'users' collection needs a 'clerkId' field!)
+	 *    - If a match is found, returns the Payload user.
+	 *    - If token is bad, ID is missing, or no match is found,
+	 *      returns `null`.
+	 * 3. **No Login:** If neither method works, returns `null`.
+	 *
+	 * @param {object} args - Info provided by Payload.
+	 * @param {Headers} args.headers - Request headers.
+	 * @param {Payload} args.payload - Payload API object.
+	 * @returns {Promise<object>} A promise that resolves to `{ user: User }`
+	 *   if logged in, or `{ user: null }` if not.
+	 */
+	authenticate: async ({ headers, payload }: AuthStrategyFunctionArgs): Promise<AuthStrategyResult> => {
 		// --- Part A: Check for Payload Authentication ---
-		// If Payload auth is present, we *don't* return immediately.
-		// We let Payload handle its own authentication and user resolution later.
+		// --- Check for Payload Auth Indicators ---
 		const payloadCookieName = `${payload.config.cookiePrefix || 'payload'}-token`;
 		const cookieHeader = headers.get('cookie');
 		const authHeader = headers.get('authorization'); // Get auth header once
 
-		const isPayloadAuthAttempt =
-			(cookieHeader && cookieHeader.includes(`${payloadCookieName}=`)) ||
-			(authHeader && authHeader.startsWith('JWT '));
+		const isPayloadCookieAttempt = cookieHeader && cookieHeader.includes(`${payloadCookieName}=`);
+		const isPayloadJwtAttempt = authHeader && authHeader.startsWith('JWT '); // Check for Payload JWT prefix
 
-		if (isPayloadAuthAttempt) {
-			console.log('Payload auth cookie or JWT detected. Deferring to Payload.');
-			// Return null to signal this strategy didn't authenticate
+		if (isPayloadCookieAttempt || isPayloadJwtAttempt) {
+		  console.log('Payload auth cookie or JWT detected. Attempting Payload authentication...');
+		  try {
+			// --- Attempt Payload Authentication ---
+			// payload.auth attempts to verify based on cookie or JWT header
+			const payloadAuthResult = await payload.auth({ headers }); // Pass headers
+
+			if (payloadAuthResult?.user) {
+			  // --- Payload Auth Successful ---
+			  console.log(`Payload strategy authenticated Payload user: ${payloadAuthResult.user.id}`);
+			  // Return the user found by Payload's internal auth
+			  // Ensure the collection slug is included if not already present
+			  const userWithCollection = {
+				 ...payloadAuthResult.user,
+				 collection: payloadAuthResult.user.collection || 'users' // Add collection slug if missing
+			  };
+			  return { user: userWithCollection };
+			} else {
+			  console.log('Payload auth indicators present, but payload.auth() failed.');
+			  // If Payload indicators were present but auth failed, stop here.
+			  // Don't proceed to Clerk check for this request.
+			  return { user: null };
+			}
+		  } catch (error) {
+			console.error('Error during payload.auth() check:', error);
+			// An error occurred during Payload's check, treat as auth failure.
 			return { user: null };
+		  }
 		}
 		// --- End Part A ---
-
 
 		// --- Part B: Check for Clerk Token and Find Linked Payload User ---
 		if (authHeader && authHeader.startsWith('Bearer ')) {
@@ -72,6 +96,11 @@ const clerkOrPayloadAdminStrategy: AuthStrategy = {
 				if (clerkClaims?.sub) {
 					const clerkUserId = clerkClaims.sub;
 					console.log(`Searching for Payload user with clerkId: ${clerkUserId}`);
+
+					// Optional: Fetch additional Clerk user details if needed
+					// const clerkClient = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
+					// const clerkUser = await clerkClient.users.getUser(clerkUserId);
+					// console.log('Fetched Clerk User:', clerkUser.firstName, clerkUser.emailAddresses);
 
 					// Find the corresponding user in Payload's 'users' collection
 					// ASSUMPTION: Your 'users' collection has a 'clerkId' field.
@@ -93,21 +122,21 @@ const clerkOrPayloadAdminStrategy: AuthStrategy = {
 						return { user: { ...payloadUser, collection: 'users' } };
 					} else {
 						console.log(`No Payload user found with clerkId: ${clerkUserId}`);
-						// Fall through to return null (auth failure by this strategy for Clerk)
+						return { user: null }; // Explicitly return null if no linked user found
 					}
 				} else {
 					console.error('Clerk token verified, but "sub" (user ID) was missing in claims.');
-					// Fall through
+					return { user: null }; // Return null if 'sub' claim is missing
 				}
 			} catch (error: unknown) {
 				// Log the error if verifyToken fails
 				console.error('Error verifying Clerk token:', error instanceof Error ? error.message : JSON.stringify(error));
-				// Fall through to return null (auth failure by this strategy for Clerk)
+				return { user: null }; // Return null on token verification error
 			}
 		}
 		// --- End Part B ---
 
-		// If neither Payload auth was detected, nor Clerk auth succeeded in finding a user, return null.
+		// If neither Payload auth indicators were present, nor Clerk auth succeeded, return null.
 		console.log('No Payload auth detected and Clerk auth failed or found no linked user.');
 		return { user: null }; // Indicate authentication failure
 	},
