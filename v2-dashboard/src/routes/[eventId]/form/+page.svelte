@@ -199,33 +199,7 @@
 			dragging = false;
 		}
 	}
-
-	async function deleteField(id: string) {
-		try {
-			const formDataToSubmit = new FormData();
-			formDataToSubmit.append('formId', formData.id.toString());
-			formDataToSubmit.append('fieldId', id);
-
-			const response = await fetch('?/deleteField', {
-				method: 'POST',
-				body: formDataToSubmit
-			});
-
-			const result = await response.json();
-			console.log('Delete response:', result);
-
-			if (result.type === 'success' && result.status === 200) {
-				formData.formBuilder = formData.formBuilder.filter((field) => field.id !== id);
-				console.log('Field deleted successfully');
-			} else {
-				throw new Error(result.error || 'Failed to delete field');
-			}
-		} catch (error) {
-			console.error('Error deleting field:', error);
-			alert('Failed to delete field. Please try again.');
-		}
-	}
-
+	
 	function updateField(updatedField: FormField) {
 		formData.formBuilder = formData.formBuilder.map((field) =>
 			field.id === updatedField.id ? updatedField : field
@@ -245,19 +219,22 @@
 	async function handleSaveChanges() {
 		try {
 			console.log('Saving form data:', formData);
-			
+
 			// Ensure all fields have the correct structure before saving
-			const sanitizedFormBuilder = formData.formBuilder.map(field => ({
+			const sanitizedFormBuilder = formData.formBuilder.map((field) => ({
 				...field,
-				fieldType: field.fieldType,  // Ensure fieldType is preserved
-				options: field.options?.map(opt => ({ value: opt.value })) // Ensure options have correct structure
+				fieldType: field.fieldType, // Ensure fieldType is preserved
+				options: field.options?.map((opt) => ({ value: opt.value })) // Ensure options have correct structure
 			}));
 
 			const formDataToSubmit = new FormData();
-			formDataToSubmit.append('formData', JSON.stringify({
-				...formData,
-				formBuilder: sanitizedFormBuilder
-			}));
+			formDataToSubmit.append(
+				'formData',
+				JSON.stringify({
+					...formData,
+					formBuilder: sanitizedFormBuilder
+				})
+			);
 
 			const response = await fetch('?/saveForm', {
 				method: 'POST',
@@ -281,21 +258,6 @@
 
 	function handleCancel() {
 		isEditMode = false;
-	}
-
-	function getFieldPlaceholder(name: string): string {
-		switch (name) {
-			case 'firstName':
-				return 'First name';
-			case 'lastName':
-				return 'Last name';
-			case 'contactNumber':
-				return '9XX XXX XXXX';
-			case 'email':
-				return 'Email address';
-			default:
-				return '';
-		}
 	}
 
 	function validateField(field: FormField, value: any): string | null {
@@ -372,30 +334,11 @@
 		fetchRegions();
 	});
 
-	async function handleRegionChange(event: Event, fieldId: string) {
-		const regionName = (event.target as HTMLSelectElement).value;
-		const region = regions.find((r) => r.name === regionName);
-		if (region) {
-			console.log(region);
-			await fetchCities(region.code);
-			formData.formBuilder = formData.formBuilder.map((f) => {
-				if (f.fieldType === 'city') {
-					return {
-						...f,
-						options: cities[region.code]?.map((city) => city.name) || []
-					};
-				}
-				return f;
-			});
-
-			console.log('Updated form fields:', formData.formBuilder);
-		}
-	}
 </script>
 
 <div in:fly={{ y: -50, duration: 200 }}>
-<div>
-	<h1 class="text-2xl font-bold">Registration Form</h1>
+	<div>
+		<h1 class="text-2xl font-bold">Registration Form</h1>
 		<div class="text-sm text-gray-500">
 			<p>(Customize what data you need to collect from your attendees here.)</p>
 		</div>
@@ -411,7 +354,7 @@
 						{formData.description}
 					</div>
 					<button
-						class="absolute right-0 top-0 flex items-center gap-2 rounded-lg border border-[#d32f2f] px-4 py-2 text-[#d32f2f]"
+						class="absolute top-0 right-0 flex items-center gap-2 rounded-lg border border-[#d32f2f] px-4 py-2 text-[#d32f2f]"
 						on:click={toggleEditMode}
 					>
 						<span>Edit Form</span>
@@ -431,66 +374,66 @@
 					<button class="rounded-lg bg-[#d32f2f] px-6 py-2 text-white" on:click={handleSaveChanges}>
 						Save Changes
 					</button>
-</div>
+				</div>
 
-			<!-- Builder Mode -->
-			<input
-				class="mb-2 w-full border-b-2 border-transparent p-2 text-3xl font-bold text-[#818692] focus:border-blue-500 focus:outline-none"
-				placeholder="Form Title"
-				bind:value={formData.title}
-			/>
-			<textarea
-				class="mb-6 w-full border-b-2 border-transparent p-2 text-[#818692] focus:border-blue-500 focus:outline-none"
-				placeholder="Form Description"
-				bind:value={formData.description}
-			></textarea>
+				<!-- Builder Mode -->
+				<input
+					class="mb-2 w-full border-b-2 border-transparent p-2 text-3xl font-bold text-[#818692] focus:border-blue-500 focus:outline-none"
+					placeholder="Form Title"
+					bind:value={formData.title}
+				/>
+				<textarea
+					class="mb-6 w-full border-b-2 border-transparent p-2 text-[#818692] focus:border-blue-500 focus:outline-none"
+					placeholder="Form Description"
+					bind:value={formData.description}
+				></textarea>
 
-			<div
-				use:dndzone={{
-					items: formData.formBuilder,
-					flipDurationMs: 200,
-					dragDisabled
-				}}
-				on:consider={handleDnd}
-				on:finalize={handleDnd}
-				class="mb-6 space-y-4"
-			>
-				{#each formData.formBuilder as field (field.id)}
-					<FormFieldComponent
-						{field}
-						on:delete={({ detail }) => removeField(detail.id)}
-						on:update={(e) => updateField(e.detail)}
-						on:startdrag={() => (dragging = true)}
-						on:stopdrag={() => (dragging = false)}
-					/>
-				{/each}
-			</div>
-
-			<div class="mt-6">
-				<h3 class="mb-4 text-lg font-semibold">Add Field</h3>
-				<div class="grid grid-cols-3 gap-4 md:grid-cols-4">
-						{#each fieldTypes as { fieldType, label, icon }}
-						<button
-							class="flex cursor-pointer flex-col items-center rounded-lg border p-4 transition-colors hover:bg-gray-50"
-								on:click={() => addField(fieldType)}
-						>
-								<i class="fas {icon} mb-2 text-2xl"></i>
-							<span class="text-sm">{label}</span>
-						</button>
+				<div
+					use:dndzone={{
+						items: formData.formBuilder,
+						flipDurationMs: 200,
+						dragDisabled
+					}}
+					on:consider={handleDnd}
+					on:finalize={handleDnd}
+					class="mb-6 space-y-4"
+				>
+					{#each formData.formBuilder as field (field.id)}
+						<FormFieldComponent
+							{field}
+							on:delete={({ detail }) => removeField(detail.id)}
+							on:update={(e) => updateField(e.detail)}
+							on:startdrag={() => (dragging = true)}
+							on:stopdrag={() => (dragging = false)}
+						/>
 					{/each}
 				</div>
-			</div>
-		{:else}
-			<!-- Preview Mode -->
-			<form on:submit|preventDefault={handleSubmit} class="space-y-6">
+
+				<div class="mt-6">
+					<h3 class="mb-4 text-lg font-semibold">Add Field</h3>
+					<div class="grid grid-cols-3 gap-4 md:grid-cols-4">
+						{#each fieldTypes as { fieldType, label, icon }}
+							<button
+								class="flex cursor-pointer flex-col items-center rounded-lg border p-4 transition-colors hover:bg-gray-50"
+								on:click={() => addField(fieldType)}
+							>
+								<i class="fas {icon} mb-2 text-2xl"></i>
+								<span class="text-sm">{label}</span>
+							</button>
+						{/each}
+					</div>
+				</div>
+			{:else}
+				<!-- Preview Mode -->
+				<form on:submit|preventDefault={handleSubmit} class="space-y-6">
 					{#each formData.formBuilder as field (field.id)}
-					<div class="space-y-2">
-						<label for={field.id} class="block text-sm font-medium text-gray-700">
-							{field.label}
-							{#if field.required}
-								<span class="text-red-500">*</span>
-							{/if}
-						</label>
+						<div class="space-y-2">
+							<label for={field.id} class="block text-sm font-medium text-gray-700">
+								{field.label}
+								{#if field.required}
+									<span class="text-red-500">*</span>
+								{/if}
+							</label>
 
 							{#if validationErrors[field.id]}
 								<p class="text-sm text-red-500">{validationErrors[field.id]}</p>
@@ -546,7 +489,7 @@
 								</select>
 							{:else if field.fieldType === 'phone'}
 								<div class="relative">
-									<span class="absolute left-3 top-2">+63</span>
+									<span class="absolute top-2 left-3">+63</span>
 									<input
 										type="tel"
 										id={field.id}
@@ -567,19 +510,19 @@
 									bind:value={formResponses[field.id]}
 								/>
 							{/if}
-					</div>
-				{/each}
+						</div>
+					{/each}
 
 					<div class="mt-6 flex justify-end space-x-4">
-					<button
-						type="submit"
-						class="w-full cursor-pointer rounded-md bg-[#0ca777] px-4 py-2 text-white hover:bg-[#36c294]"
-					>
-						Submit
-					</button>
-				</div>
-			</form>
-		{/if}
+						<button
+							type="submit"
+							class="w-full cursor-pointer rounded-md bg-[#0ca777] px-4 py-2 text-white hover:bg-[#36c294]"
+						>
+							Submit
+						</button>
+					</div>
+				</form>
+			{/if}
 		</div>
 	</div>
 </div>

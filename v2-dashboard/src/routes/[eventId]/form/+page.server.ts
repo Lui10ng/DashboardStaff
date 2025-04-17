@@ -11,7 +11,7 @@ async function getForm(eventId: string) {
 			'where[eventId][equals]': eventId
 		});
 		console.log('Request URL params:', params.toString());
-		
+
 		const response = (await apiClient.get('forms', params)) as PayloadResponse;
 		console.log('Raw API Response:', JSON.stringify(response, null, 2));
 
@@ -77,7 +77,10 @@ export const load: PageServerLoad = async ({ params }) => {
 				label: field.label,
 				required: field.required,
 				description: field.description || undefined,
-				options: field.options
+				options:
+					field.options?.map((option: string | { value: string }) =>
+						typeof option === 'string' ? { value: option } : option
+					) || []
 			}))
 		};
 
@@ -138,7 +141,7 @@ export const actions = {
 			const formData = await request.formData();
 			const formId = formData.get('formId');
 			const fieldId = formData.get('fieldId');
-			
+
 			if (!formId || !fieldId || typeof fieldId !== 'string') {
 				return { success: false, error: 'Invalid form or field ID' };
 			}

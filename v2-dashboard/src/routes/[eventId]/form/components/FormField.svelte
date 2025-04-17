@@ -74,12 +74,13 @@
 				on:click={() => updateField({ required: !field.required })}
 				title={field.required ? 'Required field' : 'Optional field'}
 			>
-				<i class="fas {field.required ? 'fa-exclamation-circle text-red-500' : 'fa-exclamation-circle text-gray-400'}"></i>
+				<i
+					class="fas {field.required
+						? 'fa-exclamation-circle text-red-500'
+						: 'fa-exclamation-circle text-gray-400'}"
+				></i>
 			</button>
-			<button
-				class="cursor-pointer p-2 text-gray-500 hover:text-red-500"
-				on:click={handleDelete}
-			>
+			<button class="cursor-pointer p-2 text-gray-500 hover:text-red-500" on:click={handleDelete}>
 				<i class="fas fa-trash-alt"></i>
 			</button>
 			<div
@@ -98,7 +99,13 @@
 		<div class="space-y-2">
 			{#each field.options || [] as option, i}
 				<div class="flex items-center space-x-2">
-					<i class="fas {field.fieldType === 'multipleChoice' ? 'fa-circle' : field.fieldType === 'checkbox' ? 'fa-square' : 'fa-chevron-down'} text-gray-400"></i>
+					<i
+						class="fas {field.fieldType === 'multipleChoice'
+							? 'fa-circle'
+							: field.fieldType === 'checkbox'
+								? 'fa-square'
+								: 'fa-chevron-down'} text-gray-400"
+					></i>
 					<input
 						class="flex-1 rounded-md border p-2"
 						value={option.value}
@@ -161,12 +168,19 @@
 				</select>
 			{:else}
 				<input
-					type={field.fieldType === 'email' ? 'email' : 
-						field.fieldType === 'phone' ? 'tel' :
-						field.fieldType === 'number' ? 'number' :
-						field.fieldType === 'date' ? 'date' :
-						field.fieldType === 'time' ? 'time' :
-						field.fieldType === 'file' ? 'file' : 'text'}
+					type={field.fieldType === 'email'
+						? 'email'
+						: field.fieldType === 'phone'
+							? 'tel'
+							: field.fieldType === 'number'
+								? 'number'
+								: field.fieldType === 'date'
+									? 'date'
+									: field.fieldType === 'time'
+										? 'time'
+										: field.fieldType === 'file'
+											? 'file'
+											: 'text'}
 					class="w-full rounded-md p-2"
 					placeholder={field.label}
 					disabled
