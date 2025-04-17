@@ -57,30 +57,45 @@ async function deleteForm(id: number) {
 
 export const load: PageServerLoad = async ({ params }) => {
 	try {
-		console.log('Fetching form data');
+		if (!params.eventId) {
+			return {
+				formData: null,
+				error: 'Event ID is required'
+			};
+		}
+
+		console.log('Fetching form data for event:', params.eventId);
 		const response = await getForm(params.eventId);
 		console.log('Raw response from Payload:', response);
 
 		if (!response) {
-			console.log('No response received from Payload');
-			throw new Error('Form not found');
+			return {
+				formData: null,
+				error: `Form not found for event: ${params.eventId}`
+			};
+		}
+
+		if (!response.formBuilder || !Array.isArray(response.formBuilder)) {
+			return {
+				formData: null,
+				error: 'Invalid form structure: formBuilder is missing or invalid'
+			};
 		}
 
 		const formData: FormData = {
 			id: response.id,
-			title: response.title,
-			description: response.description,
+			title: response.title || 'Untitled Form',
+			description: response.description || '',
 			formBuilder: response.formBuilder.map((field) => ({
-				id: field.id,
-				name: field.name,
+				id: field.id || crypto.randomUUID(),
+				name: field.name || '',
 				fieldType: field.fieldType as FieldType,
-				label: field.label,
-				required: field.required,
+				label: field.label || 'Untitled Field',
+				required: !!field.required,
 				description: field.description || undefined,
-				options:
-					field.options?.map((option: string | { value: string }) =>
-						typeof option === 'string' ? { value: option } : option
-					) || []
+				options: field.options?.map((option: string | { value: string }) =>
+					typeof option === 'string' ? { value: option } : option
+				) || []
 			}))
 		};
 
@@ -92,9 +107,23 @@ export const load: PageServerLoad = async ({ params }) => {
 		};
 	} catch (error) {
 		console.error('Error details in load function:', error);
-		if (error && typeof error === 'object' && 'message' in error) {
-			console.error('API Error:', error.message);
+		
+		// Handle specific API errors
+		if (error instanceof Error) {
+			if (error.message.includes('Network')) {
+				return {
+					formData: null,
+					error: 'Network error: Please check your connection'
+				};
+			}
+			if (error.message.includes('401')) {
+				return {
+					formData: null,
+					error: 'Authentication error: Please log in again'
+				};
+			}
 		}
+
 		return {
 			formData: null,
 			error: error instanceof Error ? error.message : 'Failed to load form data'

@@ -48,6 +48,8 @@
 		console.log('Current formData:', formData);
 	});
 
+	let hasValidationErrors = $derived(Object.keys(validationErrors).length > 0);
+
 	interface Region {
 		id: string;
 		name: string;
@@ -62,7 +64,6 @@
 
 	let regions: Region[] = [];
 	let cities: Record<string, City[]> = {};
-	let selectedRegion = '';
 
 	let dragging = $state(false);
 	let dragDisabled = $derived(!dragging);
@@ -199,7 +200,7 @@
 			dragging = false;
 		}
 	}
-	
+
 	function updateField(updatedField: FormField) {
 		formData.formBuilder = formData.formBuilder.map((field) =>
 			field.id === updatedField.id ? updatedField : field
@@ -220,11 +221,10 @@
 		try {
 			console.log('Saving form data:', formData);
 
-			// Ensure all fields have the correct structure before saving
 			const sanitizedFormBuilder = formData.formBuilder.map((field) => ({
 				...field,
-				fieldType: field.fieldType, // Ensure fieldType is preserved
-				options: field.options?.map((opt) => ({ value: opt.value })) // Ensure options have correct structure
+				fieldType: field.fieldType,
+				options: field.options?.map((opt) => ({ value: opt.value }))
 			}));
 
 			const formDataToSubmit = new FormData();
@@ -261,25 +261,46 @@
 	}
 
 	function validateField(field: FormField, value: any): string | null {
-		if (field.required && !value) {
+		if (field.required && (value === undefined || value === null || value === '')) {
 			return `${field.label} is required`;
+		}
+
+		if (!field.required && (value === undefined || value === null || value === '')) {
+			return null;
 		}
 
 		switch (field.fieldType) {
 			case 'email':
-				if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+				if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
 					return 'Please enter a valid email address';
 				}
 				break;
 			case 'phone':
 				const phoneNumber = value?.replace(/[^0-9]/g, '');
-				if (value && !/^[0-9]{10}$/.test(phoneNumber)) {
+				if (!/^[0-9]{10}$/.test(phoneNumber)) {
 					return 'Please enter a valid 10-digit phone number';
 				}
 				break;
 			case 'number':
-				if (value && isNaN(Number(value))) {
+				if (isNaN(Number(value)) || value === '') {
 					return 'Please enter a valid number';
+				}
+				break;
+			case 'date':
+				if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+					return 'Please enter a valid date (YYYY-MM-DD)';
+				}
+				break;
+			case 'time':
+				if (!/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(value)) {
+					return 'Please enter a valid time (HH:MM)';
+				}
+				break;
+			case 'multipleChoice':
+			case 'checkbox':
+			case 'dropdown':
+				if (field.required && (!value || (Array.isArray(value) && value.length === 0))) {
+					return 'Please select at least one option';
 				}
 				break;
 		}
@@ -287,24 +308,19 @@
 		return null;
 	}
 
-	function validateForm(): boolean {
+	async function handleSubmit() {
 		validationErrors = {};
-		let isValid = true;
 
 		formData.formBuilder.forEach((field) => {
 			const value = formResponses[field.id];
 			const error = validateField(field, value);
 			if (error) {
 				validationErrors[field.id] = error;
-				isValid = false;
 			}
 		});
 
-		return isValid;
-	}
-
-	async function handleSubmit() {
-		if (!validateForm()) {
+		if (hasValidationErrors) {
+			console.error('Form validation failed:', validationErrors);
 			return;
 		}
 
@@ -319,13 +335,19 @@
 			});
 
 			if (!response.ok) {
-				throw new Error('Failed to submit form');
+				throw new Error(`Failed to submit form: ${response.statusText}`);
 			}
 
-			alert('Form submitted successfully!');
+			const result = await response.json();
+			if (result.success) {
+				alert('Form submitted successfully!');
+				formResponses = {};
+			} else {
+				throw new Error(result.error || 'Failed to submit form');
+			}
 		} catch (error) {
 			console.error('Error submitting form:', error);
-			alert('Failed to submit form. Please try again.');
+			alert(error instanceof Error ? error.message : 'Failed to submit form. Please try again.');
 		}
 	}
 
@@ -333,7 +355,6 @@
 	onMount(() => {
 		fetchRegions();
 	});
-
 </script>
 
 <div in:fly={{ y: -50, duration: 200 }}>
