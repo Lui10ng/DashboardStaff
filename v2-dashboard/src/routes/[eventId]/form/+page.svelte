@@ -12,19 +12,19 @@
 	let formResponses = $state<Record<string, any>>({});
 	let validationErrors = $state<Record<string, string>>({});
 	let fieldTypes: { fieldType: FieldType; label: string; icon: string }[] = [
-		{ fieldType: 'firstName', label: 'First Name', icon: 'fa-user' },
-		{ fieldType: 'lastName', label: 'Last Name', icon: 'fa-user' },
-		{ fieldType: 'shortText', label: 'Short Text', icon: 'fa-font' },
-		{ fieldType: 'longText', label: 'Long Text', icon: 'fa-paragraph' },
-		{ fieldType: 'email', label: 'Email', icon: 'fa-envelope' },
-		{ fieldType: 'phone', label: 'Phone', icon: 'fa-phone' },
-		{ fieldType: 'date', label: 'Date', icon: 'fa-calendar' },
-		{ fieldType: 'time', label: 'Time', icon: 'fa-clock' },
-		{ fieldType: 'multipleChoice', label: 'Multiple Choice', icon: 'fa-list-ul' },
-		{ fieldType: 'checkbox', label: 'Checkbox', icon: 'fa-check-square' },
-		{ fieldType: 'dropdown', label: 'Dropdown', icon: 'fa-chevron-down' },
-		{ fieldType: 'file', label: 'File Upload', icon: 'fa-upload' },
-		{ fieldType: 'region', label: 'Region & City', icon: 'fa-map-marker-alt' }
+		{ fieldType: 'text', label: 'Text', icon: 'fa-solid fa-font' },
+		{ fieldType: 'shortText', label: 'Short Text', icon: 'fa-solid fa-font' },
+		{ fieldType: 'longText', label: 'Long Text', icon: 'fa-solid fa-paragraph' },
+		{ fieldType: 'email', label: 'Email', icon: 'fa-solid fa-envelope' },
+		{ fieldType: 'phone', label: 'Phone', icon: 'fa-solid fa-phone' },
+		{ fieldType: 'number', label: 'Number', icon: 'fa-solid fa-hashtag' },
+		{ fieldType: 'date', label: 'Date', icon: 'fa-solid fa-calendar' },
+		{ fieldType: 'time', label: 'Time', icon: 'fa-solid fa-clock' },
+		{ fieldType: 'multipleChoice', label: 'Multiple Choice', icon: 'fa-solid fa-list-ul' },
+		{ fieldType: 'checkbox', label: 'Checkbox', icon: 'fa-solid fa-square-check' },
+		{ fieldType: 'dropdown', label: 'Dropdown', icon: 'fa-solid fa-chevron-down' },
+		{ fieldType: 'file', label: 'File Upload', icon: 'fa-solid fa-upload' },
+		{ fieldType: 'region', label: 'Region & City', icon: 'fa-solid fa-map-marker-alt' }
 	];
 
 	$effect(() => {
@@ -88,6 +88,33 @@
 		}
 	}
 
+	function getInputType(fieldType: FieldType): string {
+		switch (fieldType) {
+			case 'email':
+				return 'email';
+			case 'phone':
+				return 'tel';
+			case 'number':
+				return 'number';
+			case 'date':
+				return 'date';
+			case 'time':
+				return 'time';
+			case 'file':
+				return 'file';
+			case 'multipleChoice':
+				return 'radio';
+			case 'checkbox':
+				return 'checkbox';
+			case 'longText':
+				return 'textarea';
+			case 'text':
+			case 'shortText':
+			default:
+				return 'text';
+		}
+	}
+
 	function addField(fieldType: FieldType) {
 		if (fieldType === 'region') {
 			formData.formBuilder = [
@@ -98,7 +125,7 @@
 					fieldType: 'region',
 					label: 'Region',
 					required: true,
-					options: regions.map((region) => region.name)
+					options: regions.map((region) => ({ value: region.name }))
 				},
 				{
 					id: crypto.randomUUID(),
@@ -111,7 +138,7 @@
 				{
 					id: crypto.randomUUID(),
 					name: 'street',
-					fieldType: 'shortText',
+					fieldType: 'text',
 					label: 'Street/Barangay',
 					required: true
 				}
@@ -123,14 +150,46 @@
 				id: crypto.randomUUID(),
 				name: fieldType.toLowerCase(),
 				fieldType,
-				label: `New ${fieldType} field`,
+				label: getDefaultLabel(fieldType),
 				required: false,
 				options:
 					fieldType === 'multipleChoice' || fieldType === 'checkbox' || fieldType === 'dropdown'
-						? ['Option 1']
+						? [{ value: 'Option 1' }]
 						: undefined
 			};
 			formData.formBuilder = [...formData.formBuilder, newField];
+		}
+		console.log('Added new field:', formData.formBuilder);
+	}
+
+	function getDefaultLabel(fieldType: FieldType): string {
+		switch (fieldType) {
+			case 'text':
+				return 'Text Input';
+			case 'email':
+				return 'Email Address';
+			case 'phone':
+				return 'Phone Number';
+			case 'number':
+				return 'Number Input';
+			case 'date':
+				return 'Date';
+			case 'time':
+				return 'Time';
+			case 'multipleChoice':
+				return 'Multiple Choice Question';
+			case 'checkbox':
+				return 'Checkbox Question';
+			case 'dropdown':
+				return 'Dropdown Selection';
+			case 'file':
+				return 'File Upload';
+			case 'shortText':
+				return 'Short Answer';
+			case 'longText':
+				return 'Long Answer';
+			default:
+				return `New ${fieldType} field`;
 		}
 	}
 
@@ -171,6 +230,12 @@
 		formData.formBuilder = formData.formBuilder.map((field) =>
 			field.id === updatedField.id ? updatedField : field
 		);
+		console.log('Updated form builder:', formData.formBuilder);
+	}
+
+	function removeField(id: string) {
+		formData.formBuilder = formData.formBuilder.filter((field) => field.id !== id);
+		console.log('Removed field, new form builder:', formData.formBuilder);
 	}
 
 	function toggleEditMode() {
@@ -179,13 +244,20 @@
 
 	async function handleSaveChanges() {
 		try {
-			formData.formBuilder = formData.formBuilder.map((field) => ({
+			console.log('Saving form data:', formData);
+			
+			// Ensure all fields have the correct structure before saving
+			const sanitizedFormBuilder = formData.formBuilder.map(field => ({
 				...field,
-				id: field.id || crypto.randomUUID()
+				fieldType: field.fieldType,  // Ensure fieldType is preserved
+				options: field.options?.map(opt => ({ value: opt.value })) // Ensure options have correct structure
 			}));
 
 			const formDataToSubmit = new FormData();
-			formDataToSubmit.append('formData', JSON.stringify(formData));
+			formDataToSubmit.append('formData', JSON.stringify({
+				...formData,
+				formBuilder: sanitizedFormBuilder
+			}));
 
 			const response = await fetch('?/saveForm', {
 				method: 'POST',
@@ -195,7 +267,6 @@
 			const result = await response.json();
 			console.log('Save response:', result);
 
-			// Check if response indicates success
 			if (result.type === 'success' && result.status === 200) {
 				console.log('Form saved successfully');
 				isEditMode = false;
@@ -210,27 +281,6 @@
 
 	function handleCancel() {
 		isEditMode = false;
-	}
-
-	function getInputType(fieldType: FieldType, name: string): string {
-		// Special handling for known field names
-		if (name === 'phone') {
-			return 'tel';
-		}
-
-		switch (fieldType) {
-			case 'email':
-				return 'email';
-			case 'phone':
-				return 'tel';
-			case 'date':
-				return 'date';
-			case 'file':
-				return 'file';
-			case 'text':
-			default:
-				return 'text';
-		}
 	}
 
 	function getFieldPlaceholder(name: string): string {
@@ -253,16 +303,21 @@
 			return `${field.label} is required`;
 		}
 
-		switch (field.name) {
+		switch (field.fieldType) {
 			case 'email':
 				if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
 					return 'Please enter a valid email address';
 				}
 				break;
-			case 'contactNumber':
+			case 'phone':
 				const phoneNumber = value?.replace(/[^0-9]/g, '');
 				if (value && !/^[0-9]{10}$/.test(phoneNumber)) {
 					return 'Please enter a valid 10-digit phone number';
+				}
+				break;
+			case 'number':
+				if (value && isNaN(Number(value))) {
+					return 'Please enter a valid number';
 				}
 				break;
 		}
@@ -339,8 +394,8 @@
 </script>
 
 <div in:fly={{ y: -50, duration: 200 }}>
-	<div>
-		<h1 class="text-2xl font-bold">Registration Form</h1>
+<div>
+	<h1 class="text-2xl font-bold">Registration Form</h1>
 		<div class="text-sm text-gray-500">
 			<p>(Customize what data you need to collect from your attendees here.)</p>
 		</div>
@@ -376,72 +431,120 @@
 					<button class="rounded-lg bg-[#d32f2f] px-6 py-2 text-white" on:click={handleSaveChanges}>
 						Save Changes
 					</button>
-				</div>
+</div>
 
-				<!-- Builder Mode -->
-				<input
-					class="mb-2 w-full border-b-2 border-transparent p-2 text-3xl font-bold text-[#818692] focus:border-blue-500 focus:outline-none"
-					placeholder="Form Title"
-					bind:value={formData.title}
-				/>
-				<textarea
-					class="mb-6 w-full border-b-2 border-transparent p-2 text-[#818692] focus:border-blue-500 focus:outline-none"
-					placeholder="Form Description"
-					bind:value={formData.description}
-				></textarea>
+			<!-- Builder Mode -->
+			<input
+				class="mb-2 w-full border-b-2 border-transparent p-2 text-3xl font-bold text-[#818692] focus:border-blue-500 focus:outline-none"
+				placeholder="Form Title"
+				bind:value={formData.title}
+			/>
+			<textarea
+				class="mb-6 w-full border-b-2 border-transparent p-2 text-[#818692] focus:border-blue-500 focus:outline-none"
+				placeholder="Form Description"
+				bind:value={formData.description}
+			></textarea>
 
-				<div
-					use:dndzone={{
-						items: formData.formBuilder,
-						flipDurationMs: 200,
-						dragDisabled
-					}}
-					on:consider={handleDnd}
-					on:finalize={handleDnd}
-					class="mb-6 space-y-4"
-				>
-					{#each formData.formBuilder as field (field.id)}
-						<FormFieldComponent
-							{field}
-							on:delete={() => deleteField(field.id)}
-							on:update={(e) => updateField(e.detail)}
-							on:startdrag={() => (dragging = true)}
-							on:stopdrag={() => (dragging = false)}
-						/>
+			<div
+				use:dndzone={{
+					items: formData.formBuilder,
+					flipDurationMs: 200,
+					dragDisabled
+				}}
+				on:consider={handleDnd}
+				on:finalize={handleDnd}
+				class="mb-6 space-y-4"
+			>
+				{#each formData.formBuilder as field (field.id)}
+					<FormFieldComponent
+						{field}
+						on:delete={({ detail }) => removeField(detail.id)}
+						on:update={(e) => updateField(e.detail)}
+						on:startdrag={() => (dragging = true)}
+						on:stopdrag={() => (dragging = false)}
+					/>
+				{/each}
+			</div>
+
+			<div class="mt-6">
+				<h3 class="mb-4 text-lg font-semibold">Add Field</h3>
+				<div class="grid grid-cols-3 gap-4 md:grid-cols-4">
+						{#each fieldTypes as { fieldType, label, icon }}
+						<button
+							class="flex cursor-pointer flex-col items-center rounded-lg border p-4 transition-colors hover:bg-gray-50"
+								on:click={() => addField(fieldType)}
+						>
+								<i class="fas {icon} mb-2 text-2xl"></i>
+							<span class="text-sm">{label}</span>
+						</button>
 					{/each}
 				</div>
-
-				<div class="mt-6">
-					<h3 class="mb-4 text-lg font-semibold">Add Field</h3>
-					<div class="grid grid-cols-3 gap-4 md:grid-cols-4">
-						{#each fieldTypes as { fieldType, label, icon }}
-							<button
-								class="flex cursor-pointer flex-col items-center rounded-lg border p-4 transition-colors hover:bg-gray-50"
-								on:click={() => addField(fieldType)}
-							>
-								<i class="fas {icon} mb-2 text-2xl"></i>
-								<span class="text-sm">{label}</span>
-							</button>
-						{/each}
-					</div>
-				</div>
-			{:else}
-				<!-- Preview Mode -->
-				<form on:submit|preventDefault={handleSubmit} class="space-y-6">
+			</div>
+		{:else}
+			<!-- Preview Mode -->
+			<form on:submit|preventDefault={handleSubmit} class="space-y-6">
 					{#each formData.formBuilder as field (field.id)}
-						<div class="space-y-2">
-							<label for={field.id} class="block text-sm font-medium text-gray-700">
-								{field.label}
-								{#if field.required}
-									<span class="text-red-500">*</span>
-								{/if}
-							</label>
+					<div class="space-y-2">
+						<label for={field.id} class="block text-sm font-medium text-gray-700">
+							{field.label}
+							{#if field.required}
+								<span class="text-red-500">*</span>
+							{/if}
+						</label>
 
 							{#if validationErrors[field.id]}
 								<p class="text-sm text-red-500">{validationErrors[field.id]}</p>
 							{/if}
 
-							{#if field.name === 'contactNumber'}
+							{#if field.fieldType === 'longText'}
+								<textarea
+									id={field.id}
+									class="w-full rounded-md border p-2"
+									placeholder={field.label}
+									required={field.required}
+									bind:value={formResponses[field.id]}
+								></textarea>
+							{:else if field.fieldType === 'multipleChoice'}
+								<div class="space-y-2">
+									{#each field.options || [] as option}
+										<div class="flex items-center gap-2">
+											<input
+												type="radio"
+												name={field.id}
+												value={option.value}
+												required={field.required}
+												bind:group={formResponses[field.id]}
+											/>
+											<span>{option.value}</span>
+										</div>
+									{/each}
+								</div>
+							{:else if field.fieldType === 'checkbox'}
+								<div class="space-y-2">
+									{#each field.options || [] as option}
+										<div class="flex items-center gap-2">
+											<input
+												type="checkbox"
+												value={option.value}
+												bind:group={formResponses[field.id]}
+											/>
+											<span>{option.value}</span>
+										</div>
+									{/each}
+								</div>
+							{:else if field.fieldType === 'dropdown'}
+								<select
+									id={field.id}
+									class="w-full rounded-md border p-2"
+									required={field.required}
+									bind:value={formResponses[field.id]}
+								>
+									<option value="">Select an option</option>
+									{#each field.options || [] as option}
+										<option value={option.value}>{option.value}</option>
+									{/each}
+								</select>
+							{:else if field.fieldType === 'phone'}
 								<div class="relative">
 									<span class="absolute left-3 top-2">+63</span>
 									<input
@@ -457,26 +560,26 @@
 							{:else}
 								<input
 									id={field.id}
-									type={getInputType(field.fieldType, field.name)}
+									type={getInputType(field.fieldType)}
 									class="w-full rounded-md border p-2"
-									placeholder={getFieldPlaceholder(field.name)}
+									placeholder={field.label}
 									required={field.required}
 									bind:value={formResponses[field.id]}
 								/>
 							{/if}
-						</div>
-					{/each}
+					</div>
+				{/each}
 
 					<div class="mt-6 flex justify-end space-x-4">
-						<button
-							type="submit"
-							class="w-full cursor-pointer rounded-md bg-[#0ca777] px-4 py-2 text-white hover:bg-[#36c294]"
-						>
-							Submit
-						</button>
-					</div>
-				</form>
-			{/if}
+					<button
+						type="submit"
+						class="w-full cursor-pointer rounded-md bg-[#0ca777] px-4 py-2 text-white hover:bg-[#36c294]"
+					>
+						Submit
+					</button>
+				</div>
+			</form>
+		{/if}
 		</div>
 	</div>
 </div>

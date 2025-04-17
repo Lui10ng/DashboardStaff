@@ -1,31 +1,66 @@
 import type { RequestEvent } from '@sveltejs/kit';
-import { getForm, updateForm, deleteForm } from '$lib/services/payload.server';
-import type { FormData, FormResponse, FieldType } from './types';
+import type { FormData, FieldType } from './types';
 import type { PageServerLoad } from './$types';
+import { apiClient } from '$lib/services/payload.server.js';
+import type { PayloadResponse } from '$lib/types/formTypes';
 
-interface PayloadFormResponse {
-	id: number;
-	title: string;
-	description: string;
-	formBuilder: Array<{
-		id: string;
-		name: string;
-		fieldType: FieldType;
-		label: string;
-		required: boolean;
-		description?: string;
-		options?: Array<string>;
-	}>;
-	createdAt: string;
-	updatedAt: string;
+async function getForm(eventId: string) {
+	try {
+		console.log('Attempting to fetch form for event:', eventId);
+		const params = new URLSearchParams({
+			'where[eventId][equals]': eventId
+		});
+		console.log('Request URL params:', params.toString());
+		
+		const response = (await apiClient.get('forms', params)) as PayloadResponse;
+		console.log('Raw API Response:', JSON.stringify(response, null, 2));
+
+		if (response?.docs && Array.isArray(response.docs) && response.docs.length > 0) {
+			console.log('Found form:', response.docs[0]);
+			return response.docs[0];
+		}
+		console.log('No form found for event:', eventId);
+		return null;
+	} catch (error) {
+		console.error('Error details in getForm:', error);
+		if (error instanceof Error) {
+			console.error('Error message:', error.message);
+			console.error('Error stack:', error.stack);
+		}
+		throw error;
+	}
+}
+
+async function updateForm(id: number, data: any) {
+	try {
+		console.log(`Attempting to update form ${id} with data:`, data);
+		const response = await apiClient.patch(`forms/${id}`, data);
+		console.log('Update response:', response);
+		return response;
+	} catch (error) {
+		console.error('Error updating form:', error);
+		throw error;
+	}
+}
+
+async function deleteForm(id: number) {
+	try {
+		console.log(`Attempting to delete form ${id}`);
+		const response = await apiClient.del(`forms/${id}`);
+		console.log('Delete response:', response);
+		return response;
+	} catch (error) {
+		console.error('Error deleting form:', error);
+		throw error;
+	}
 }
 
 export const load: PageServerLoad = async ({ params }) => {
 	try {
 		console.log('Fetching form data');
-		const response = await getForm();
+		const response = await getForm(params.eventId);
 		console.log('Raw response from Payload:', response);
-		
+
 		if (!response) {
 			console.log('No response received from Payload');
 			throw new Error('Form not found');
@@ -45,7 +80,7 @@ export const load: PageServerLoad = async ({ params }) => {
 				options: field.options
 			}))
 		};
-		
+
 		console.log('Transformed formData:', formData);
 
 		return {
@@ -69,7 +104,7 @@ export const actions = {
 		try {
 			const formData = await request.formData();
 			const formDataJson = formData.get('formData');
-			
+
 			if (!formDataJson || typeof formDataJson !== 'string') {
 				return { success: false, error: 'Invalid form data' };
 			}
@@ -94,8 +129,12 @@ export const actions = {
 		}
 	},
 
-	deleteField: async ({ request }: RequestEvent) => {
+	deleteField: async ({ request, params }: RequestEvent) => {
 		try {
+			if (!params.eventId) {
+				return { success: false, error: 'Event ID is required' };
+			}
+
 			const formData = await request.formData();
 			const formId = formData.get('formId');
 			const fieldId = formData.get('fieldId');
@@ -111,13 +150,13 @@ export const actions = {
 			}
 
 			// Get current form data
-			const currentForm = await getForm();
+			const currentForm = await getForm(params.eventId);
 			if (!currentForm) {
 				return { success: false, error: 'Form not found' };
 			}
 
 			// Remove the field from formBuilder
-			const updatedFormBuilder = currentForm.formBuilder.filter(field => field.id !== fieldId);
+			const updatedFormBuilder = currentForm.formBuilder.filter((field) => field.id !== fieldId);
 
 			// Update the form with the new formBuilder
 			const response = await updateForm(formIdNumber, {
