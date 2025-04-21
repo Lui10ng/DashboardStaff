@@ -4,43 +4,34 @@
 
 	export let field: FormField;
 
-	const dispatch = createEventDispatcher<{
-		update: FormField;
-		delete: { id: string };
-		startdrag: void;
-		stopdrag: void;
-	}>();
+	const dispatch = createEventDispatcher();
 
 	function updateField(updates: Partial<FormField>) {
-		const updatedField = { ...field, ...updates };
-		console.log('Updating field:', updatedField);
-		dispatch('update', updatedField);
+		dispatch('update', { ...field, ...updates });
 	}
 
 	function addOption() {
 		if (field.options) {
-			const newOptions = [...field.options, { value: `Option ${field.options.length + 1}` }];
-			updateField({ options: newOptions });
+			updateField({
+				options: [...field.options, `Option ${field.options.length + 1}`]
+			});
 		}
 	}
 
 	function updateOption(index: number, value: string) {
 		if (field.options) {
 			const newOptions = [...field.options];
-			newOptions[index] = { value };
+			newOptions[index] = value;
 			updateField({ options: newOptions });
 		}
 	}
 
 	function deleteOption(index: number) {
 		if (field.options && field.options.length > 1) {
-			const newOptions = field.options.filter((_, i) => i !== index);
-			updateField({ options: newOptions });
+			updateField({
+				options: field.options.filter((_, i) => i !== index)
+			});
 		}
-	}
-
-	function handleDelete() {
-		dispatch('delete', { id: field.id });
 	}
 
 	function startDrag() {
@@ -74,20 +65,19 @@
 				on:click={() => updateField({ required: !field.required })}
 				title={field.required ? 'Required field' : 'Optional field'}
 			>
-				<i
-					class="fas {field.required
-						? 'fa-exclamation-circle text-red-500'
-						: 'fa-exclamation-circle text-gray-400'}"
-				></i>
+				<i class="fas {field.required ? 'fa-exclamation-circle text-red-500' : 'fa-exclamation-circle text-gray-400'}"></i>
 			</button>
-			<button class="cursor-pointer p-2 text-gray-500 hover:text-red-500" on:click={handleDelete}>
+			<button
+				class="cursor-pointer p-2 text-gray-500 hover:text-red-500"
+				on:click={() => dispatch('delete')}
+			>
 				<i class="fas fa-trash-alt"></i>
 			</button>
 			<div
 				class="cursor-grab p-2 text-gray-400 hover:text-gray-600"
-				on:mousedown={startDrag}
-				on:mouseup={stopDrag}
-				on:mouseleave={stopDrag}
+				on:mousedown={() => dispatch('startdrag')}
+				on:mouseup={() => dispatch('stopdrag')}
+				on:mouseleave={() => dispatch('stopdrag')}
 				data-dnd-handle
 			>
 				<i class="fas fa-grip-vertical"></i>
@@ -99,16 +89,10 @@
 		<div class="space-y-2">
 			{#each field.options || [] as option, i}
 				<div class="flex items-center space-x-2">
-					<i
-						class="fas {field.fieldType === 'multipleChoice'
-							? 'fa-circle'
-							: field.fieldType === 'checkbox'
-								? 'fa-square'
-								: 'fa-chevron-down'} text-gray-400"
-					></i>
+					<i class="fas {field.fieldType === 'multipleChoice' ? 'fa-circle' : field.fieldType === 'checkbox' ? 'fa-square' : 'fa-chevron-down'} text-gray-400"></i>
 					<input
 						class="flex-1 rounded-md border p-2"
-						value={option.value}
+						value={option}
 						on:input={(e) => updateOption(i, e.currentTarget.value)}
 					/>
 					<button
@@ -128,66 +112,49 @@
 				<span>Add Option</span>
 			</button>
 		</div>
-	{/if}
-
-	<div class="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
-		<div class="text-gray-500">
-			{#if field.fieldType === 'longText'}
-				<textarea class="w-full rounded-md p-2" placeholder="Long answer text" disabled></textarea>
-			{:else if field.fieldType === 'multipleChoice'}
-				<div class="space-y-2">
-					{#each field.options || [] as option}
-						<div class="flex items-center gap-2">
-							<input type="radio" disabled />
-							<span>{option.value}</span>
-						</div>
-					{/each}
-				</div>
-			{:else if field.fieldType === 'checkbox'}
-				<div class="space-y-2">
-					{#each field.options || [] as option}
-						<div class="flex items-center gap-2">
-							<input type="checkbox" disabled />
-							<span>{option.value}</span>
-						</div>
-					{/each}
-				</div>
-			{:else if field.fieldType === 'dropdown'}
-				<select class="w-full rounded-md p-2" disabled>
-					{#each field.options || [] as option}
-						<option>{option.value}</option>
-					{/each}
-				</select>
-			{:else if field.fieldType === 'region'}
-				<select class="w-full rounded-md p-2" disabled>
-					<option>Select Region</option>
-				</select>
-			{:else if field.fieldType === 'city'}
-				<select class="w-full rounded-md p-2" disabled>
-					<option>Select City/Municipality</option>
-				</select>
-			{:else}
-				<input
-					type={field.fieldType === 'email'
-						? 'email'
-						: field.fieldType === 'phone'
-							? 'tel'
-							: field.fieldType === 'number'
-								? 'number'
-								: field.fieldType === 'date'
-									? 'date'
-									: field.fieldType === 'time'
-										? 'time'
-										: field.fieldType === 'file'
-											? 'file'
-											: 'text'}
-					class="w-full rounded-md p-2"
-					placeholder={field.label}
-					disabled
-				/>
-			{/if}
+	{:else}
+		<div class="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
+			<div class="text-gray-500">
+				{#if field.fieldType === 'shortText'}
+					<input
+						type="text"
+						class="w-full rounded-md p-2"
+						placeholder="Short answer text"
+						disabled
+					/>
+				{:else if field.fieldType === 'longText'}
+					<textarea class="w-full rounded-md p-2" placeholder="Long answer text" disabled></textarea>
+				{:else if field.fieldType === 'email'}
+					<input type="email" class="w-full rounded-md p-2" placeholder="Email" disabled />
+				{:else if field.fieldType === 'phone'}
+					<input type="tel" class="w-full rounded-md p-2" placeholder="Phone number" disabled />
+				{:else if field.fieldType === 'number'}
+					<input type="number" class="w-full rounded-md p-2" placeholder="Number" disabled />
+				{:else if field.fieldType === 'date'}
+					<input type="date" class="w-full rounded-md p-2" disabled />
+				{:else if field.fieldType === 'file'}
+					<input type="file" class="w-full rounded-md p-2" disabled />
+				{:else if field.fieldType === 'firstName' || field.fieldType === 'lastName'}
+					<div class="grid grid-cols-2 gap-4">
+						<input
+							type="text"
+							class="rounded-md border-2 border-gray-200 p-2"
+							placeholder={field.fieldType === 'firstName' ? 'First name' : 'Last name'}
+							disabled
+						/>
+					</div>
+				{:else if field.fieldType === 'region'}
+					<select class="w-full rounded-md p-2" disabled>
+						<option>Select Region</option>
+					</select>
+				{:else if field.fieldType === 'city'}
+					<select class="w-full rounded-md p-2" disabled>
+						<option>Select City/Municipality</option>
+					</select>
+				{/if}
+			</div>
 		</div>
-	</div>
+	{/if}
 </div>
 
 <slot></slot>

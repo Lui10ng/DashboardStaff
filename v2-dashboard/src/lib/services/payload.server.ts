@@ -143,3 +143,78 @@ export const apiClient: ApiClient = {
 	 */
 	del: (path, options = {}) => request('DELETE', path, { ...options })
 };
+
+interface PayloadForm {
+	id: number;
+	title: string;
+	description: string;
+	formBuilder: Array<{
+		id: string;
+		name: string;
+		fieldType: string;
+		label: string;
+		required: boolean;
+		description: string | null;
+		options: string[];
+	}>;
+	responses: any[];
+	updatedAt: string;
+	createdAt: string;
+}
+
+interface PayloadResponse {
+	docs: PayloadForm[];
+	hasNextPage: boolean;
+	hasPrevPage: boolean;
+	limit: number;
+	nextPage: number | null;
+	page: number;
+	pagingCounter: number;
+	prevPage: number | null;
+	totalDocs: number;
+	totalPages: number;
+}
+
+export async function getForm() {
+	try {
+		console.log('Attempting to fetch forms');
+		const response = await apiClient.get('forms') as PayloadResponse;
+		console.log('Response from Payload:', response);
+		
+		// The response contains a docs array with the forms
+		if (response?.docs && Array.isArray(response.docs) && response.docs.length > 0) {
+			// For now, we'll return the first form since that's what we have
+			// Later we can filter by eventId if needed
+			return response.docs[0];
+		}
+		
+		return null;
+	} catch (error) {
+		console.error('Error details in getForm:', error);
+		throw error;
+	}
+}
+
+export async function updateForm(id: number, data: any) {
+	try {
+		console.log(`Attempting to update form ${id} with data:`, data);
+		const response = await apiClient.patch(`forms/${id}`, data);
+		console.log('Update response:', response);
+		return response;
+	} catch (error) {
+		console.error('Error updating form:', error);
+		throw error;
+	}
+}
+
+export async function deleteForm(id: number) {
+	try {
+		console.log(`Attempting to delete form ${id}`);
+		const response = await apiClient.del(`forms/${id}`);
+		console.log('Delete response:', response);
+		return response;
+	} catch (error) {
+		console.error('Error deleting form:', error);
+		throw error;
+	}
+}

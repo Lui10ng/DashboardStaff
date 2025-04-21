@@ -12,19 +12,19 @@
 	let formResponses = $state<Record<string, any>>({});
 	let validationErrors = $state<Record<string, string>>({});
 	let fieldTypes: { fieldType: FieldType; label: string; icon: string }[] = [
-		{ fieldType: 'text', label: 'Text', icon: 'fa-solid fa-font' },
-		{ fieldType: 'shortText', label: 'Short Text', icon: 'fa-solid fa-font' },
-		{ fieldType: 'longText', label: 'Long Text', icon: 'fa-solid fa-paragraph' },
-		{ fieldType: 'email', label: 'Email', icon: 'fa-solid fa-envelope' },
-		{ fieldType: 'phone', label: 'Phone', icon: 'fa-solid fa-phone' },
-		{ fieldType: 'number', label: 'Number', icon: 'fa-solid fa-hashtag' },
-		{ fieldType: 'date', label: 'Date', icon: 'fa-solid fa-calendar' },
-		{ fieldType: 'time', label: 'Time', icon: 'fa-solid fa-clock' },
-		{ fieldType: 'multipleChoice', label: 'Multiple Choice', icon: 'fa-solid fa-list-ul' },
-		{ fieldType: 'checkbox', label: 'Checkbox', icon: 'fa-solid fa-square-check' },
-		{ fieldType: 'dropdown', label: 'Dropdown', icon: 'fa-solid fa-chevron-down' },
-		{ fieldType: 'file', label: 'File Upload', icon: 'fa-solid fa-upload' },
-		{ fieldType: 'region', label: 'Region & City', icon: 'fa-solid fa-map-marker-alt' }
+		{ fieldType: 'firstName', label: 'First Name', icon: 'fa-user' },
+		{ fieldType: 'lastName', label: 'Last Name', icon: 'fa-user' },
+		{ fieldType: 'shortText', label: 'Short Text', icon: 'fa-font' },
+		{ fieldType: 'longText', label: 'Long Text', icon: 'fa-paragraph' },
+		{ fieldType: 'email', label: 'Email', icon: 'fa-envelope' },
+		{ fieldType: 'phone', label: 'Phone', icon: 'fa-phone' },
+		{ fieldType: 'date', label: 'Date', icon: 'fa-calendar' },
+		{ fieldType: 'time', label: 'Time', icon: 'fa-clock' },
+		{ fieldType: 'multipleChoice', label: 'Multiple Choice', icon: 'fa-list-ul' },
+		{ fieldType: 'checkbox', label: 'Checkbox', icon: 'fa-check-square' },
+		{ fieldType: 'dropdown', label: 'Dropdown', icon: 'fa-chevron-down' },
+		{ fieldType: 'file', label: 'File Upload', icon: 'fa-upload' },
+		{ fieldType: 'region', label: 'Region & City', icon: 'fa-map-marker-alt' }
 	];
 
 	$effect(() => {
@@ -48,8 +48,6 @@
 		console.log('Current formData:', formData);
 	});
 
-	let hasValidationErrors = $derived(Object.keys(validationErrors).length > 0);
-
 	interface Region {
 		id: string;
 		name: string;
@@ -64,6 +62,7 @@
 
 	let regions: Region[] = [];
 	let cities: Record<string, City[]> = {};
+	let selectedRegion = '';
 
 	let dragging = $state(false);
 	let dragDisabled = $derived(!dragging);
@@ -89,33 +88,6 @@
 		}
 	}
 
-	function getInputType(fieldType: FieldType): string {
-		switch (fieldType) {
-			case 'email':
-				return 'email';
-			case 'phone':
-				return 'tel';
-			case 'number':
-				return 'number';
-			case 'date':
-				return 'date';
-			case 'time':
-				return 'time';
-			case 'file':
-				return 'file';
-			case 'multipleChoice':
-				return 'radio';
-			case 'checkbox':
-				return 'checkbox';
-			case 'longText':
-				return 'textarea';
-			case 'text':
-			case 'shortText':
-			default:
-				return 'text';
-		}
-	}
-
 	function addField(fieldType: FieldType) {
 		if (fieldType === 'region') {
 			formData.formBuilder = [
@@ -126,7 +98,7 @@
 					fieldType: 'region',
 					label: 'Region',
 					required: true,
-					options: regions.map((region) => ({ value: region.name }))
+					options: regions.map((region) => region.name)
 				},
 				{
 					id: crypto.randomUUID(),
@@ -139,7 +111,7 @@
 				{
 					id: crypto.randomUUID(),
 					name: 'street',
-					fieldType: 'text',
+					fieldType: 'shortText',
 					label: 'Street/Barangay',
 					required: true
 				}
@@ -151,46 +123,14 @@
 				id: crypto.randomUUID(),
 				name: fieldType.toLowerCase(),
 				fieldType,
-				label: getDefaultLabel(fieldType),
+				label: `New ${fieldType} field`,
 				required: false,
 				options:
 					fieldType === 'multipleChoice' || fieldType === 'checkbox' || fieldType === 'dropdown'
-						? [{ value: 'Option 1' }]
+						? ['Option 1']
 						: undefined
 			};
 			formData.formBuilder = [...formData.formBuilder, newField];
-		}
-		console.log('Added new field:', formData.formBuilder);
-	}
-
-	function getDefaultLabel(fieldType: FieldType): string {
-		switch (fieldType) {
-			case 'text':
-				return 'Text Input';
-			case 'email':
-				return 'Email Address';
-			case 'phone':
-				return 'Phone Number';
-			case 'number':
-				return 'Number Input';
-			case 'date':
-				return 'Date';
-			case 'time':
-				return 'Time';
-			case 'multipleChoice':
-				return 'Multiple Choice Question';
-			case 'checkbox':
-				return 'Checkbox Question';
-			case 'dropdown':
-				return 'Dropdown Selection';
-			case 'file':
-				return 'File Upload';
-			case 'shortText':
-				return 'Short Answer';
-			case 'longText':
-				return 'Long Answer';
-			default:
-				return `New ${fieldType} field`;
 		}
 	}
 
@@ -201,16 +141,36 @@
 		}
 	}
 
+	async function deleteField(id: string) {
+		try {
+			const formDataToSubmit = new FormData();
+			formDataToSubmit.append('formId', formData.id.toString());
+			formDataToSubmit.append('fieldId', id);
+
+			const response = await fetch('?/deleteField', {
+				method: 'POST',
+				body: formDataToSubmit
+			});
+
+			const result = await response.json();
+			console.log('Delete response:', result);
+
+			if (result.type === 'success' && result.status === 200) {
+				formData.formBuilder = formData.formBuilder.filter((field) => field.id !== id);
+				console.log('Field deleted successfully');
+			} else {
+				throw new Error(result.error || 'Failed to delete field');
+			}
+		} catch (error) {
+			console.error('Error deleting field:', error);
+			alert('Failed to delete field. Please try again.');
+		}
+	}
+
 	function updateField(updatedField: FormField) {
 		formData.formBuilder = formData.formBuilder.map((field) =>
 			field.id === updatedField.id ? updatedField : field
 		);
-		console.log('Updated form builder:', formData.formBuilder);
-	}
-
-	function removeField(id: string) {
-		formData.formBuilder = formData.formBuilder.filter((field) => field.id !== id);
-		console.log('Removed field, new form builder:', formData.formBuilder);
 	}
 
 	function toggleEditMode() {
@@ -219,22 +179,13 @@
 
 	async function handleSaveChanges() {
 		try {
-			console.log('Saving form data:', formData);
-
-			const sanitizedFormBuilder = formData.formBuilder.map((field) => ({
+			formData.formBuilder = formData.formBuilder.map((field) => ({
 				...field,
-				fieldType: field.fieldType,
-				options: field.options?.map((opt) => ({ value: opt.value }))
+				id: field.id || crypto.randomUUID()
 			}));
 
 			const formDataToSubmit = new FormData();
-			formDataToSubmit.append(
-				'formData',
-				JSON.stringify({
-					...formData,
-					formBuilder: sanitizedFormBuilder
-				})
-			);
+			formDataToSubmit.append('formData', JSON.stringify(formData));
 
 			const response = await fetch('?/saveForm', {
 				method: 'POST',
@@ -244,6 +195,7 @@
 			const result = await response.json();
 			console.log('Save response:', result);
 
+			// Check if response indicates success
 			if (result.type === 'success' && result.status === 200) {
 				console.log('Form saved successfully');
 				isEditMode = false;
@@ -260,47 +212,57 @@
 		isEditMode = false;
 	}
 
+	function getInputType(fieldType: FieldType, name: string): string {
+		// Special handling for known field names
+		if (name === 'phone') {
+			return 'tel';
+		}
+
+		switch (fieldType) {
+			case 'email':
+				return 'email';
+			case 'phone':
+				return 'tel';
+			case 'date':
+				return 'date';
+			case 'file':
+				return 'file';
+			case 'text':
+			default:
+				return 'text';
+		}
+	}
+
+	function getFieldPlaceholder(name: string): string {
+		switch (name) {
+			case 'firstName':
+				return 'First name';
+			case 'lastName':
+				return 'Last name';
+			case 'contactNumber':
+				return '9XX XXX XXXX';
+			case 'email':
+				return 'Email address';
+			default:
+				return '';
+		}
+	}
+
 	function validateField(field: FormField, value: any): string | null {
-		if (field.required && (value === undefined || value === null || value === '')) {
+		if (field.required && !value) {
 			return `${field.label} is required`;
 		}
 
-		if (!field.required && (value === undefined || value === null || value === '')) {
-			return null;
-		}
-
-		switch (field.fieldType) {
+		switch (field.name) {
 			case 'email':
-				if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+				if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
 					return 'Please enter a valid email address';
 				}
 				break;
-			case 'phone':
+			case 'contactNumber':
 				const phoneNumber = value?.replace(/[^0-9]/g, '');
-				if (!/^[0-9]{10}$/.test(phoneNumber)) {
+				if (value && !/^[0-9]{10}$/.test(phoneNumber)) {
 					return 'Please enter a valid 10-digit phone number';
-				}
-				break;
-			case 'number':
-				if (isNaN(Number(value)) || value === '') {
-					return 'Please enter a valid number';
-				}
-				break;
-			case 'date':
-				if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-					return 'Please enter a valid date (YYYY-MM-DD)';
-				}
-				break;
-			case 'time':
-				if (!/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(value)) {
-					return 'Please enter a valid time (HH:MM)';
-				}
-				break;
-			case 'multipleChoice':
-			case 'checkbox':
-			case 'dropdown':
-				if (field.required && (!value || (Array.isArray(value) && value.length === 0))) {
-					return 'Please select at least one option';
 				}
 				break;
 		}
@@ -308,19 +270,24 @@
 		return null;
 	}
 
-	async function handleSubmit() {
+	function validateForm(): boolean {
 		validationErrors = {};
+		let isValid = true;
 
 		formData.formBuilder.forEach((field) => {
 			const value = formResponses[field.id];
 			const error = validateField(field, value);
 			if (error) {
 				validationErrors[field.id] = error;
+				isValid = false;
 			}
 		});
 
-		if (hasValidationErrors) {
-			console.error('Form validation failed:', validationErrors);
+		return isValid;
+	}
+
+	async function handleSubmit() {
+		if (!validateForm()) {
 			return;
 		}
 
@@ -335,19 +302,13 @@
 			});
 
 			if (!response.ok) {
-				throw new Error(`Failed to submit form: ${response.statusText}`);
+				throw new Error('Failed to submit form');
 			}
 
-			const result = await response.json();
-			if (result.success) {
-				alert('Form submitted successfully!');
-				formResponses = {};
-			} else {
-				throw new Error(result.error || 'Failed to submit form');
-			}
+			alert('Form submitted successfully!');
 		} catch (error) {
 			console.error('Error submitting form:', error);
-			alert(error instanceof Error ? error.message : 'Failed to submit form. Please try again.');
+			alert('Failed to submit form. Please try again.');
 		}
 	}
 
@@ -355,6 +316,26 @@
 	onMount(() => {
 		fetchRegions();
 	});
+
+	async function handleRegionChange(event: Event, fieldId: string) {
+		const regionName = (event.target as HTMLSelectElement).value;
+		const region = regions.find((r) => r.name === regionName);
+		if (region) {
+			console.log(region);
+			await fetchCities(region.code);
+			formData.formBuilder = formData.formBuilder.map((f) => {
+				if (f.fieldType === 'city') {
+					return {
+						...f,
+						options: cities[region.code]?.map((city) => city.name) || []
+					};
+				}
+				return f;
+			});
+
+			console.log('Updated form fields:', formData.formBuilder);
+		}
+	}
 </script>
 
 <div in:fly={{ y: -50, duration: 200 }}>
@@ -375,7 +356,7 @@
 						{formData.description}
 					</div>
 					<button
-						class="absolute top-0 right-0 flex items-center gap-2 rounded-lg border border-[#d32f2f] px-4 py-2 text-[#d32f2f]"
+						class="absolute right-0 top-0 flex items-center gap-2 rounded-lg border border-[#d32f2f] px-4 py-2 text-[#d32f2f]"
 						on:click={toggleEditMode}
 					>
 						<span>Edit Form</span>
@@ -422,7 +403,7 @@
 					{#each formData.formBuilder as field (field.id)}
 						<FormFieldComponent
 							{field}
-							on:delete={({ detail }) => removeField(detail.id)}
+							on:delete={() => deleteField(field.id)}
 							on:update={(e) => updateField(e.detail)}
 							on:startdrag={() => (dragging = true)}
 							on:stopdrag={() => (dragging = false)}
@@ -460,57 +441,9 @@
 								<p class="text-sm text-red-500">{validationErrors[field.id]}</p>
 							{/if}
 
-							{#if field.fieldType === 'longText'}
-								<textarea
-									id={field.id}
-									class="w-full rounded-md border p-2"
-									placeholder={field.label}
-									required={field.required}
-									bind:value={formResponses[field.id]}
-								></textarea>
-							{:else if field.fieldType === 'multipleChoice'}
-								<div class="space-y-2">
-									{#each field.options || [] as option}
-										<div class="flex items-center gap-2">
-											<input
-												type="radio"
-												name={field.id}
-												value={option.value}
-												required={field.required}
-												bind:group={formResponses[field.id]}
-											/>
-											<span>{option.value}</span>
-										</div>
-									{/each}
-								</div>
-							{:else if field.fieldType === 'checkbox'}
-								<div class="space-y-2">
-									{#each field.options || [] as option}
-										<div class="flex items-center gap-2">
-											<input
-												type="checkbox"
-												value={option.value}
-												bind:group={formResponses[field.id]}
-											/>
-											<span>{option.value}</span>
-										</div>
-									{/each}
-								</div>
-							{:else if field.fieldType === 'dropdown'}
-								<select
-									id={field.id}
-									class="w-full rounded-md border p-2"
-									required={field.required}
-									bind:value={formResponses[field.id]}
-								>
-									<option value="">Select an option</option>
-									{#each field.options || [] as option}
-										<option value={option.value}>{option.value}</option>
-									{/each}
-								</select>
-							{:else if field.fieldType === 'phone'}
+							{#if field.name === 'contactNumber'}
 								<div class="relative">
-									<span class="absolute top-2 left-3">+63</span>
+									<span class="absolute left-3 top-2">+63</span>
 									<input
 										type="tel"
 										id={field.id}
@@ -524,9 +457,9 @@
 							{:else}
 								<input
 									id={field.id}
-									type={getInputType(field.fieldType)}
+									type={getInputType(field.fieldType, field.name)}
 									class="w-full rounded-md border p-2"
-									placeholder={field.label}
+									placeholder={getFieldPlaceholder(field.name)}
 									required={field.required}
 									bind:value={formResponses[field.id]}
 								/>
