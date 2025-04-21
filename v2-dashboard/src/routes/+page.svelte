@@ -8,11 +8,11 @@
 	import { fly } from 'svelte/transition';
 	import Drawer from '$lib/components/ui/Drawer.svelte';
 	import { superForm } from 'sveltekit-superforms';
-	import { FileUpload, type ToastContext } from '@skeletonlabs/skeleton-svelte';
+	import { FileUpload } from '@skeletonlabs/skeleton-svelte';
 	import DatePicker from '$lib/components/ui/DatePicker.svelte';
 	import RichText from '$lib/components/ui/RichText.svelte';
 	import LocationMap from '$lib/components/ui/LocationMap.svelte';
-	import { getContext } from 'svelte';
+
 	import Button from '$lib/components/ui/Button.svelte';
 	import { stateDrawer } from '$lib/stores/state.svelte.ts';
 
@@ -34,19 +34,8 @@
 	message.subscribe(async (msg) => {
 		if (msg && msg.success) {
 			stateDrawer.open = false;
-			triggerSuccess(msg.message);
 		}
 	});
-
-	export const toast: ToastContext = getContext('toast');
-
-	const triggerSuccess = (message: string) => {
-		toast.create({
-			title: 'Success',
-			description: message,
-			type: 'success'
-		});
-	};
 
 	$effect(() => {
 		eventListStore.setEvents(data.events);
