@@ -2,26 +2,27 @@ export type FieldType =
 	| 'text'
 	| 'email'
 	| 'phone'
-	| 'number'
 	| 'date'
 	| 'time'
 	| 'multipleChoice'
 	| 'checkbox'
 	| 'dropdown'
 	| 'file'
-	| 'shortText'
-	| 'longText'
+	| 'firstName'
+	| 'lastName'
 	| 'region'
-	| 'city';
+	| 'city'
+	| 'shortText'
+	| 'longText';
 
 export interface FormField {
 	id: string;
 	name: string;
-	fieldType: FieldType;
 	label: string;
 	required: boolean;
-	description?: string;
-	options?: { value: string }[];
+	fieldType: FieldType;
+	options?: string[];
+	description?: string | null;
 }
 
 export interface FormData {

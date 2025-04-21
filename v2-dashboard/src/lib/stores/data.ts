@@ -1,26 +1,26 @@
-export const navItems = (eventId: string) => [
+export const navItems = [
 	{
-		path: `/${eventId}/registrants`,
+		path: '/eventId/registrants',
 		label: 'registrants'
 	},
 	{
-		path: `/${eventId}/posts`,
+		path: '/eventId/posts',
 		label: 'posts'
 	},
 	{
-		path: `/${eventId}/form`,
+		path: '/eventId/form',
 		label: 'form'
 	},
 	{
-		path: `/${eventId}/merchant`,
+		path: '/eventId/merchant',
 		label: 'merchant'
 	},
 	{
-		path: `/${eventId}/emails`,
+		path: '/eventId/emails',
 		label: 'emails'
 	},
 	{
-		path: `/${eventId}/staff`,
+		path: '/eventId/staff',
 		label: 'staff'
 	}
 ];

@@ -764,7 +764,7 @@
 	</div>
 	<div class="-mx-4 mb-6 overflow-x-auto rounded-lg px-4 py-3 sm:mx-0 sm:mb-8 sm:px-0">
 		<nav class="flex min-w-max space-x-4">
-			{#each navItems(event.id) as item}
+			{#each navItems as item}
 				<Button
 					label={item.label}
 					className="rounded-lg border border-gray-200 py-2 shadow-sm transition-colors w-35 capitalize {handleActiveNav(
