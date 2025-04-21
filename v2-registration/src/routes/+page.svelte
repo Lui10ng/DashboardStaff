@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { superForm } from 'sveltekit-superforms';
-	import { ProgressRing, type ToastContext } from '@skeletonlabs/skeleton-svelte';
+	import { ProgressRing } from '@skeletonlabs/skeleton-svelte';
 	import { Tabs } from '@skeletonlabs/skeleton-svelte';
-	import { getContext } from 'svelte';
+
 	import { browser } from '$app/environment';
 	import { Modal } from '@skeletonlabs/skeleton-svelte';
 	import { regions } from '$lib/static/constant.js';
@@ -37,23 +37,11 @@
 
 	message.subscribe(async (msg) => {
 		if (msg) {
-			triggerToast(msg.success, msg.message);
 		}
 	});
 
 	const copyToClipboard = (contact: any) => {
 		navigator.clipboard.writeText(contact);
-		triggerToast(true, 'Copied to clipboard');
-	};
-
-	export const toast: ToastContext = getContext('toast');
-
-	const triggerToast = (success: boolean, message: string) => {
-		toast.create({
-			title: success ? 'Success' : 'Error',
-			description: message,
-			type: success ? 'success' : 'error'
-		});
 	};
 
 	let tabData = $derived.by(() => {
