@@ -9,17 +9,17 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Install dependencies based on the preferred package manager
-COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
+# Install dependencies using pnpm
+COPY package.json pnpm-lock.yaml* ./
 RUN \
-   if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
-   elif [ -f package-lock.json ]; then npm ci; \
-   elif [ -f pnpm-lock.yaml ]; then \
-     npm install -g pnpm@9 && \
-     pnpm i --frozen-lockfile --stream; \
-     pnpm rebuild; \
-   else echo "Lockfile not found." && exit 1; \
-   fi
+    # Check if pnpm is installed, install if not
+    if ! command -v pnpm &> /dev/null; then \
+        echo "pnpm could not be found, installing..."; \
+        npm install -g pnpm@9; \
+    fi && \
+    # Install dependencies
+    pnpm i --frozen-lockfile --stream && \
+    pnpm rebuild
 
 
 # Rebuild the source code only when needed
@@ -34,14 +34,14 @@ COPY . .
 # ENV NEXT_TELEMETRY_DISABLED 1
 
 RUN \
-   if [ -f yarn.lock ]; then yarn run build; \
-   elif [ -f package-lock.json ]; then npm run build; \
-   elif [ -f pnpm-lock.yaml ]; then \
-     npm install -g pnpm@9 && \
-     pnpm run build; \
-     pnpm rebuild; \
-   else echo "Lockfile not found." && exit 1; \
-   fi
+    # Check if pnpm is installed, install if not (might be redundant if base image doesn't change, but safe)
+    if ! command -v pnpm &> /dev/null; then \
+        echo "pnpm could not be found, installing..."; \
+        npm install -g pnpm@9; \
+    fi && \
+    # Build the application
+    pnpm run build && \
+    pnpm rebuild
 
 # Production image, copy all the files and run next
 FROM base AS runner
