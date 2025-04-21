@@ -16,10 +16,10 @@ type UserRole = typeof USER_ROLES[keyof typeof USER_ROLES];
 const Users: CollectionConfig = {
   slug: 'users',
   auth: {
-    disableLocalStrategy: true,
-    strategies: [
-      clerkOrPayloadAdminStrategy,
-    ],
+    // disableLocalStrategy: true,
+    // strategies: [
+    //   clerkOrPayloadAdminStrategy,
+    // ],
     // If using JWT (Payload's default)
     tokenExpiration: 7200, // seconds - e.g., 2 hours
     // verify: true, // Enable email verification if needed

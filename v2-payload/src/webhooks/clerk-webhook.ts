@@ -1,192 +1,163 @@
 // src/webhooks/clerkWebhookHandler.ts
 import { Webhook } from 'svix';
 import type { PayloadRequest } from 'payload';
-import type { User } from '../payload-types'; // Adjust path if needed
+import type { WebhookEvent } from '@clerk/backend';
 
-/**
- * Handles Clerk webhooks to sync users with Payload.
- *
- * Verifies the request came from Clerk. Then, based on the event
- * ('user.created', 'user.updated', 'user.deleted'), it creates,
- * updates, or deletes the corresponding user in Payload.
- * Responds 200 on success, 400/500 on errors.
- *
- * @param {PayloadRequest} req Incoming Clerk request.
- * @returns {Promise<Response>} Response to Clerk (200, 400, or 500).
- * @throws {Response} Implicitly via return on verification/processing errors.
- * @requires process.env.CLERK_WEBHOOK_SECRET Clerk secret key.
- * @requires svix Library for verification (`npm install svix`).
- */
+// Ensure your secret is loaded correctly (e.g., from environment variables)
+const secret = process.env.CLERK_WEBHOOK_SIGNING_SECRET;
+
+// Return standard Web API Response
 export const clerkWebhookHandler = async (req: PayloadRequest): Promise<Response> => {
-    // --- Verification Start ---
+  // Ensure the request method is POST
+  if (req.method !== 'POST') {
+    return new Response('Method Not Allowed', { status: 405 });
+  }
 
-    // 1. Get the secret from environment variables
-    const secret = process.env.CLERK_WEBHOOK_SECRET;
-    if (!secret) {
-        console.error('Clerk webhook secret is not configured.');
-        // Don't tell the sender too much, just that it failed
-        return new Response('Webhook Error: Configuration missing', { status: 400 });
-    }
+  // Access the raw request body as an ArrayBuffer and convert to Buffer
+  if (!req.arrayBuffer) {
+     console.error('Webhook Error: Incoming request does not support arrayBuffer');
+     return new Response('Bad Request: Cannot read request body', { status: 400 });
+  }
 
-    // 2. Get headers sent by Clerk
-    const headers = req.headers;
-    const svix_id = headers.get('svix-id');
-    const svix_timestamp = headers.get('svix-timestamp');
-    const svix_signature = headers.get('svix-signature');
+  const arrayBuffer = await req.arrayBuffer();
+  const rawBody = Buffer.from(arrayBuffer);
 
-    if (!svix_id || !svix_timestamp || !svix_signature) {
-        console.error('Clerk webhook error: Missing svix headers');
-        return new Response('Webhook Error: Missing headers', { status: 400 });
-    }
+  // Extract Svix Headers
+  const svixId = req.headers.get('svix-id') as string;
+  const svixTimestamp = req.headers.get('svix-timestamp') as string;
+  const svixSignature = req.headers.get('svix-signature') as string;
 
-    // 3. Get the RAW request body (important: must be raw, not parsed JSON)
-    let rawBody: string = ''; // Initialize rawBody
-    try {
-        // Check if req and req.text are valid before calling
-        if (req && typeof req.text === 'function') {
-            // req.text() reads the raw body stream
-            rawBody = await req.text();
-        } else {
-            console.error('Clerk webhook error: Request object or text method is undefined.');
-            return new Response('Webhook Error: Invalid request object', { status: 400 });
-        }
-    } catch (err: unknown) { // Add explicit type 'unknown' to the error
-        console.error('Clerk webhook error: Could not read raw body.', err);
-        // Ensure err is an Error instance before accessing message
-        const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
-        return new Response(`Webhook Error: ${errorMessage}`, { status: 400 });
-    }
+  // If any required header is missing, return an error
+  if (!svixId || !svixTimestamp || !svixSignature) {
+    console.error('Webhook Error: Missing Svix headers');
+    return new Response('Missing Svix headers', { status: 400 });
+  }
 
-    const wh = new Webhook(secret);
-    let eventPayload: Record<string, any>; // Or Clerk's WebhookEvent type
+  // Perform Svix Verification
+  const wh = new Webhook(secret as string);
+  let msg: any; // Type this according to your expected webhook payload
+  try {
+    // The verify function takes the raw body (Buffer) and headers
+    msg = wh.verify(rawBody, {
+      "svix-id": svixId,
+      "svix-timestamp": svixTimestamp,
+      "svix-signature": svixSignature,
+    });
+  } catch (err) {
+    // Verification failed
+    console.error('Webhook verification failed:', err);
+    return new Response('Webhook signature verification failed', { status: 400 });
+  }
 
-    try {
-        const rawBody = await req.text(); // Get raw body *before* verification
-        eventPayload = wh.verify(rawBody, { /* svix headers */ }) as Record<string, any>;
-        console.log('Clerk Webhook Verified Successfully!');
-    } catch (err: unknown) {
-        console.error('Clerk webhook error: Invalid signature.', (err as Error).message);
-        return new Response(`Webhook Error: ${(err as Error).message}`, { status: 400 });
-    }
-    // --- Verification End ---
+  // Webhook is successfully verified, process the event
+  console.log('Webhook received and verified:', msg);
 
+    // Webhook is successfully verified, you can now process the rawBody
+    // If the webhook payload is JSON, you'll need to parse the rawBody buffer:
+    const webhookPayload = JSON.parse(rawBody.toString('utf-8'));
 
-    // --- Processing Start (New Logic) ---
-    const eventType = eventPayload.type;
-    const eventData = eventPayload.data; // Clerk user data is usually here
+    console.log('Webhook received and verified:', webhookPayload);
 
-    // Use req.payload to access Payload's Local API
+    // --- Processing Start ---
+    const eventType = webhookPayload.type;
+    const eventData = webhookPayload.data;
     const payload = req.payload;
 
     try {
-        // Use a switch to handle different event types from Clerk
+        console.log(`Processing verified Clerk event type: ${eventType}`);
+
         switch (eventType) {
             case 'user.created':
                 console.log(`Processing Clerk event: ${eventType} for Clerk User ID: ${eventData.id}`);
-                // Check if user already exists (important for resilience)
-                const existingUserCheck = await payload.find({
-                    collection: 'users',
-                    where: { clerkId: { equals: eventData.id } },
-                    limit: 1,
-                    depth: 0,
-                    req: req, // Pass req for context
-                });
+                // const existingUserCheck = await payload.find({
+                //     collection: 'users',
+                //     where: { clerkId: { equals: eventData.id } },
+                //     limit: 1,
+                //     depth: 0,
+                //     req: req, 
+                // });
 
-                if (existingUserCheck.docs.length === 0) {
-                    // Create a new user in Payload
-                    const email = eventData.email_addresses?.[0]?.email_address;
-                    const clerkId = eventData.id;
-                    await payload.create({
-                        collection: 'users',
-                        data: {
-                            email,
-                            clerkId,
-                            roles: ['organizer'], // Add default roles
-                        },
-                        overrideAccess: true, // Often needed when creating system users
-                        req: req, // Pass req for context
-                    });
-                    console.log(`-> Created Payload user for Clerk User ID: ${eventData.id}`);
-                } else {
-                    console.log(`-> Payload user already exists for Clerk User ID: ${eventData.id}. Skipping creation.`);
-                }
+                // if (existingUserCheck.docs.length === 0) {
+                //     const email = eventData.email_addresses?.[0]?.email_address;
+                //     const clerkId = eventData.id;
+                //     await payload.create({
+                //         collection: 'users',
+                //         data: {
+                //             email,
+                //             clerkId,
+                //             roles: ['organizer'], 
+                //         },
+                //         overrideAccess: true, 
+                //         req: req, 
+                //     });
+                //     console.log(`-> Created Payload user for Clerk User ID: ${eventData.id}`);
+                // } else {
+                //     console.log(`-> Payload user already exists for Clerk User ID: ${eventData.id}. Skipping creation.`);
+                // }
                 break;
 
             case 'user.updated':
                 console.log(`Processing Clerk event: ${eventType} for Clerk User ID: ${eventData.id}`);
-                // Find the existing Payload user by Clerk User ID
-                const userToUpdateQuery = await payload.find({
-                    collection: 'users',
-                    where: { clerkId: { equals: eventData.id } },
-                    limit: 1,
-                    depth: 0,
-                    req: req,
-                });
-                const userToUpdate = userToUpdateQuery.docs[0] as User | undefined;
+                // const userToUpdateQuery = await payload.find({
+                //     collection: 'users',
+                //     where: { clerkId: { equals: eventData.id } },
+                //     limit: 1,
+                //     depth: 0,
+                //     req: req,
+                // });
+                // const userToUpdate = userToUpdateQuery.docs[0] as any;
 
-                if (userToUpdate) {
-                    // Update the Payload user
-                    await payload.update({
-                        collection: 'users',
-                        id: userToUpdate.id, // Use the Payload ID to update
-                        data: {
-                            email: eventData.email_addresses?.[0]?.email_address,
-                            // Map other updatable fields
-                        },
-                        overrideAccess: true,
-                        req: req,
-                    });
-                    console.log(`-> Updated Payload user for Clerk User ID: ${eventData.id}`);
-                } else {
-                    console.warn(`-> Received user.updated for Clerk User ID ${eventData.id}, but no matching Payload user found.`);
-                    // Optionally: handle this case, maybe attempt creation?
-                }
+                // if (userToUpdate) {
+                //     await payload.update({
+                //         collection: 'users',
+                //         id: userToUpdate.id, 
+                //         data: {
+                //             email: eventData.email_addresses?.[0]?.email_address,
+                //         },
+                //         overrideAccess: true,
+                //         req: req,
+                //     });
+                //     console.log(`-> Updated Payload user for Clerk User ID: ${eventData.id}`);
+                // } else {
+                //     console.warn(`-> Received user.updated for Clerk User ID ${eventData.id}, but no matching Payload user found.`);
+                // }
                 break;
 
             case 'user.deleted':
                 console.log(`Processing Clerk event: ${eventType} for Clerk User ID: ${eventData.id}`);
-                // Find the existing Payload user by Clerk User ID
-                const userToDeleteQuery = await payload.find({
-                    collection: 'users',
-                    where: { clerkId: { equals: eventData.id } },
-                    limit: 1,
-                    depth: 0,
-                    req: req,
-                });
-                const userToDelete = userToDeleteQuery.docs[0] as User | undefined;
+                // const userToDeleteQuery = await payload.find({
+                //     collection: 'users',
+                //     where: { clerkId: { equals: eventData.id } },
+                //     limit: 1,
+                //     depth: 0,
+                //     req: req,
+                // });
+                // const userToDelete = userToDeleteQuery.docs[0] as any;
 
-                if (userToDelete) {
-                    // Delete the Payload user
-                    await payload.delete({
-                        collection: 'users',
-                        id: userToDelete.id, // Use the Payload ID to delete
-                        overrideAccess: true,
-                        req: req,
-                    });
-                    console.log(`-> Deleted Payload user for Clerk User ID: ${eventData.id}`);
-                } else {
-                    console.warn(`-> Received user.deleted for Clerk User ID ${eventData.id}, but no matching Payload user found.`);
-                }
+                // if (userToDelete) {
+                //     await payload.delete({
+                //         collection: 'users',
+                //         id: userToDelete.id, 
+                //         overrideAccess: true,
+                //         req: req,
+                //     });
+                //     console.log(`-> Deleted Payload user for Clerk User ID: ${eventData.id}`);
+                // } else {
+                //     console.warn(`-> Received user.deleted for Clerk User ID ${eventData.id}, but no matching Payload user found.`);
+                // }
                 break;
-
-            // Add cases for other events you care about (e.g., 'session.created')
-            // case 'session.created':
-            //    console.log(`User ${eventData.user_id} created a session`);
-            //    // You might update a 'lastLogin' field here
-            //    break;
 
             default:
                 console.log(`Received unhandled Clerk event type: ${eventType}`);
         }
 
-        // --- Processing End ---
+        // Return a Response object for success
+        return new Response(JSON.stringify({ message: 'Webhook received successfully' }), { status: 200, headers: { 'Content-Type': 'application/json' } });
 
-        // Respond after processing
-        return Response.json({ message: 'Webhook processed successfully' }, { status: 200 });
-
-    } catch (error) {
-        payload.logger.error(`Error processing Clerk webhook event ${eventType}: ${error}`);
-        // Send a generic server error response
-        return Response.json({ message: 'Internal server error processing webhook' }, { status: 500 });
+    } catch (processingError: unknown) {
+        const message = processingError instanceof Error ? processingError.message : 'Unknown processing error.';
+        console.error(`Clerk webhook error: Failed to process event type ${eventType}. Error: ${message}`);
+        // Return a Response object for errors
+        return new Response(`Webhook Processing Error: ${message}`, { status: 500 });
     }
-}
+};
