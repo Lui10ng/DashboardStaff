@@ -1,65 +1,72 @@
+import { registration } from '$lib/schema/registration';
+import { apiClient } from '$lib/services/payload.server.js';
+import { fail } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { message, superValidate } from 'sveltekit-superforms/server';
-import { fail } from 'sveltekit-superforms';
-import { env } from '$env/dynamic/private';
-import { registration } from '$lib/schema/registration';
-import { AWS_URL } from '$env/static/private';
 
-let eventDetails: any = null;
+let schema: any = null;
 
-export const load = async ({ url }) => {
+export const load = async ({ url, fetch: svelteKitFetch }) => {
 	const hostName = url.hostname;
 	const subdomain = hostName.split('.')[0];
 
-	if (
-		hostName.includes('.localhost') ||
-		hostName.includes('.test.com') ||
-		hostName.includes('.veent.co') ||
-		hostName.includes('veent-registration.vercel.app') ||
-		hostName.includes('veent-registration-git-staging-veent-team.vercel.app')
-	) {
-		const formsResp = await fetch(
-			`${env.PAYLOAD_PUBLIC_SERVER_URL}/api/events?where[subdomain][equals]=${subdomain}&depth=1`,
-			{
-				method: 'GET'
-			}
-		);
-		eventDetails = await formsResp.json();
-		eventDetails = eventDetails.docs[0];
-	} else {
-		// redirect(302, 'https://www.veent.io/');
-	}
-
-	const formBuilder = eventDetails.formBuilder;
-
-	formBuilder.push({
-		name: 'paymentType',
-		fieldType: 'json',
-		label: 'Tickets',
-		ticketData: eventDetails.paymentType
+	const params = new URLSearchParams({
+		'where[slug][equals]': subdomain,
+		depth: '1'
 	});
 
-	const schema = registration(formBuilder);
-	const form = await superValidate(zod(schema));
+	try {
+		const formData = await apiClient.get('/events', params, { fetchInstance: svelteKitFetch });
 
-	const serverTime = new Date();
+		if (formData && formData.docs[0].formId.formBuilder) {
+			const formBuilder = formData.docs[0].formId.formBuilder;
 
-	return { form, formBuilder, eventDetails, AWS_URL, serverTime };
+			schema = registration(formBuilder);
+			const form = await superValidate(zod(schema));
+
+			const serverTime = new Date();
+
+			const eventDetails = formData.docs[0];
+
+			return {
+				form,
+				eventDetails,
+				serverTime,
+				formBuilder
+			};
+		}
+	} catch (err) {}
 };
 
 export const actions = {
-	register: async ({ request }) => {
+	register: async ({ url, request }) => {
+		const hostName = url.hostname;
+		const subdomain = hostName.split('.')[0];
+
 		const formData = await request.formData();
 
-		const schema = registration(eventDetails.formBuilder);
 		const form = await superValidate(formData, zod(schema));
 
 		if (!form.valid) {
 			return fail(400, { form });
 		}
 
-		console.log('form: ', form.data.tabs);
+		try {
+			const registrantData = {
+				ticket: '1',
+				event: subdomain,
+				guestDetails: {
+					guestEmail: 'guest@example.com',
+					guestFirstName: 'Jane',
+					guestLastName: 'Doe'
+				},
+				submittedAnswers: form.data.tabs
+			};
 
-		return message(form, { success: true, message: 'Registration successful!' });
+			const response = await apiClient.post('/registrants', registrantData);
+			return message(form, { success: true, message: 'Registration successful!' });
+		} catch (error: any) {
+			return message(form, { success: false, message: error.message });
+		}
 	}
 };
