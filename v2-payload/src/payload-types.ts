@@ -222,9 +222,9 @@ export interface Event {
    */
   totalCapacity?: number | null;
   /**
-   * Select the MANDATORY registration form attendees must complete.
+   * Select the registration form attendees must complete.
    */
-  registrationForm: number | RegistrationFormTemplate;
+  registrationForm?: (number | null) | RegistrationFormTemplate;
   /**
    * Optional notes or instructions to display alongside the registration form.
    */
@@ -255,6 +255,10 @@ export interface Event {
         id?: string | null;
       }[]
     | null;
+  /**
+   * The registration form for this event
+   */
+  formId?: (number | null) | Form;
   updatedAt: string;
   createdAt: string;
 }
@@ -556,6 +560,65 @@ export interface RegistrationFormTemplate {
   createdAt: string;
 }
 /**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "forms".
+ */
+export interface Form {
+  id: number;
+  /**
+   * The event this form belongs to
+   */
+  eventId?: (number | null) | Event;
+  /**
+   * Form title that will be displayed to users
+   */
+  title: string;
+  /**
+   * A brief description of what this form is for
+   */
+  description?: string | null;
+  formBuilder?:
+    | {
+        name: string;
+        label: string;
+        required?: boolean | null;
+        fieldType:
+          | 'text'
+          | 'email'
+          | 'phone'
+          | 'number'
+          | 'date'
+          | 'time'
+          | 'multipleChoice'
+          | 'checkbox'
+          | 'dropdown'
+          | 'file'
+          | 'shortText'
+          | 'longText'
+          | 'region'
+          | 'city';
+        id: string | null;
+        options?:
+          | {
+              value?: string | null;
+              id?: string | null;
+            }[]
+          | null;
+        description?: string | null;
+      }[]
+    | null;
+  responses?:
+    | {
+        fieldId: string;
+        value?: string | null;
+        submittedAt?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Records of ticket purchases (by users or guests) and their status.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -774,55 +837,6 @@ export interface Transaction {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "forms".
- */
-export interface Form {
-  id: number;
-  title: string;
-  description?: string | null;
-  formBuilder?:
-    | {
-        name: string;
-        label: string;
-        required?: boolean | null;
-        fieldType:
-          | 'text'
-          | 'email'
-          | 'phone'
-          | 'number'
-          | 'date'
-          | 'time'
-          | 'multipleChoice'
-          | 'checkbox'
-          | 'dropdown'
-          | 'file'
-          | 'shortText'
-          | 'longText'
-          | 'region'
-          | 'city';
-        id: string | null;
-        options?:
-          | {
-              value?: string | null;
-              id?: string | null;
-            }[]
-          | null;
-        description?: string | null;
-      }[]
-    | null;
-  responses?:
-    | {
-        fieldId: string;
-        value?: string | null;
-        submittedAt?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -991,6 +1005,7 @@ export interface EventsSelect<T extends boolean = true> {
         contactPhone?: T;
         id?: T;
       };
+  formId?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1300,6 +1315,7 @@ export interface VenuesSelect<T extends boolean = true> {
  * via the `definition` "forms_select".
  */
 export interface FormsSelect<T extends boolean = true> {
+  eventId?: T;
   title?: T;
   description?: T;
   formBuilder?:
