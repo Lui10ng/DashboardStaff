@@ -10,3 +10,6 @@ export const ticketDrawer = $state({
 	open: false
 });
 
+export const themeDrawer = $state({
+	open: false
+});

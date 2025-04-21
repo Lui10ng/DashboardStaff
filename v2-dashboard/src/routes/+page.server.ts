@@ -23,9 +23,6 @@ export async function load({ url, fetch: svelteKitFetch }) {
 	try {
 		const eventsData = await apiClient.get('/events', params, { fetchInstance: svelteKitFetch });
 
-		// console.log(eventsData);
-		console.log(JSON.stringify(eventsData, null, 2));
-
 		return {
 			events: eventsData.docs,
 			form
@@ -66,10 +63,7 @@ export const actions = {
 			// description: form.data.richText, // use lexical richtext
 			organizer: { id: 1 },
 			venue: { id: 1 },
-			seatingType: 'general_admission',
-			registrationForm: {
-				id: 1
-			}
+			seatingType: 'general_admission'
 		};
 
 		try {
@@ -113,10 +107,7 @@ export const actions = {
 		const data = await request.formData();
 		console.log(data);
 	},
-	updateContacts: async ({ request }) => {
-		const data = await request.formData();
-		console.log(data)
-	},
+
 	updateRegistrationInstruction: async ({ request }) => {
 		const data = await request.formData();
 		console.log(data);

@@ -1,23 +1,46 @@
 import { apiClient } from '$lib/services/payload.server.js';
+import { superValidate } from 'sveltekit-superforms';
 import type { LayoutServerLoad } from './$types';
+import { zod } from 'sveltekit-superforms/adapters';
+import { contactSchema } from '$lib/schema/contact';
 
-export const load: LayoutServerLoad = async ({ params, fetch: svelteKitFetch }) => {
+export const load: LayoutServerLoad = async ({ url, params, fetch: svelteKitFetch }) => {
 	try {
 		const eventId = params.eventId;
-		console.log('Fetching event data for:', eventId);
+		const contactForm = await superValidate(zod(contactSchema));
+		const response = await apiClient.get(`events/${eventId}`, undefined, {
+			fetchInstance: svelteKitFetch
+		});
 
-		const response = await apiClient.get(`events/${eventId}`, undefined, { fetchInstance: svelteKitFetch });
-		console.log('Event data response:', response);
+		const contactDetails = response.eventContacts;
+
+		let siteUrl = 'https://' + response.slug + '.veent.co/';
+		if (url.origin.includes('localhost')) {
+			siteUrl = 'http://' + response.slug + '.localhost:2000';
+		}
 
 		return {
+			eventId,
+			siteUrl,
+			contactForm,
+			contactDetails,
 			currentEvent: {
 				id: response.id,
+				slug: response.slug,
 				title: response.title,
-				date: new Date(response.startTime).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+				startTime: response.startTime,
+				endTime: response.endTime,
+				date: new Date(response.startTime).toLocaleDateString('en-US', {
+					month: 'long',
+					day: 'numeric',
+					year: 'numeric'
+				}),
 				time: `${new Date(response.startTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })} - ${new Date(response.endTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`,
 				location: response.location,
 				url: `https://${response.slug}.veent.co`,
-				imageUrl: response.poster?.url || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=2940&ixlib=rb-4.0.3'
+				imageUrl:
+					response.poster?.url ||
+					'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=2940&ixlib=rb-4.0.3'
 			}
 		};
 	} catch (error) {

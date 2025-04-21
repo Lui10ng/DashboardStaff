@@ -4,10 +4,11 @@
 	import { navItems } from '$lib/stores/data';
 	import { page } from '$app/stores';
 	import Drawer from '$lib/components/ui/Drawer.svelte';
-	import { stateDrawer } from '$lib/stores/state.svelte.ts';
+	import { stateDrawer, themeDrawer } from '$lib/stores/state.svelte.ts';
 	import { writable } from 'svelte/store';
 	import RichText from '$lib/components/ui/RichText.svelte';
 	import DatePicker from '$lib/components/ui/DatePicker.svelte';
+	import { superForm } from 'sveltekit-superforms';
 	import { enhance } from '$app/forms';
 
 	let { children, data } = $props();
@@ -17,6 +18,7 @@
 	let activeTab = writable('edit');
 
 	const drawerState = $derived(stateDrawer.open);
+	const themeDrawerState = $derived(themeDrawer.open);
 
 	const handleActiveNav = (path: string) => {
 		return $page.url.pathname.includes(path) ? 'bg-primary text-white' : '';
@@ -34,6 +36,14 @@
 	let eventLogoImgSrc: string | null = $state(null);
 	let posterImgSrc: string | null = $state(null);
 	let backgroundImgSrc: string | null = $state(null);
+
+	const {
+		form: contactForm,
+		errors: contactFormErrors,
+		enhance: contactFormEnhance,
+		delayed: contactFormDelayed,
+		message: contactFormMessage
+	} = superForm(data.contactForm);
 
 	// Functions
 	function handleImageUpload(event: Event) {
@@ -108,6 +118,27 @@
 
 	const handleOpenDrawer = () => {
 		stateDrawer.open = true;
+	};
+
+	const handleOpenThemeDrawer = () => {
+		themeDrawer.open = true;
+	};
+
+	const handleContactSubmit = async () => {
+		const formData = new FormData();
+
+		const contactData = [...data.contactDetails, $contactForm];
+
+		formData.append('formData', JSON.stringify({ eventContacts: contactData }));
+
+		const response = await fetch(`/${data.eventId}?/updateContacts`, {
+			method: 'POST',
+			body: formData
+		});
+
+		if (response.ok && response.status === 200) {
+			console.log('Contact form submitted successfully');
+		}
 	};
 </script>
 
@@ -203,6 +234,7 @@
 												type="text"
 												id="event-name"
 												name="Event Name"
+												value={event.title}
 												class="mt-1 block w-full rounded-md border border-transparent bg-gray-100 px-3 py-2 placeholder:text-[13px] placeholder:text-[#3E3E3F] focus:bg-[#e9ecf3] focus:outline-none"
 												placeholder="Enter Event name"
 											/>
@@ -224,6 +256,7 @@
 													type="text"
 													id="subdomain"
 													name="Subdomain"
+													value={event.slug}
 													class="ml-2 block w-full border border-transparent bg-transparent placeholder:text-[13px] placeholder:text-[#3E3E3F] focus:border-transparent focus:outline-none"
 													placeholder="Enter Subdomain"
 												/>
@@ -244,6 +277,7 @@
 													Name="Event Address"
 													type="text"
 													id="event-address"
+													value={event.location}
 													class="block w-full rounded-md bg-gray-100 px-3 py-2 pl-10 placeholder:text-[13px] placeholder:text-[#3E3E3F] focus:bg-[#e9ecf3] focus:outline-none"
 													placeholder="Enter Event address"
 												/>
@@ -335,36 +369,29 @@
 									<!-- Theme Image Upload -->
 									<div class="grid grid-cols-2 gap-6 md:grid-cols-3">
 										<div class="mb-4">
-											<h3 class="mb-2 block text-sm font-medium">Theme Image</h3>
-											<div
-												role="button"
-												tabindex="0"
-												aria-label="uploader"
-												class="relative flex h-40 min-h-[10rem] w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-[#F1F2F6] text-center"
-												onclick={() => uploadImage('themeInput')}
-												onkeydown={(e) =>
-													(e.key === 'Enter' || e.key === ' ') && uploadImage('themeInput')}
+											<h3 class="mb-2 block text-sm font-medium">Theme</h3>
+											<Button
+												label="Select Theme"
+												className=" text-gray-500 h-[10rem] w-full bg-[#F1F2F6]"
+												onClick={() => handleOpenThemeDrawer()}
+											/>
+											<Drawer
+												isOpen={themeDrawerState}
+												contentBaseClass="bg-white p-10 space-y-4 shadow-xl w-full h-[90svh] overflow-y-auto"
+												justify="justify-end"
+												alignment="items-end"
+												positionIn={{ y: 600, duration: 200 }}
+												positionOut={{ y: 600, duration: 200 }}
 											>
-												{#if themeImgSrc}
-													<img src={themeImgSrc} alt="Theme" class="h-full w-full object-cover" />
-													<button
-														class="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-gray-400 text-white"
-														onclick={(e) => removeImageVar('themeImg', e)}
-													>
-														&times;
-													</button>
-												{:else}
-													<p class="text-sm text-gray-500">Select Theme Image</p>
-												{/if}
-												<input
-													name="Theme Input"
-													type="file"
-													id="themeInput"
-													class="hidden"
-													accept="image/*"
-													onchange={(e) => displayImage(e, 'themeImg')}
-												/>
-											</div>
+												<div>
+													<iframe
+														id="myIframe"
+														title="themeSelector"
+														src={data.siteUrl}
+														class="h-[70svh] w-full"
+													></iframe>
+												</div></Drawer
+											>
 										</div>
 
 										<!-- Logo Image Upload -->
@@ -546,12 +573,7 @@
 								</div>
 							</form>
 						{:else if $activeTab === 'contacts'}
-							<form
-								action="/?/updateContacts"
-								method="POST"
-								use:enhance
-								enctype="multipart/form-data"
-							>
+							<form onsubmit={handleContactSubmit}>
 								<div class="mb-6">
 									<h2 class="mb-2 text-xl font-semibold text-gray-900">Basic Information</h2>
 									<p class="text-sm text-gray-500">
@@ -586,7 +608,6 @@
 												type="file"
 												accept="image/*"
 												class="hidden"
-												name="Contact Image"
 												onchange={handleImageUpload}
 											/>
 										</label>
@@ -597,9 +618,13 @@
 											<input
 												type="text"
 												placeholder="Enter name"
-												name="Name"
+												name="contactName"
+												bind:value={$contactForm.contactName}
 												class="mt-1 w-full rounded-md bg-gray-100 p-2 focus:bg-[#e9ecf3] focus:outline-none"
 											/>
+											{#if $contactFormErrors.contactName}
+												<p class="text-primary text-sm">{$contactFormErrors.contactName}</p>
+											{/if}
 										</label>
 
 										<div>
@@ -609,11 +634,15 @@
 													<i class="fa-regular fa-envelope"></i>
 												</span>
 												<input
-													name="contactNumber"
+													name="contactEmail"
+													bind:value={$contactForm.contactEmail}
 													type="tel"
 													placeholder="Enter mobile number"
 													class="w-full rounded-md bg-gray-100 p-2 pl-10 focus:bg-[#e9ecf3] focus:outline-none"
 												/>
+												{#if $contactFormErrors.contactEmail}
+													<p class="text-primary text-sm">{$contactFormErrors.contactEmail}</p>
+												{/if}
 											</div>
 										</div>
 										<div>
@@ -623,27 +652,32 @@
 													<i class="fa-solid fa-phone"></i>
 												</span>
 												<input
-													name="contactNumber"
+													name="contactPhone"
+													bind:value={$contactForm.contactPhone}
 													type="tel"
 													placeholder="Enter mobile number"
 													class="w-full rounded-md bg-gray-100 p-2 pl-10 focus:bg-[#e9ecf3] focus:outline-none"
 												/>
 											</div>
+											{#if $contactFormErrors.contactPhone}
+												<p class="text-primary text-sm">{$contactFormErrors.contactPhone}</p>
+											{/if}
 										</div>
 									</div>
 									<div class="mb-4 md:col-span-1 lg:col-span-1">
-										Website URL
-										<div class="relative mt-1">
-											<span class="absolute inset-y-0 left-3 flex items-center">
-												<i class="fa-solid fa-globe h-4 w-4 text-gray-500"></i>
-											</span>
+										<label class="block"
+											>Role
 											<input
-												name="Website URL"
-												type="url"
-												placeholder="Enter website URL"
-												class="w-full rounded-md bg-gray-100 p-2 pl-10 focus:bg-[#e9ecf3] focus:outline-none"
+												type="text"
+												name="contactRole"
+												bind:value={$contactForm.contactRole}
+												placeholder="Enter role"
+												class="mt-1 w-full rounded-md bg-gray-100 p-2 focus:bg-[#e9ecf3] focus:outline-none"
 											/>
-										</div>
+											{#if $contactFormErrors.contactRole}
+												<p class="text-primary text-sm">{$contactFormErrors.contactRole}</p>
+											{/if}
+										</label>
 									</div>
 								</div>
 								<!-- Footer (Responsive Buttons) -->
