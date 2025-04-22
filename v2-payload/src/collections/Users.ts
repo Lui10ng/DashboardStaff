@@ -92,6 +92,15 @@ const Users: CollectionConfig = {
         // update: isAdmin,
       }
     },
+    {
+      name: 'organizer', // Or 'associatedOrganizer', etc.
+      label: 'Associated Organizer',
+      type: 'relationship',
+      relationTo: 'organizers',
+      hasMany: false, // A user typically belongs to/manages one primary organizer
+      required: false, // Or true if every user MUST be linked
+      index: true,
+    },
     // Consider adding other fields if needed:
     // - Phone number
     // - Profile picture (relationship to 'media')

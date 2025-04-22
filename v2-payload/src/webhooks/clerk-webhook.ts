@@ -150,9 +150,19 @@ export const clerkWebhookHandler = async (req: PayloadRequest): Promise<Response
                         managingUsers: [payloadUserId],
                     };
                     // Create the Organizer document in Payload within the same transaction.
-                    await payload.create({
+                    const organizerDoc = await payload.create({
                         collection: 'organizers',
                         data: organizerData,
+                        req: { transactionID: transactionID },
+                    });
+
+                    const organizerId = organizerDoc.id;
+
+                    // Update the user document with the organizer ID
+                    await payload.update({
+                        collection: 'users',
+                        id: payloadUserId,
+                        data: { organizer: organizerId },
                         req: { transactionID: transactionID },
                     });
 

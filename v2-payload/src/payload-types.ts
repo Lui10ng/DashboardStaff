@@ -213,13 +213,13 @@ export interface Event {
     [k: string]: unknown;
   } | null;
   organizer: number | Organizer;
-  venue: number | Venue;
+  venue?: (number | null) | Venue;
   category?: (number | null) | EventCategory;
   eventImages?: (number | Media)[] | null;
   /**
    * Select the seating arrangement type.
    */
-  seatingType: 'general_admission' | 'reserved_seating';
+  seatingType?: ('general_admission' | 'reserved_seating') | null;
   /**
    * Select the seat map layout for this event.
    */
@@ -382,6 +382,7 @@ export interface User {
    * Internal ID linking to the Clerk authentication provider.
    */
   clerkId?: string | null;
+  organizer?: (number | null) | Organizer;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -1275,6 +1276,7 @@ export interface UsersSelect<T extends boolean = true> {
   name?: T;
   roles?: T;
   clerkId?: T;
+  organizer?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;

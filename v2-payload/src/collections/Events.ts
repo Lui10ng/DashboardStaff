@@ -271,7 +271,7 @@ const Events: CollectionConfig = {
       label: 'Venue',
       type: 'relationship',
       relationTo: 'venues',
-      required: true,
+      required: false,
       hasMany: false,
       index: true,
       admin: {
@@ -302,7 +302,7 @@ const Events: CollectionConfig = {
       name: 'seatingType',
       label: 'Seating Type',
       type: 'select',
-      required: true,
+      required: false,
       options: ['general_admission', 'reserved_seating'],
       defaultValue: 'general_admission',
       enumName: 'SeatingType',

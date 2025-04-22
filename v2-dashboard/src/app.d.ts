@@ -1,9 +1,9 @@
 import type { User, Session, AuthObject } from 'svelte-clerk/server';
 
 interface CustomAuthObject {
-	sessionId?: string;
+	userId: string;
+	sessionId: string;
 	getToken: () => Promise<string | null>;
-	user?: {};
 }
 
 declare global {
