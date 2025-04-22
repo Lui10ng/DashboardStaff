@@ -38,7 +38,7 @@ export const load: LayoutServerLoad = async ({ url, params, fetch: svelteKitFetc
 				}),
 				time: `${new Date(response.startTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })} - ${new Date(response.endTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`,
 				location: response.location,
-				url: `https://${response.slug}.veent.co`,
+				url: siteUrl,
 				imageUrl:
 					response.poster?.url ||
 					'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=2940&ixlib=rb-4.0.3'

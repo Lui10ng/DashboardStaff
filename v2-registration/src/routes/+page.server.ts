@@ -39,7 +39,7 @@ export const load = async ({ url, fetch: svelteKitFetch }) => {
 };
 
 export const actions = {
-	register: async ({ url, request }) => {
+	register: async ({ url, request, fetch: svelteKitFetch }) => {
 		const hostName = url.hostname;
 		const subdomain = hostName.split('.')[0];
 
@@ -51,19 +51,23 @@ export const actions = {
 			return fail(400, { form });
 		}
 
+		const params = new URLSearchParams({
+			'where[slug][equals]': subdomain,
+			select: 'id'
+		});
+
 		try {
-			const registrantData = {
-				ticket: '1',
-				event: subdomain,
-				guestDetails: {
-					guestEmail: 'guest@example.com',
-					guestFirstName: 'Jane',
-					guestLastName: 'Doe'
-				},
+
+			const eventId = await apiClient.get('/events', params, { fetchInstance: svelteKitFetch });
+
+			const registrantData = {				
+				event: eventId.docs[0].id,
 				submittedAnswers: form.data.tabs
 			};
 
 			const response = await apiClient.post('/registrants', registrantData);
+			console.log("response: ", response);
+
 			return message(form, { success: true, message: 'Registration successful!' });
 		} catch (error: any) {
 			return message(form, { success: false, message: error.message });
