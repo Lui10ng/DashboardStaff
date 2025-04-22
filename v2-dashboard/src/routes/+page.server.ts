@@ -1,12 +1,11 @@
+import { error, fail, redirect } from '@sveltejs/kit';
+import type { ServerLoadEvent, RequestEvent } from '@sveltejs/kit';
 import { message, superValidate } from 'sveltekit-superforms/server';
 import { zod } from 'sveltekit-superforms/adapters';
 import { eventSchema } from '$lib/schema/event';
-import { fail } from 'sveltekit-superforms';
-import { createApiClient } from '$lib/services/payload.server.js';
-import { error } from '@sveltejs/kit';
+import { createApiClient } from '$lib/services/payload.server';
 import { handleSvelteError } from '$lib/utils/errorHandler';
-import { redirect } from '@sveltejs/kit';
-import type { ServerLoadEvent } from '@sveltejs/kit';
+import type { Event, PayloadPaginatedResponse } from '$lib/types/eventData';
 
 export async function load(event: ServerLoadEvent) {
 	const authObject = await event.locals.auth();
@@ -31,7 +30,7 @@ export async function load(event: ServerLoadEvent) {
 	});
 
 	try {
-		const eventsData = await apiClient.get('/events', params);
+		const eventsData = await apiClient.get<PayloadPaginatedResponse<Event>>('/events', params);
 
 		return {
 			events: eventsData.docs,
@@ -40,8 +39,8 @@ export async function load(event: ServerLoadEvent) {
 	} catch (err: unknown) {
 		const { statusCode, errorMessage } = handleSvelteError(
 			err,
-			'loading events',
-			'Failed to load events'
+			'Loading Events List',
+			'Failed to Load Events List'
 		);
 
 		throw error(statusCode, errorMessage);
@@ -54,7 +53,8 @@ export const actions = {
 		console.log(data);
 	},
 
-	createEvent: async ({ request }) => {
+	createEvent: async (event: RequestEvent) => {
+		const { request } = event;
 		const data = await request.formData();
 
 		const form = await superValidate(data, zod(eventSchema));
@@ -77,6 +77,7 @@ export const actions = {
 		};
 
 		try {
+			const apiClient = createApiClient(event);
 			const response = await apiClient.post('/events', formData);
 			console.log('response: ', response);
 
@@ -84,8 +85,8 @@ export const actions = {
 		} catch (err: unknown) {
 			const { statusCode, errorMessage } = handleSvelteError(
 				err,
-				'creating event',
-				'Failed to create event'
+				'Creating Event',
+				'Failed to Create Event'
 			);
 			console.log('errorMessage: ', errorMessage);
 			console.log('statusCode: ', statusCode);

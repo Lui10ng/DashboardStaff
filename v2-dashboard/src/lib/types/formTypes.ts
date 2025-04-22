@@ -2,6 +2,7 @@ export interface PayloadForm {
 	id: number;
 	title: string;
 	description: string;
+	buttonText: string;
 	formBuilder: Array<{
 		id: string;
 		name: string;
