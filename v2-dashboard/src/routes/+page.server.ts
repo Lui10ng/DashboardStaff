@@ -55,7 +55,7 @@ export const actions = {
 
 		const formData = {
 			title: form.data.event,
-			slug: form.data.subdomain,
+			slug: form.data.subdomain.toLowerCase(),
 			location: form.data.location,
 			status: 'Published',
 			startTime: new Date(`${form.data.startDate}T${form.data.startTime}:00Z`).toISOString(),
