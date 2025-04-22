@@ -93,7 +93,7 @@ const Organizers: CollectionConfig = {
       type: 'relationship',
       relationTo: 'users',
       hasMany: true,
-      required: true, // Must have at least one manager
+      required: false,
       index: true,
       access: {
         // Only Admins can modify who manages the organizer profile

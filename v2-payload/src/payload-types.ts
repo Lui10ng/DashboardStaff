@@ -312,7 +312,7 @@ export interface Organizer {
   /**
    * Users permitted to manage this organizer profile and their events.
    */
-  managingUsers: (number | User)[];
+  managingUsers?: (number | User)[] | null;
   updatedAt: string;
   createdAt: string;
 }

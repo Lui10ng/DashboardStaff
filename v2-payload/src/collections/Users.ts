@@ -2,16 +2,7 @@
 import type { CollectionConfig } from 'payload';
 import clerkOrPayloadAdminStrategy from '../auth/clerk-strategy';
 // import { isAdmin, isAdminOrSelf } from '../access/isAdminOrSelf'; // Assuming these access helpers exist
-
-// Define Roles - use const for consistency
-const USER_ROLES = {
-  ADMIN: 'admin',
-  ORGANIZER: 'organizer',
-  ATTENDEE: 'attendee',
-  CHECK_IN_STAFF: 'check-in-staff',
-} as const;
-
-type UserRole = typeof USER_ROLES[keyof typeof USER_ROLES];
+import { USER_ROLES } from '../types/users';
 
 const Users: CollectionConfig = {
   slug: 'users',
