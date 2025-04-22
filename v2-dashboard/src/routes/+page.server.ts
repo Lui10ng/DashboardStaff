@@ -77,6 +77,8 @@ export const actions = {
 				'creating event',
 				'Failed to create event'
 			);
+			console.log('errorMessage: ', errorMessage);
+			console.log('statusCode: ', statusCode);
 		}
 	},
 

@@ -83,12 +83,17 @@ export type Event = {
 	title: string;
 	location: string;
 	date: string;
+	startTime: string;
+	endTime: string;
 	status: string;
 	tickets: {
 		sold: number;
 		total: number;
 	};
 	image: string;
+	eventImages: {
+		url: string;
+	}[];
 };
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';

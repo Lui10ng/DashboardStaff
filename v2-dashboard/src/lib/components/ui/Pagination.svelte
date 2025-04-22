@@ -30,7 +30,7 @@
 				<Pagination.PrevButton
 					class="mr-3 inline-flex size-8 cursor-pointer items-center justify-center rounded-lg hover:bg-gray-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:text-gray-500 sm:size-10"
 				>
-					<i class="ri-arrow-left-s-line text-lg"></i>
+				<i class="fa-solid fa-arrow-left"></i>				
 				</Pagination.PrevButton>
 				<div class="flex items-center gap-1 sm:gap-2">
 					{#each pages as page (page.key)}
@@ -49,8 +49,8 @@
 				<Pagination.NextButton
 					class="ml-3 inline-flex size-8 cursor-pointer items-center justify-center rounded-lg hover:bg-gray-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:text-gray-500 sm:size-10"
 				>
-					<i class="ri-arrow-right-s-line text-lg"></i>
-				</Pagination.NextButton>
+				<i class="fa-solid fa-arrow-right"></i>
+						</Pagination.NextButton>
 			</div>
 		</div>
 	{/snippet}

@@ -80,7 +80,7 @@ async function request(method: HttpMethod, path: string, options: RequestOptions
 		return await response.json(); // Success
 	} catch (error) {
 		console.error(`API Client Fetch Error (${method} ${path}):`, error);
-
+		console.log(error.data.errors);
 		// Handle Network errors or errors thrown from (!response.ok) block
 		if (isStructuredApiError(error)) {
 			// If it's our structured error, re-throw it
