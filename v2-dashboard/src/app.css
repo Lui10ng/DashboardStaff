@@ -300,6 +300,7 @@ body {
 	--color-gray-500: #a0a4ac;
 	--color-green: #08a43c;
 	--color-blue: #4c3cf8;
+	--color-font-primary: #131517;
 }
 
 /* geosearch and datepicker */
@@ -419,7 +420,6 @@ button {
 	cursor: pointer;
 }
 
-
 * {
 	scrollbar-width: thin;
 	scrollbar-color: #cbd5e1 transparent;
@@ -437,4 +437,3 @@ button {
 	background-color: #cbd5e1;
 	border-radius: 6px;
 }
-

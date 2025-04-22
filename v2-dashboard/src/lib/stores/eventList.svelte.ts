@@ -10,7 +10,7 @@ const defaultEventValues: Event = {
 		sold: 0,
 		total: 0
 	},
-	image: ''
+	eventImages: []
 };
 
 let eventsStore = $state<Event[]>([]);

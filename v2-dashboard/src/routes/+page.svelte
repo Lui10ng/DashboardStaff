@@ -12,7 +12,7 @@
 	import DatePicker from '$lib/components/ui/DatePicker.svelte';
 	import RichText from '$lib/components/ui/RichText.svelte';
 	import LocationMap from '$lib/components/ui/LocationMap.svelte';
-
+	import { PUBLIC_PAYLOAD_API_URL } from '$env/static/public';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { stateDrawer } from '$lib/stores/state.svelte.ts';
 
@@ -39,6 +39,7 @@
 
 	$effect(() => {
 		eventListStore.setEvents(data.events);
+		console.log('all events', events)
 	});
 
 	const formatStatus = (status: string) => {
@@ -51,6 +52,11 @@
 		} else {
 			return 'bg-yellow-100 text-yellow-800';
 		}
+	};
+
+	const extractLocation = (location: string): string => {
+    if (!location) return '';
+    return location.split(',')[0].trim();
 	};
 
 	// Handle location selection from the LocationMap component
@@ -126,10 +132,10 @@
 </script>
 
 <div class="space-y-5" in:fly={{ y: -50, duration: 200 }}>
-	<div class="space-y-2">
-		<h1 class="text-2xl font-semibold sm:text-3xl sm:font-bold">Welcome back, Aero Dev!</h1>
-		<p class="text-gray-500">Manage your events and track their performance</p>
-	</div>
+    <div class="space-y-2">
+        <h1 class="text-2xl font-semibold sm:text-3xl sm:font-bold">Welcome back, Aero Dev!</h1>
+        <p class="text-gray-500">Manage your events and track their performance</p>
+    </div>
 	<Button
 		label="Create Event"
 		icon="fa-solid fa-plus"
@@ -138,7 +144,7 @@
 	/>
 	<Drawer
 		isOpen={drawerState}
-		contentBaseClass="bg-white p-10 space-y-4 shadow-xl w-full h-[90svh] overflow-y-auto"
+		contentBaseClass="bg-white py-7 px-4 space-y-4 shadow-xl w-full h-[90svh] overflow-y-auto"
 		justify="justify-end"
 		alignment="items-end"
 		positionIn={{ y: 600, duration: 200 }}
@@ -252,7 +258,6 @@
 						<div class="flex items-center gap-2">
 							<label for="location" class="text-sm font-medium text-gray-700">Location</label>
 						</div>
-
 						<LocationMap
 							selectedLocation={$form.location || ''}
 							on:locationChange={handleLocationChange}
@@ -378,11 +383,12 @@
 	</Drawer>
 
 	<div class="overflow-hidden rounded-xl border border-gray-200 shadow-sm">
+		
 		<!-- Event List Items -->
 		<div>
 			{#each paginatedEvents as event (event.id)}
 				<div
-					class="flex cursor-pointer flex-col justify-between gap-5 border-b border-gray-200 p-4 transition-colors hover:bg-gray-50 sm:flex-row sm:items-center sm:p-6 md:gap-10"
+					class="flex cursor-pointer flex-col justify-between gap-5 border-b border-gray-200 p-4 transition-colors hover:bg-gray-50 sm:flex-row sm:items-center sm:p-6 md:gap-10 "
 					onclick={() => handleEvent(event.id)}
 					onkeydown={(e) => e.key === 'Enter' && handleEvent(event.id)}
 					tabindex="0"
@@ -390,23 +396,33 @@
 					aria-label="View details for {event.title}"
 				>
 					<div class="flex justify-between">
-						<div class="flex items-center gap-4">
+						<div class="flex items-start gap-4">
 							<div class="overflow-hidden rounded-lg">
 								<img
-									src={event.image}
+									src={event.eventImages && event.eventImages.length > 0 ? `${PUBLIC_PAYLOAD_API_URL}${event.eventImages[0].url}` : '/images/veent-logo.svg'}
 									alt={event.title}
-									class="h-16 w-16 rounded-lg object-cover object-center transition-all duration-500 hover:scale-125"
+									class={
+										event.eventImages && event.eventImages.length > 0
+											? 'h-16 w-16 rounded-lg object-cover object-center transition-all duration-500 hover:scale-125 bg-gray-100'
+											: 'h-16 w-16 rounded-lg object-contain  p-2 bg-gray-100'
+									}
 								/>
+								<!-- Sir ron sakto ni inani pagka implement sa event image? -->
 							</div>
 
-							<div class="flex-1">
+							<div class="flex-1 ">
 								<h3 class="font-medium text-gray-900">{event.title}</h3>
-								<p class="text-sm text-gray-500">
-									<i class="ri-map-pin-line text-gray-400"></i>
-									{event.location}
-								</p>
+								<Tooltip
+									icon="fa-solid fa-location-dot text-sm text-gray-500"
+									text={extractLocation(event.location)}
+									content={event.location}
+									classTrigger="text-sm text-gray-500 flex items-center gap-1 cursor-pointer"
+									classContent="border bg-white px-2 py-1 rounded-lg text-gray-900 max-w-xs break-words"
+								/>	
+								
 							</div>
 						</div>
+						{#if !stateDrawer.open}
 						<div class="block sm:hidden">
 							<DropdownMenu
 								icon="fa-solid fa-ellipsis text-2xl text-gray-400 hover:text-red-600 p-2"
@@ -414,32 +430,55 @@
 								classMenu="mt-2 shadow-md"
 								alignContent="end"
 								buttonText=""
-								items={['Scanner', 'Ticket', 'Copy link', 'Share event', 'Duplicate event']}
+								items={['Scanner', 'Copy link', 'Share event', 'Duplicate event']}
 								on:select={(e) => {
 									e.stopPropagation();
 									handleDropdownSelection(e.detail, event.id);
 								}}
 							/>
 						</div>
+						{/if}
 					</div>
+					<div>
+							<p class="text-start mb-1 text-sm  text-font-primary">Date</p>
+							<div class="flex flex-col gap-1">
+								<div class="flex items-center gap-2">
+									<i class="fa-regular fa-calendar text-gray-400"></i>
+									<span class="text-gray-600 text-sm">
+										{new Date(event.startTime).toLocaleDateString('en-US', { 
+											month: 'short', 
+											day: 'numeric', 
+											year: 'numeric' 
+										})}
+									</span>
+								</div>
+								<div class="flex items-center gap-2">
+									<i class="fa-regular fa-calendar text-gray-400"></i>
+									<span class="text-gray-600 text-sm">
+										{new Date(event.endTime).toLocaleDateString('en-US', { 
+											month: 'short', 
+											day: 'numeric', 
+											year: 'numeric' 
+										})}
+									</span>
+								</div>
+							</div>
+					</div>
+					<div >
+							<p class="text-sm  sm:text-start text-font-primary mb-1">Status</p>
+							<h3 class="px-5 py-1 text-sm rounded-full {formatStatus(event.status)}">
+								{event.status}
+							</h3>
+					</div>
+					<div>
+							<p class="text-sm text-font-primary mb-1">Ticket Sold</p>
+							<h3 class="font-medium sm:text-end">{event.tickets.sold}/{event.tickets.total}</h3>
+					</div>
+						
 					<div
 						class="flex flex-wrap items-center justify-between gap-x-6 gap-y-5 sm:justify-end md:gap-10"
 					>
-						<div>
-							<p class="text-sm text-gray-500 sm:text-end">Status</p>
-							<h3 class="px-2 py-1 text-sm {formatStatus(event.status)}">
-								{event.status}
-							</h3>
-						</div>
-						<div>
-							<p class="text-sm text-gray-500">Ticket Sold</p>
-							<h3 class="font-medium sm:text-end">{event.tickets.sold}/{event.tickets.total}</h3>
-						</div>
-						<div>
-							<p class="text-end text-sm text-gray-500">Date</p>
-
-							<h3 class="font-medium">{event.date}</h3>
-						</div>
+						
 						<div class="hidden sm:block">
 							<div>
 								<button
@@ -461,24 +500,7 @@
 										classContent="border bg-white px-2 py-1 rounded-lg text-red-600"
 									/>
 								</button>
-								<button
-									class="cursor-pointer p-2 text-gray-500 transition-colors hover:text-gray-600"
-									aria-label="Tickets"
-									tabindex="0"
-									onclick={(e) => {
-										e.stopPropagation();
-										handleTickets(event.id);
-									}}
-									onkeydown={(e) => e.key === 'Enter' && handleTickets(event.id)}
-								>
-									<Tooltip
-										icon="fa-solid fa-ticket text-lg text-gray-400 hover:text-red-600"
-										text=""
-										content="Ticket"
-										classTrigger=""
-										classContent="border bg-white px-2 py-1 rounded-lg text-red-600"
-									/>
-								</button>
+							
 								<button
 									class="cursor-pointer p-2 text-gray-500 transition-colors hover:text-gray-600"
 									aria-label="Copy link"

@@ -3,6 +3,7 @@ import { superValidate } from 'sveltekit-superforms';
 import type { LayoutServerLoad } from './$types';
 import { zod } from 'sveltekit-superforms/adapters';
 import { contactSchema } from '$lib/schema/contact';
+import { PORT } from '$env/static/private';
 
 export const load: LayoutServerLoad = async ({ url, params, fetch: svelteKitFetch }) => {
 	try {
@@ -16,7 +17,7 @@ export const load: LayoutServerLoad = async ({ url, params, fetch: svelteKitFetc
 
 		let siteUrl = 'https://' + response.slug + '.veent.co/';
 		if (url.origin.includes('localhost')) {
-			siteUrl = 'http://' + response.slug + '.localhost:2000';
+			siteUrl = 'http://' + response.slug + `.localhost:${PORT}`;
 		}
 
 		return {
