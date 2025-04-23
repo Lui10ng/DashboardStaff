@@ -5,6 +5,7 @@
 
 	// Props
 	export let selectedLocation = '';
+	export let text = '';
 
 	// Internal state
 	let map: any;
@@ -165,9 +166,10 @@
 			<input
 				type="text"
 				placeholder="Search for a location..."
+				name="location"
 				bind:value={selectedLocation}
 				on:input={handleLocationInput}
-				class="w-full rounded-lg border border-gray-200 py-3 pr-10 pl-10"
+				class={`w-full rounded-lg border border-gray-200 py-3 pr-10 pl-10 ${text}`}
 			/>
 			{#if selectedLocation}
 				<button
