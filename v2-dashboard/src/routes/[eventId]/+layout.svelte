@@ -10,6 +10,7 @@
 	import DatePicker from '$lib/components/ui/DatePicker.svelte';
 	import { superForm } from 'sveltekit-superforms';
 	import { enhance } from '$app/forms';
+	import LocationMap from '$lib/components/ui/LocationMap.svelte';
 
 	let { children, data } = $props();
 
@@ -235,7 +236,7 @@
 												id="event-name"
 												name="Event Name"
 												value={event.title}
-												class="mt-1 block w-full rounded-md border border-transparent bg-gray-100 px-3 py-2 placeholder:text-[13px] placeholder:text-[#3E3E3F] focus:bg-[#e9ecf3] focus:outline-none"
+												class="mt-1 block w-full rounded-md border  border-gray-200 px-3 py-3 pl-5 text-sm"
 												placeholder="Enter Event name"
 											/>
 										</div>
@@ -247,7 +248,7 @@
 
 											<!-- Wrapper that changes background on focus -->
 											<div
-												class="group mt-1 flex items-center rounded-md bg-gray-100 px-3 py-2 focus-within:bg-[#e9ecf3]"
+												class="group mt-1 flex items-center rounded-lg border border-gray-200 px-3 py-3"
 											>
 												<i class="fa-solid fa-globe h-4 w-4 text-gray-500"></i>
 
@@ -257,7 +258,7 @@
 													id="subdomain"
 													name="Subdomain"
 													value={event.slug}
-													class="ml-2 block w-full border border-transparent bg-transparent placeholder:text-[13px] placeholder:text-[#3E3E3F] focus:border-transparent focus:outline-none"
+													class="ml-2 block w-full border border-transparent bg-transparent px-3 focus:border-transparent focus:outline-none text-sm"
 													placeholder="Enter Subdomain"
 												/>
 
@@ -273,14 +274,7 @@
 												<span class="absolute inset-y-0 left-3 flex items-center">
 													<i class="fa-solid fa-location-dot h-4 w-4 text-gray-500"></i>
 												</span>
-												<input
-													Name="Event Address"
-													type="text"
-													id="event-address"
-													value={event.location}
-													class="block w-full rounded-md bg-gray-100 px-3 py-2 pl-10 placeholder:text-[13px] placeholder:text-[#3E3E3F] focus:bg-[#e9ecf3] focus:outline-none"
-													placeholder="Enter Event address"
-												/>
+												<LocationMap text="text-sm"/>
 											</div>
 										</div>
 										<div class="space-y-4">
@@ -296,34 +290,36 @@
 													<span class="ml-2 text-sm text-gray-700">This is a recurring event</span>
 												</label>
 											</div>
-											<div class="flex items-center gap-4">
-												<h3 class="w-12 text-sm font-medium text-gray-700">Start</h3>
-												<div class="flex w-full flex-col gap-2 sm:flex-row">
-													<DatePicker
-														name="startDate"
-														className="flex items-center w-full rounded-md bg-gray-100 px-3 py-2 text-sm  focus:outline-none h-10"
-													/>
-													<input
-														type="time"
-														class="w-full rounded-md bg-gray-100 px-3 py-2 text-sm tracking-wider focus:bg-[#e9ecf3] focus:outline-none sm:w-32"
-														name="Start Time"
-													/>
+											{#if !isRecurring}
+												<div class="flex items-center gap-4">
+													<h3 class="w-12 text-sm font-medium text-gray-700">Start</h3>
+													<div class="flex w-full flex-col gap-2 sm:flex-row">
+														<DatePicker
+															name="startDate"
+															className="flex items-center w-full rounded-lg border-gray-200 py-3 text-sm border px-3"
+														/>
+														<input
+															type="time"
+															class="w-full rounded-lg border border-gray-200 px-3 py-3 tracking-wider sm:w-32"
+															name="Start Time"
+														/>
+													</div>
 												</div>
-											</div>
-											<div class="flex items-center gap-4">
-												<h3 class="w-12 text-sm font-medium text-gray-700">End</h3>
-												<div class="flex w-full flex-col gap-2 sm:flex-row">
-													<DatePicker
-														name="endDate"
-														className="flex items-center w-full rounded-md bg-gray-100 px-3 py-2 text-sm  focus:outline-none h-10"
-													/>
-													<input
-														type="time"
-														class="w-full rounded-md bg-gray-100 px-3 py-2 text-sm tracking-wider focus:bg-[#e9ecf3] focus:outline-none sm:w-32"
-														name="End Time"
-													/>
+												<div class="flex items-center gap-4">
+													<h3 class="w-12 text-sm font-medium text-gray-700">End</h3>
+													<div class="flex w-full flex-col gap-2 sm:flex-row">
+														<DatePicker
+															name="endDate"
+															className="flex items-center w-full rounded-lg border-gray-200 py-3 text-sm border px-3"
+														/>
+														<input
+															type="time"
+															class="w-full rounded-lg border border-gray-200 px-3 py-3 tracking-wider sm:w-32"
+															name="End Time"
+														/>
+													</div>
 												</div>
-											</div>
+											{/if}
 										</div>
 									</div>
 									<div class="mb-30 h-80 lg:col-span-1 lg:w-full">
@@ -361,7 +357,7 @@
 							>
 								<div class="pb-4">
 									<h2 class="mb-2 text-xl font-semibold">Website Visual</h2>
-									<p class="mb-6 text-sm text-gray-600">
+									<p class="mb-6 text-sm text-gray-500">
 										Edit your website visual below. Changes update automatically on your website.
 									</p>
 									<hr class="mb-6 border-t border-gray-300" />
@@ -372,7 +368,7 @@
 											<h3 class="mb-2 block text-sm font-medium">Theme</h3>
 											<Button
 												label="Select Theme"
-												className=" text-gray-500 h-[10rem] w-full bg-[#F1F2F6]"
+												className="text-sm text-gray-500 h-[10rem] w-full rounded-lg border-4  border-gray-200 text-center hover:border-gray-400"
 												onClick={() => handleOpenThemeDrawer()}
 											/>
 											<Drawer
@@ -397,12 +393,12 @@
 										<!-- Logo Image Upload -->
 
 										<div class="mb-4">
-											<h3 class="mb-2 block text-sm font-medium">Logo Image</h3>
+											<h3 class="mb-2 block text-sm font-medium">Logo</h3>
 											<div
 												role="button"
 												tabindex="0"
 												aria-label="uploader"
-												class="relative flex h-40 min-h-[10rem] w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-[#F1F2F6] text-center"
+												class="relative flex h-40 min-h-[10rem] w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg border-4 border-dashed border-gray-200 text-center hover:border-gray-400"
 												onclick={() => handleClick('logoInput')}
 												onkeydown={(e) =>
 													(e.key === 'Enter' || e.key === ' ') && handleClick('logoInput')}
@@ -410,13 +406,14 @@
 												{#if logoImgSrc}
 													<img src={logoImgSrc} alt="Logo" class="h-full w-full object-cover" />
 													<button
+														aria-label="Remove image"	
 														class="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-gray-400 text-white"
 														onclick={(e) => removeImageVar('logoImg', e)}
 													>
-														&times;
+													<i class="fa-solid fa-xmark"></i>
 													</button>
 												{:else}
-													<p class="text-sm text-gray-500">Select Logo Image</p>
+													<p class="text-sm text-gray-500">Select Logo</p>
 												{/if}
 												<input
 													name="Logo Input"
@@ -431,12 +428,12 @@
 
 										<!-- Event Logo Image Upload -->
 										<div class="mb-4">
-											<h3 class="mb-2 block text-sm font-medium">Event Logo Image</h3>
+											<h3 class="mb-2 block text-sm font-medium">Event Logo</h3>
 											<div
 												role="button"
 												tabindex="0"
 												aria-label="uploader"
-												class="relative flex h-40 min-h-[10rem] w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-[#F1F2F6] text-center"
+												class="relative flex h-40 min-h-[10rem] w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg border-4 border-dashed border-gray-200 text-center hover:border-gray-400"
 												onclick={() => handleClick('eventLogoInput')}
 												onkeydown={(e) =>
 													(e.key === 'Enter' || e.key === ' ') && handleClick('eventLogoInput')}
@@ -448,13 +445,14 @@
 														class="h-full w-full object-cover"
 													/>
 													<button
+														aria-label="Remove image"
 														class="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-gray-400 text-white"
 														onclick={(e) => removeImageVar('eventLogoImg', e)}
 													>
-														&times;
+													<i class="fa-solid fa-xmark"></i>
 													</button>
 												{:else}
-													<p class="text-sm text-gray-500">Select Event Logo Image</p>
+													<p class="text-sm text-gray-500">Select Event Logo</p>
 												{/if}
 												<input
 													name="Event Logo Input"
@@ -469,12 +467,12 @@
 
 										<!-- Poster Image Upload -->
 										<div class="mb-4">
-											<h3 class="mb-2 block text-sm font-medium">Poster Image</h3>
+											<h3 class="mb-2 block text-sm font-medium">Poster</h3>
 											<div
 												role="button"
 												tabindex="0"
 												aria-label="uploader"
-												class="relative flex h-40 min-h-[10rem] w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-[#F1F2F6] text-center"
+												class="relative flex h-40 min-h-[10rem] w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg border-4 border-dashed border-gray-200 text-center hover:border-gray-400"
 												onclick={() => handleClick('posterInput')}
 												onkeydown={(e) =>
 													(e.key === 'Enter' || e.key === ' ') && handleClick('posterInput')}
@@ -482,13 +480,14 @@
 												{#if posterImgSrc}
 													<img src={posterImgSrc} alt="Poster" class="h-full w-full object-cover" />
 													<button
+														aria-label="Remove image"
 														class="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-gray-400 text-white"
 														onclick={(e) => removeImageVar('posterImg', e)}
 													>
-														&times;
+													<i class="fa-solid fa-xmark"></i>
 													</button>
 												{:else}
-													<p class="text-sm text-gray-500">Select Poster Image</p>
+													<p class="text-sm text-gray-500">Select Poster</p>
 												{/if}
 												<input
 													name="Poster Input"
@@ -508,7 +507,7 @@
 												role="button"
 												tabindex="0"
 												aria-label="uploader"
-												class="relative flex h-40 min-h-[10rem] w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-[#F1F2F6] text-center"
+												class="relative flex h-40 min-h-[10rem] w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg border-4 border-dashed border-gray-200 text-center hover:border-gray-400"
 												onclick={() => handleClick('backgroundInput')}
 												onkeydown={(e) =>
 													(e.key === 'Enter' || e.key === ' ') && handleClick('backgroundInput')}
@@ -520,10 +519,11 @@
 														class="h-full w-full object-cover"
 													/>
 													<button
+														aria-label="Remove image"
 														class="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-gray-400 text-white"
 														onclick={(e) => removeImageVar('backgroundImg', e)}
 													>
-														&times;
+													<i class="fa-solid fa-xmark"></i>
 													</button>
 												{:else}
 													<p class="text-sm text-gray-500">Select Background Image</p>
@@ -547,7 +547,7 @@
 													type="text"
 													name="Youtube Link"
 													placeholder="Insert YouTube link here"
-													class="w-full rounded bg-[#F1F2F6] p-2 placeholder:text-[13px] focus:bg-[#e9ecf3] focus:outline-none"
+													class="w-full rounded-lg border p-2 px-3 py-3"
 												/>
 											</label>
 										</div>
@@ -577,15 +577,15 @@
 								<div class="mb-6">
 									<h2 class="mb-2 text-xl font-semibold text-gray-900">Basic Information</h2>
 									<p class="text-sm text-gray-500">
-										Edit your event details below. Changes update automatically on your website.
+										Edit your contact details below. Changes update automatically on your website.
 									</p>
 								</div>
 								<hr class="mb-6 border-t border-gray-300" />
 								<div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
 									<div class="relative flex flex-col md:col-span-1 lg:col-span-1">
-										<p class="mb-2 text-black">Image (Optional)</p>
+										<p class="mb-2 text-sm text-black">Image (Optional)</p>
 										<label
-											class="relative flex h-40 w-full cursor-pointer items-center justify-center rounded-lg border border-gray-300 bg-gray-100 text-gray-500"
+											class="relative flex h-40 w-full cursor-pointer items-center justify-center rounded-lg border-4 border-dashed border-gray-200 text-gray-500 hover:border-gray-400"
 										>
 											{#if imagePreview}
 												<div class="relative h-full w-full">
@@ -595,14 +595,15 @@
 														alt="preview"
 													/>
 													<button
+														aria-label="Remove image"
 														onclick={removeImage}
-														class="absolute right-2 top-2 h-6 w-6 rounded-full bg-gray-400 pb-3 text-white shadow-sm hover:bg-gray-600"
+														class="absolute right-2 top-2 h-6 w-6 rounded-full bg-gray-400 pb-3 text-white shadow-sm hover:bg-gray-600 z-10"
 													>
-														&times;
+													<i class="fa-solid fa-xmark"></i>
 													</button>
 												</div>
 											{:else}
-												<span>Select image</span>
+												<span class="text-sm">Select image</span>
 											{/if}
 											<input
 												type="file"
@@ -620,7 +621,7 @@
 												placeholder="Enter name"
 												name="contactName"
 												bind:value={$contactForm.contactName}
-												class="mt-1 w-full rounded-md bg-gray-100 p-2 focus:bg-[#e9ecf3] focus:outline-none"
+												class="mt-1 w-full rounded-md border border-gray-200 p-2 px-3 py-3"
 											/>
 											{#if $contactFormErrors.contactName}
 												<p class="text-primary text-sm">{$contactFormErrors.contactName}</p>
@@ -631,14 +632,14 @@
 											Email Address
 											<div class="relative mt-1">
 												<span class="absolute inset-y-0 left-3 flex items-center">
-													<i class="fa-regular fa-envelope"></i>
+													<i class="fa-regular fa-envelope text-gray-500"></i>
 												</span>
 												<input
 													name="contactEmail"
 													bind:value={$contactForm.contactEmail}
 													type="tel"
-													placeholder="Enter mobile number"
-													class="w-full rounded-md bg-gray-100 p-2 pl-10 focus:bg-[#e9ecf3] focus:outline-none"
+													placeholder="Enter Email Address"
+													class="w-full rounded-md border border-gray-200 p-2 px-3 py-3 pl-10"
 												/>
 												{#if $contactFormErrors.contactEmail}
 													<p class="text-primary text-sm">{$contactFormErrors.contactEmail}</p>
@@ -649,14 +650,14 @@
 											Mobile Number
 											<div class="relative mt-1">
 												<span class="absolute inset-y-0 left-3 flex items-center">
-													<i class="fa-solid fa-phone"></i>
+													<i class="fa-solid fa-phone text-gray-500"></i>
 												</span>
 												<input
 													name="contactPhone"
 													bind:value={$contactForm.contactPhone}
 													type="tel"
 													placeholder="Enter mobile number"
-													class="w-full rounded-md bg-gray-100 p-2 pl-10 focus:bg-[#e9ecf3] focus:outline-none"
+													class="w-full rounded-md border border-gray-200 p-2 px-3 py-3 pl-10"
 												/>
 											</div>
 											{#if $contactFormErrors.contactPhone}
@@ -672,7 +673,7 @@
 												name="contactRole"
 												bind:value={$contactForm.contactRole}
 												placeholder="Enter role"
-												class="mt-1 w-full rounded-md bg-gray-100 p-2 focus:bg-[#e9ecf3] focus:outline-none"
+												class="mt-1 w-full rounded-md border border-gray-200 p-2 px-3 py-3 pl-10"
 											/>
 											{#if $contactFormErrors.contactRole}
 												<p class="text-primary text-sm">{$contactFormErrors.contactRole}</p>
@@ -711,55 +712,53 @@
 											Registration instruction
 										</h2>
 										<p class="mb-4 text-sm text-gray-500">
-											Edit your registration instruction below. Changes update automatically on your
-											website.
+											Edit your registration instructions below. Changes update automatically on
+											your website.
 										</p>
 									</div>
 									<hr class="mb-6 border-t border-gray-300" />
 									<div class="flex flex-col gap-8 lg:flex-row">
 										<div class="w-full space-y-6 lg:w-2/5">
 											<div>
-												<h3 class="mb-1 font-medium">Heading</h3>
+												<h3 class="mb-1 text-sm font-medium">Heading</h3>
 												<input
 													name="Heading"
 													type="text"
 													placeholder="Add heading"
-													class="mt-1 w-full rounded-lg bg-gray-100 p-2 px-3 py-2 text-sm placeholder:text-gray-500 focus:bg-[#e9ecf3] focus:outline-none"
+													class="mt-1 w-full rounded-lg border border-gray-200 p-2 px-3 py-3 text-sm placeholder:text-gray-500"
 												/>
 											</div>
 											<div>
-												<h3 class="mb-2 font-medium">Image</h3>
-												{#if selectedImage}
-													<div class="relative w-full">
+												<h3 class="mb-2 text-sm font-medium">Image</h3>
+												<label
+													class="h-50 relative flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg border-4 border-dashed border-gray-200 p-12 text-center hover:border-gray-400"
+													for="imageUpload"
+												>
+													{#if selectedImage}
 														<img
 															src={selectedImage}
 															alt="Registration instruction preview"
-															class="h-50 w-full rounded-lg object-cover"
+															class="absolute inset-0 h-full w-full object-cover"
 														/>
 														<button
 															aria-label="Remove image"
 															onclick={removeSelectedImage}
-															class="absolute right-2 top-2 rounded-full bg-gray-400 p-1 text-white shadow-sm hover:bg-gray-600"
+															class="absolute right-2 top-2 z-10 rounded-full bg-gray-400 h-6 w-6  text-white shadow-sm hover:bg-gray-600"
 														>
 															<i class="fa-solid fa-xmark"></i>
 														</button>
-													</div>
-												{:else}
-													<label
-														class="h-50 flex cursor-pointer items-center justify-center rounded-lg bg-gray-100 p-12 text-center hover:bg-[#e9ecf3]"
-														for="imageUpload"
-													>
-														<p class="text-sm text-gray-500">Select image</p>
-													</label>
-												{/if}
-												<input
-													name="Registration Instruction IMG"
-													id="imageUpload"
-													type="file"
-													accept="image/*"
-													class="hidden"
-													onchange={handleFileUpload}
-												/>
+													{:else}
+														<p class="z-10 text-sm text-gray-500">Select image</p>
+													{/if}
+													<input
+														name="Registration Instruction IMG"
+														id="imageUpload"
+														type="file"
+														accept="image/*"
+														class="hidden"
+														onchange={handleFileUpload}
+													/>
+												</label>
 											</div>
 										</div>
 										<div class="mb-30 h-80 w-full lg:w-3/5">
