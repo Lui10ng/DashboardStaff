@@ -9,6 +9,13 @@ export const staffDrawer = $state({
 export const ticketDrawer = $state({
 	open: false
 });
+export const editTicketDrawer = $state({
+	open: false
+});
+
+export const voucherDrawer = $state({
+	open: false
+});
 
 export const themeDrawer = $state({
 	open: false

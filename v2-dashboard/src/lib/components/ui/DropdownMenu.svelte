@@ -2,51 +2,68 @@
 	import type { DropdownMenuProps } from '$lib/types';
 	import { DropdownMenu } from 'bits-ui';
 	import { createEventDispatcher } from 'svelte';
-
-	const dispatch = createEventDispatcher<{ select: string }>();
-
+  
+	const dispatch = createEventDispatcher<{ select: string[] }>();
+  
 	let {
-		open = $bindable(false),
-		children,
-		className,
-		classMenu,
-		buttonText,
-		alignContent,
-		icon,
-		items,
-		contentProps,
-		...restProps
-	}: DropdownMenuProps = $props();
-
+	  open = $bindable(false),
+	  children,
+	  className,
+	  classMenu,
+	  buttonText,
+	  alignContent,
+	  icon,
+	  items,
+	  contentProps,
+	  multiple = false,
+	  selected = [],
+	  ...restProps
+	}: DropdownMenuProps & { multiple?: boolean; selected?: string[] } = $props();
+  
+	let selectedItems: string[] = $state(selected);
+  
 	const handleItemSelect = (item: string) => {
-		dispatch('select', item);
+	  if (multiple) {
+		const index = selectedItems.indexOf(item);
+		if (index === -1) {
+		  selectedItems = [...selectedItems, item];
+		} else {
+		  selectedItems = selectedItems.filter(i => i !== item);
+		}
+		dispatch('select', selectedItems);
+	  } else {
+		dispatch('select', [item]);
 		open = false;
+	  }
 	};
-</script>
-
-<DropdownMenu.Root bind:open {...restProps}>
+  </script>
+  
+  <DropdownMenu.Root bind:open {...restProps}>
 	<DropdownMenu.Trigger class="{className} inline-flex items-center justify-center">
-		<i class="{icon} flex-shrink-0"></i>
-		{#if buttonText}
-			<span>{buttonText}</span>
-		{/if}
+	  <i class="{icon} flex-shrink-0"></i>
+	  {#if buttonText}
+		<span>{buttonText}</span>
+	  {/if}
 	</DropdownMenu.Trigger>
 	<DropdownMenu.Portal>
-		<DropdownMenu.Content sideOffset={5} {...contentProps} align={alignContent} class="z-50">
-			<DropdownMenu.Group
-				aria-label="icon"
-				class="space-y-2 rounded-lg border border-red-200 bg-white px-4 py-2 shadow-lg {classMenu}"
+	  <DropdownMenu.Content sideOffset={5} {...contentProps} align={alignContent} class="z-50">
+		<DropdownMenu.Group
+		  aria-label="icon"
+		  class="space-y-2 rounded-lg border border-red-200 bg-white px-4 py-2 shadow-lg {classMenu}"
+		>
+		  {#each items as item}
+			<DropdownMenu.Item
+			  textValue={item}
+			  class="cursor-pointer rounded px-1 py-2 transition-colors hover:bg-gray-100 flex items-center justify-between"
+			  onSelect={() => handleItemSelect(item)}
 			>
-				{#each items as item}
-					<DropdownMenu.Item
-						textValue={item}
-						class="cursor-pointer rounded px-1 py-2 transition-colors hover:bg-gray-100"
-						onSelect={() => handleItemSelect(item)}
-					>
-						{item}
-					</DropdownMenu.Item>
-				{/each}
-			</DropdownMenu.Group>
-		</DropdownMenu.Content>
+			  <span>{item}</span>
+			  {#if multiple && selectedItems.includes(item)}
+				<i class="fas fa-check text-green-500"></i>
+			  {/if}
+			</DropdownMenu.Item>
+		  {/each}
+		</DropdownMenu.Group>
+	  </DropdownMenu.Content>
 	</DropdownMenu.Portal>
-</DropdownMenu.Root>
+  </DropdownMenu.Root>
