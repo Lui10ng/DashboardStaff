@@ -1,19 +1,23 @@
 import { apiClient } from '$lib/services/payload.server.js';
-import { superValidate } from 'sveltekit-superforms';
 import type { LayoutServerLoad } from './$types';
-import { zod } from 'sveltekit-superforms/adapters';
-import { contactSchema } from '$lib/schema/contact';
 import { PORT } from '$env/static/private';
 
 export const load: LayoutServerLoad = async ({ url, params, fetch: svelteKitFetch }) => {
+	const paramsEvent = new URLSearchParams({
+		'where[event][equals]': params.eventId,
+		'select[title]': 'true',
+		'select[slug]': 'true',
+		'select[startTime]': 'true',
+		'select[endTime]': 'true',
+		'select[location]': 'true',
+		'select[poster]': 'true'
+	});
 	try {
 		const eventId = params.eventId;
-		const contactForm = await superValidate(zod(contactSchema));
-		const response = await apiClient.get(`events/${eventId}`, undefined, {
+
+		const response = await apiClient.get(`events/${eventId}`, paramsEvent, {
 			fetchInstance: svelteKitFetch
 		});
-
-		const contactDetails = response.eventContacts;
 
 		let siteUrl = 'https://' + response.slug + '.veent.co/';
 		if (url.origin.includes('localhost')) {
@@ -23,8 +27,6 @@ export const load: LayoutServerLoad = async ({ url, params, fetch: svelteKitFetc
 		return {
 			eventId,
 			siteUrl,
-			contactForm,
-			contactDetails,
 			currentEvent: {
 				id: response.id,
 				slug: response.slug,

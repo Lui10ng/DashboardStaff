@@ -1,4 +1,29 @@
 import { apiClient } from '$lib/services/payload.server';
+import { superValidate } from 'sveltekit-superforms';
+
+import { zod } from 'sveltekit-superforms/adapters';
+import { contactSchema } from '$lib/schema/contact.js';
+
+export const load = async ({ url, params, fetch: svelteKitFetch }) => {
+	const paramContacts = new URLSearchParams({
+		'where[event][equals]': params.eventId,
+		'select[eventContacts]': 'true'
+	});
+
+	try {
+		const eventId = params.eventId;
+		const form = await superValidate(zod(contactSchema));
+
+		const respContact = await apiClient.get(`events/${eventId}`, paramContacts, {
+			fetchInstance: svelteKitFetch
+		});
+
+		return {
+			respContact,
+			form
+		};
+	} catch (err) {}
+};
 
 export const actions = {
 	updateContacts: async ({ request, params }) => {
