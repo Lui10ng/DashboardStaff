@@ -17,7 +17,6 @@ export const load = async ({ url, fetch: svelteKitFetch }) => {
 
 	try {
 		const formData = await apiClient.get('/events', params, { fetchInstance: svelteKitFetch });
-
 		if (formData && formData.docs[0].formId.formBuilder) {
 			const formBuilder = formData.docs[0].formId.formBuilder;
 
@@ -27,9 +26,11 @@ export const load = async ({ url, fetch: svelteKitFetch }) => {
 			const serverTime = new Date();
 
 			const eventDetails = formData.docs[0];
+			const buttonText = eventDetails.formId.buttonText;
 
 			return {
 				form,
+				buttonText,
 				eventDetails,
 				serverTime,
 				formBuilder

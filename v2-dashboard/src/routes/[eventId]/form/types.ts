@@ -28,6 +28,7 @@ export interface FormData {
 	id: number;
 	title: string;
 	description: string;
+	buttonText:string;
 	formBuilder: FormField[];
 }
 

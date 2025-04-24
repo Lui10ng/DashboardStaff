@@ -9,7 +9,9 @@
 	import { formatDateTime, getTimeRemaining } from '$lib/utils';
 
 	let { data } = $props();
+	
 	const event = $derived(data.eventDetails);
+	const buttonText = $derived(data.buttonText);
 	let currentTab = $state('tab-0');
 	let openState = $state(false);
 	let timeRemaining = $state({
@@ -498,7 +500,7 @@
 							meterStroke="stroke-tertiary-600-400"
 							trackStroke="stroke-tertiary-50-950"
 						/>
-					{/if}Submit</button
+					{/if}{buttonText}</button
 				>
 
 				<div class="space-y-1">

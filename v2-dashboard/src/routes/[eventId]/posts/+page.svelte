@@ -6,27 +6,17 @@
 	import { fly } from 'svelte/transition';
 	import { Dialog } from 'bits-ui';
 	import ImageUploader from '$lib/components/ui/ImageUploader.svelte';
+	import { awsURL } from '$lib/stores/data.js';
+	
+	let { data } = $props();
+	let posts = data.posts && data.posts.docs && data.posts.docs.length>0?data.posts.docs:[];
+	
+	console.log("posts",posts);
+	// const currentImage = $state(null);
 
-	let sampleImages = $state([
-		{
-			id: 1,
-			url: 'https://veent.sgp1.cdn.digitaloceanspaces.com/media/475124993_639454641846376_711577880836547120_n-400x400.jpg'
-		},
-		{
-			id: 2,
-			url: 'https://veent.sgp1.cdn.digitaloceanspaces.com/media/476390380_590873343768999_2162506272708969218_n-400x400.jpg'
-		},
-		{
-			id: 3,
-			url: 'https://veent.sgp1.cdn.digitaloceanspaces.com/media/58826fbf-b69d-450b-ba29-582d24390a62-400x400.jpg',
-			name: 'Jhone'
-		},
-		{
-			id: 4,
-			url: 'https://veent.sgp1.cdn.digitaloceanspaces.com/media/476492613_601747789308459_774602919831942051_n-400x424.jpg',
-			name: 'icon'
-		}
-	]);
+	// $effect(() => {
+	// 	console.log('currentImage', currentImage);
+	// });
 
 	let isMoving = $state(false);
 	let movingIndex = $state<number | null>(null);
@@ -35,25 +25,30 @@
 		const newIndex = direction === 'left' ? currentIndex - 1 : currentIndex + 1;
 
 		// Check if the move is valid
-		if (newIndex >= 0 && newIndex < sampleImages.length) {
+		if (newIndex >= 0 && newIndex < posts.length) {
 			isMoving = true;
 			movingIndex = currentIndex;
 
 			try {
-				await new Promise((resolve) => setTimeout(resolve, 500));
-
-				const newImages = [...sampleImages];
-
+				// await new Promise((resolve) => setTimeout(resolve, 500));
+				// posts = [];
+				const newImages = [...posts];
 				[newImages[currentIndex], newImages[newIndex]] = [
 					newImages[newIndex],
 					newImages[currentIndex]
 				];
-				sampleImages = newImages;
+				posts = [...newImages];
+				console.log("posts",posts);
+				const response = await fetch(`/${data.eventId}?/updateContacts`, {
+					method: 'POST',
+					body: formData
+				});
 			} finally {
 				isMoving = false;
 				movingIndex = null;
 			}
 		}
+		
 	}
 </script>
 
@@ -104,62 +99,65 @@
 			</form>
 		{/snippet}
 	</Modal>
+	{#if posts.length>0}
 	<div class="mt-6 flex gap-2" in:fly={{ x: 0, duration: 200 }}>
-		{#each sampleImages as image, index (image.id)}
+		{#each posts as image, index (image.id)}
 			<div
 				class="relative h-80 w-80 overflow-hidden rounded-md border border-black"
 				transition:fly={{ x: 0, duration: 200 }}
 			>
-				{#if index > 0 && index < sampleImages.length - 1}
-					<button
-						class="absolute left-1 top-1 flex h-10 w-10 items-center justify-center rounded-sm bg-red-500 text-white transition-colors hover:bg-red-300 disabled:opacity-50"
-						onclick={() => moveImage(index, 'left')}
-						disabled={isMoving}
-					>
-						{#if isMoving && movingIndex === index}
-							<div
-								class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
-							/>
-						{:else}
-							<i class="fa-solid fa-arrow-left" />
-						{/if}
-					</button>
-					<button
-						class="absolute right-1 top-1 flex h-10 w-10 items-center justify-center rounded-sm bg-red-500 text-white transition-colors hover:bg-red-300 disabled:opacity-50"
-						onclick={() => moveImage(index, 'right')}
-						disabled={isMoving}
-					>
-						{#if isMoving && movingIndex === index}
-							<div
-								class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
-							/>
-						{:else}
-							<i class="fa-solid fa-arrow-right" />
-						{/if}
-					</button>
-				{:else}
-					<button
-						class={`absolute top-1 ${index === sampleImages.length - 1 ? 'left-1' : 'right-1'}
-						flex h-10 w-10 items-center justify-center rounded-sm bg-red-500 text-white transition-colors hover:bg-red-300 disabled:opacity-50`}
-						onclick={() => moveImage(index, index === sampleImages.length - 1 ? 'left' : 'right')}
-						disabled={isMoving}
-					>
-						{#if isMoving && movingIndex === index}
-							<div
-								class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
-							/>
-						{:else}
-							<i
-								class={`fa-solid ${
-									index === sampleImages.length - 1 ? 'fa-arrow-left' : 'fa-arrow-right'
-								}`}
-							/>
-						{/if}
-					</button>
+				{#if posts.length-1>0}
+					{#if index > 0 && index < posts.length - 1}
+						<button
+							class="absolute left-1 top-1 flex h-10 w-10 items-center justify-center rounded-sm bg-red-500 text-white transition-colors hover:bg-red-300 disabled:opacity-50"
+							onclick={() => moveImage(index, 'left')}
+							disabled={isMoving}
+						>
+							{#if isMoving && movingIndex === index}
+								<div
+									class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
+								/>
+							{:else}
+								<i class="fa-solid fa-arrow-left" />
+							{/if}
+						</button>
+						<button
+							class="absolute right-1 top-1 flex h-10 w-10 items-center justify-center rounded-sm bg-red-500 text-white transition-colors hover:bg-red-300 disabled:opacity-50"
+							onclick={() => moveImage(index, 'right')}
+							disabled={isMoving}
+						>
+							{#if isMoving && movingIndex === index}
+								<div
+									class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
+								/>
+							{:else}
+								<i class="fa-solid fa-arrow-right" />
+							{/if}
+						</button>
+					{:else}
+						<button
+							class={`absolute top-1 ${index === posts.length - 1 ? 'left-1' : 'right-1'}
+							flex h-10 w-10 items-center justify-center rounded-sm bg-red-500 text-white transition-colors hover:bg-red-300 disabled:opacity-50`}
+							onclick={() => moveImage(index, index === posts.length - 1 ? 'left' : 'right')}
+							disabled={isMoving}
+						>
+							{#if isMoving && movingIndex === index}
+								<div
+									class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
+								/>
+							{:else}
+								<i
+									class={`fa-solid ${
+										index === posts.length - 1 ? 'fa-arrow-left' : 'fa-arrow-right'
+									}`}
+								/>
+							{/if}
+						</button>
+					{/if}
 				{/if}
 				<div class="flex h-full w-full items-center justify-center bg-gray-100">
 					<img
-						src={image.url}
+						src={awsURL+image.url}
 						alt={image.name || 'Image'}
 						onerror={(e: Event) => {
 							const target = e.target as HTMLImageElement;
@@ -172,4 +170,5 @@
 			</div>
 		{/each}
 	</div>
+	{/if}
 </div>

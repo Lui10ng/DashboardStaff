@@ -414,6 +414,15 @@
 					placeholder="Form Description"
 					bind:value={formData.description}
 				></textarea>
+				<label class="block">
+					Button Text:
+					<input
+						class="mt-2 mb-5 w-full cursor-text rounded-md bg-[#0ca777] px-4 py-2 text-white placeholder-white shadow-sm transition duration-150 hover:bg-[#36c294] focus:bg-[#36c294] focus:outline-none"
+						placeholder="Submit"
+						bind:value={formData.buttonText}
+					/>
+				</label>
+				
 
 				<div
 					use:dndzone={{
@@ -452,7 +461,7 @@
 				</div>
 			{:else}
 				<!-- Preview Mode -->
-				<form on:submit|preventDefault={handleSubmit} class="space-y-6">
+				<form class="space-y-6">
 					{#each formData.formBuilder as field (field.id)}
 						<div class="space-y-2">
 							<label for={field.id} class="block text-sm font-medium text-gray-700">
@@ -545,7 +554,7 @@
 							type="submit"
 							class="w-full cursor-pointer rounded-md bg-[#0ca777] px-4 py-2 text-white hover:bg-[#36c294]"
 						>
-							Submit
+							{formData.buttonText?formData.buttonText:"Submit"}
 						</button>
 					</div>
 				</form>

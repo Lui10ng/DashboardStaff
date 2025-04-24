@@ -86,6 +86,7 @@ export const load: PageServerLoad = async ({ params }) => {
 			id: response.id,
 			title: response.title || 'Untitled Form',
 			description: response.description || '',
+			buttonText: response.buttonText || '',
 			formBuilder: response.formBuilder.map((field) => ({
 				id: field.id || crypto.randomUUID(),
 				name: field.name || '',

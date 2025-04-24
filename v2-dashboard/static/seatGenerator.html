@@ -1,0 +1,1653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seat Map Editor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        #canvas-container, #selection-canvas-container {
+            position: relative;
+            overflow: hidden;
+            border: 2px dashed #ccc;
+            transform-origin: 0 0;
+        }
+        #background-canvas, #drawing-canvas, #selection-background-canvas, #selection-drawing-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform-origin: 0 0;
+        }
+        .zone-color {
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+            margin-right: 5px;
+            border: 1px solid #000;
+        }
+        .seat, .selection-seat {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s;
+        }
+        .seat.greyed-out, .selection-seat.greyed-out {
+            opacity: 0.3;
+            filter: grayscale(100%);
+        }
+        .control-panel {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .tab-active {
+            border-bottom: 3px solid #3b82f6;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        .zoom-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 100;
+            background: white;
+            padding: 5px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .preview-zone-control {
+            position: absolute;
+            top: 10px;
+            right: 120px;
+            z-index: 100;
+            background: white;
+            padding: 5px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .selection-seat.selected {
+            box-shadow: 0 0 0 3px #000;
+            transform: scale(1.2);
+            z-index: 10;
+        }
+        .selection-seat.unavailable {
+            background-color: #ccc !important;
+            cursor: not-allowed;
+        }
+        .cart-item {
+            border-bottom: 1px solid #e5e7eb;
+            padding: 8px 0;
+        }
+        .error-toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #ef4444;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+        }
+        .row-label {
+            position: absolute;
+            font-size: 12px;
+            font-weight: bold;
+            color: #333;
+            pointer-events: none;
+        }
+        .zone-item {
+            cursor: move;
+        }
+        .zone-item.dragging {
+            opacity: 0.5;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+        .row-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin-bottom: 4px;
+            background-color: #f3f4f6;
+        }
+        .row-list-item:hover {
+            background-color: #e5e7eb;
+        }
+        .highlight-seat {
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.7); }
+            70% { box-shadow: 0 0 0 5px rgba(0, 0, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-6">
+    <div class="max-w-7xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">Seat Map Editor</h1>
+        
+        <div class="flex border-b mb-4">
+            <button id="editor-tab" class="tab-active px-4 py-2">Editor</button>
+            <button id="selection-tab" class="px-4 py-2">Seat Selection</button>
+        </div>
+        
+        <!-- Editor Tab -->
+        <div id="editor-content">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <!-- Control Panel -->
+                <div class="control-panel p-4 lg:col-span-1">
+                    <div class="flex border-b mb-4">
+                        <button id="upload-tab" class="tab-active px-4 py-2">Upload</button>
+                        <button id="draw-tab" class="px-4 py-2">Draw</button>
+                        <button id="zones-tab" class="px-4 py-2">Zones</button>
+                    </div>
+                    
+                    <!-- Upload Tab -->
+                    <div id="upload-panel" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Upload Seat Map Image</label>
+                            <input type="file" id="image-upload" accept="image/*" class="block w-full text-sm text-gray-500
+                                file:mr-4 file:py-2 file:px-4
+                                file:rounded-md file:border-0
+                                file:text-sm file:font-semibold
+                                file:bg-blue-50 file:text-blue-700
+                                hover:file:bg-blue-100">
+                        </div>
+                        <button id="clear-canvas" class="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md">
+                            <i class="fas fa-trash mr-2"></i> Clear Canvas
+                        </button>
+                    </div>
+                    
+                    <!-- Draw Tab -->
+                    <div id="draw-panel" class="space-y-4 hidden">
+                        <div class="bg-blue-50 p-3 rounded-md">
+                            <p class="text-sm text-blue-800">Click and drag to draw a row of seats. Start from left to right for proper orientation.</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Zone</label>
+                            <select id="zone-type" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                <!-- Zones will be populated here -->
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Current Row</label>
+                            <input type="text" id="row-letter" class="w-full px-3 py-2 border border-gray-300 rounded-md" readonly>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Seats in Row</label>
+                            <input type="number" id="seats-per-row" min="1" value="5" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Price per Seat ($)</label>
+                            <input type="number" id="seat-price" min="0" value="50" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        </div>
+                        <div class="flex space-x-2">
+                            <button id="preview-all" class="flex-1 bg-gray-200 hover:bg-gray-300 py-2 px-4 rounded-md">
+                                Show All
+                            </button>
+                            <button id="preview-none" class="flex-1 bg-gray-200 hover:bg-gray-300 py-2 px-4 rounded-md">
+                                Hide All
+                            </button>
+                        </div>
+                        
+                        <div class="border-t pt-4">
+                            <h3 class="font-medium mb-2">Rows</h3>
+                            <div id="rows-list" class="max-h-60 overflow-y-auto">
+                                <!-- Rows will be listed here -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Zones Tab -->
+                    <div id="zones-panel" class="space-y-4 hidden">
+                        <div class="bg-yellow-50 p-3 rounded-md">
+                            <p class="text-sm text-yellow-800">Drag zones to reorder them.</p>
+                        </div>
+                        <div id="zones-list" class="space-y-2">
+                            <!-- Zones will be listed here -->
+                        </div>
+                        <div class="border-t pt-4">
+                            <h3 class="font-medium mb-2">Add New Zone</h3>
+                            <div class="flex space-x-2 mb-2">
+                                <input type="text" id="new-zone-name" placeholder="Zone Name" class="flex-1 px-3 py-2 border border-gray-300 rounded-md">
+                                <input type="color" id="new-zone-color" value="#3b82f6" class="w-10 h-10">
+                            </div>
+                            <button id="add-zone" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md">
+                                <i class="fas fa-plus mr-2"></i> Add Zone
+                            </button>
+                        </div>
+                        <button id="export-json" class="w-full bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md mt-4">
+                            <i class="fas fa-file-export mr-2"></i> Export JSON
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Canvas Area -->
+                <div class="lg:col-span-3 relative">
+                    <div id="canvas-container" class="w-full h-[600px] bg-gray-200">
+                        <canvas id="background-canvas"></canvas>
+                        <canvas id="drawing-canvas"></canvas>
+                        <div class="preview-zone-control">
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Preview Zone</label>
+                            <select id="preview-zone" class="text-xs px-2 py-1 border border-gray-300 rounded-md">
+                                <option value="all">All Zones</option>
+                                <!-- Zones will be populated here -->
+                            </select>
+                        </div>
+                        <div class="zoom-controls flex space-x-2">
+                            <button id="zoom-in" class="bg-white hover:bg-gray-100 px-3 py-1 rounded">
+                                <i class="fas fa-search-plus"></i>
+                            </button>
+                            <button id="zoom-out" class="bg-white hover:bg-gray-100 px-3 py-1 rounded">
+                                <i class="fas fa-search-minus"></i>
+                            </button>
+                            <button id="zoom-reset" class="bg-white hover:bg-gray-100 px-3 py-1 rounded">
+                                100%
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="json-output" class="mt-4 hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">JSON Output</label>
+                        <textarea id="json-data" class="w-full h-40 px-3 py-2 border border-gray-300 rounded-md font-mono text-sm" readonly></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Selection Tab -->
+        <div id="selection-content" class="hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <!-- Seat Map -->
+                <div class="lg:col-span-3 relative">
+                    <div id="selection-canvas-container" class="w-full h-[600px] bg-gray-200">
+                        <canvas id="selection-background-canvas"></canvas>
+                        <canvas id="selection-drawing-canvas"></canvas>
+                        <div class="preview-zone-control">
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Filter Zone</label>
+                            <select id="selection-preview-zone" class="text-xs px-2 py-1 border border-gray-300 rounded-md">
+                                <option value="all">All Zones</option>
+                                <!-- Zones will be populated here -->
+                            </select>
+                        </div>
+                        <div class="zoom-controls flex space-x-2">
+                            <button id="selection-zoom-in" class="bg-white hover:bg-gray-100 px-3 py-1 rounded">
+                                <i class="fas fa-search-plus"></i>
+                            </button>
+                            <button id="selection-zoom-out" class="bg-white hover:bg-gray-100 px-3 py-1 rounded">
+                                <i class="fas fa-search-minus"></i>
+                            </button>
+                            <button id="selection-zoom-reset" class="bg-white hover:bg-gray-100 px-3 py-1 rounded">
+                                100%
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Cart Panel -->
+                <div class="control-panel p-4 lg:col-span-1">
+                    <h2 class="text-xl font-bold mb-4">Your Selections</h2>
+                    <div id="cart-items" class="mb-4 max-h-96 overflow-y-auto">
+                        <p class="text-gray-500 text-sm">No seats selected yet</p>
+                    </div>
+                    <div class="border-t pt-4">
+                        <div class="flex justify-between mb-2">
+                            <span class="font-medium">Subtotal:</span>
+                            <span id="subtotal">$0.00</span>
+                        </div>
+                        <button id="checkout-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md disabled:opacity-50" disabled>
+                            Checkout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Main tab switching
+            const editorTab = document.getElementById('editor-tab');
+            const selectionTab = document.getElementById('selection-tab');
+            const editorContent = document.getElementById('editor-content');
+            const selectionContent = document.getElementById('selection-content');
+            
+            editorTab.addEventListener('click', () => {
+                editorTab.classList.add('tab-active');
+                selectionTab.classList.remove('tab-active');
+                editorContent.classList.remove('hidden');
+                selectionContent.classList.add('hidden');
+            });
+            
+            selectionTab.addEventListener('click', () => {
+                selectionTab.classList.add('tab-active');
+                editorTab.classList.remove('tab-active');
+                selectionContent.classList.remove('hidden');
+                editorContent.classList.add('hidden');
+                
+                // Initialize selection view if not already done
+                if (!selectionInitialized) {
+                    initializeSelectionView();
+                    selectionInitialized = true;
+                }
+            });
+            
+            // EDITOR TAB CODE
+            // DOM Elements
+            const canvasContainer = document.getElementById('canvas-container');
+            const backgroundCanvas = document.getElementById('background-canvas');
+            const drawingCanvas = document.getElementById('drawing-canvas');
+            const bgCtx = backgroundCanvas.getContext('2d');
+            const drawCtx = drawingCanvas.getContext('2d');
+            
+            // Tab controls
+            const uploadTab = document.getElementById('upload-tab');
+            const drawTab = document.getElementById('draw-tab');
+            const zonesTab = document.getElementById('zones-tab');
+            const uploadPanel = document.getElementById('upload-panel');
+            const drawPanel = document.getElementById('draw-panel');
+            const zonesPanel = document.getElementById('zones-panel');
+            
+            // Form controls
+            const imageUpload = document.getElementById('image-upload');
+            const seatsPerRow = document.getElementById('seats-per-row');
+            const clearCanvasBtn = document.getElementById('clear-canvas');
+            const zoneType = document.getElementById('zone-type');
+            const previewZone = document.getElementById('preview-zone');
+            const seatPrice = document.getElementById('seat-price');
+            const zonesList = document.getElementById('zones-list');
+            const exportJsonBtn = document.getElementById('export-json');
+            const jsonOutput = document.getElementById('json-output');
+            const jsonData = document.getElementById('json-data');
+            const newZoneName = document.getElementById('new-zone-name');
+            const newZoneColor = document.getElementById('new-zone-color');
+            const addZoneBtn = document.getElementById('add-zone');
+            const previewAllBtn = document.getElementById('preview-all');
+            const previewNoneBtn = document.getElementById('preview-none');
+            const rowLetter = document.getElementById('row-letter');
+            const rowsList = document.getElementById('rows-list');
+            
+            // Zoom controls
+            const zoomInBtn = document.getElementById('zoom-in');
+            const zoomOutBtn = document.getElementById('zoom-out');
+            const zoomResetBtn = document.getElementById('zoom-reset');
+            
+            // Canvas setup
+            let scale = 1;
+            let isDrawing = false;
+            let startPoint = null;
+            let currentZoneId = 'general';
+            let currentPrice = 50;
+            let seats = [];
+            let zones = {
+                general: { id: 'general', name: 'General Admission', color: '#3b82f6', price: 50, seats: {}, visible: true },
+                vip: { id: 'vip', name: 'VIP', color: '#ef4444', price: 100, seats: {}, visible: true },
+                premium: { id: 'premium', name: 'Premium', color: '#10b981', price: 150, seats: {}, visible: true }
+            };
+            let rows = {}; // Track rows with their identifiers
+            let currentRowLetter = 'A'; // Start with 'A'
+            
+            // SELECTION TAB CODE
+            let selectionInitialized = false;
+            const selectionCanvasContainer = document.getElementById('selection-canvas-container');
+            const selectionBackgroundCanvas = document.getElementById('selection-background-canvas');
+            const selectionDrawingCanvas = document.getElementById('selection-drawing-canvas');
+            const selectionBgCtx = selectionBackgroundCanvas.getContext('2d');
+            const selectionDrawCtx = selectionDrawingCanvas.getContext('2d');
+            const selectionPreviewZone = document.getElementById('selection-preview-zone');
+            const selectionZoomInBtn = document.getElementById('selection-zoom-in');
+            const selectionZoomOutBtn = document.getElementById('selection-zoom-out');
+            const selectionZoomResetBtn = document.getElementById('selection-zoom-reset');
+            const cartItems = document.getElementById('cart-items');
+            const subtotal = document.getElementById('subtotal');
+            const checkoutBtn = document.getElementById('checkout-btn');
+            
+            let selectionScale = 1;
+            let selectedSeats = [];
+            let highlightedSeatId = null;
+            
+            function initializeSelectionView() {
+                resizeSelectionCanvases();
+                window.addEventListener('resize', resizeSelectionCanvases);
+                
+                // Copy background from editor
+                selectionBackgroundCanvas.width = backgroundCanvas.width;
+                selectionBackgroundCanvas.height = backgroundCanvas.height;
+                selectionBgCtx.drawImage(backgroundCanvas, 0, 0);
+                
+                // Set up zoom controls
+                selectionZoomInBtn.addEventListener('click', () => {
+                    selectionScale *= 1.2;
+                    applySelectionZoom();
+                });
+                
+                selectionZoomOutBtn.addEventListener('click', () => {
+                    selectionScale /= 1.2;
+                    applySelectionZoom();
+                });
+                
+                selectionZoomResetBtn.addEventListener('click', () => {
+                    selectionScale = 1;
+                    applySelectionZoom();
+                });
+                
+                // Set up zone filter
+                updateSelectionZoneDropdown();
+                selectionPreviewZone.addEventListener('change', function() {
+                    const zoneId = this.value;
+                    
+                    if (zoneId === 'all') {
+                        // Show all zones
+                        Object.values(zones).forEach(zone => {
+                            zone.visible = true;
+                        });
+                    } else {
+                        // Show only selected zone
+                        Object.values(zones).forEach(zone => {
+                            zone.visible = (zone.id === zoneId);
+                        });
+                    }
+                    
+                    updateSelectionSeatVisibility();
+                });
+                
+                // Draw seats for selection
+                drawSelectionSeats();
+            }
+            
+            function resizeSelectionCanvases() {
+                const width = selectionCanvasContainer.clientWidth;
+                const height = selectionCanvasContainer.clientHeight;
+                
+                selectionBackgroundCanvas.width = width;
+                selectionBackgroundCanvas.height = height;
+                selectionDrawingCanvas.width = width;
+                selectionDrawingCanvas.height = height;
+                
+                selectionBgCtx.drawImage(backgroundCanvas, 0, 0, width, height);
+                drawSelectionSeats();
+            }
+            
+            function applySelectionZoom() {
+                selectionCanvasContainer.style.transform = `scale(${selectionScale})`;
+                selectionZoomResetBtn.textContent = `${Math.round(selectionScale * 100)}%`;
+            }
+            
+            function updateSelectionZoneDropdown() {
+                let previewOptions = '<option value="all">All Zones</option>';
+                Object.values(zones).forEach(zone => {
+                    previewOptions += `<option value="${zone.id}">${zone.name}</option>`;
+                });
+                selectionPreviewZone.innerHTML = previewOptions;
+            }
+            
+            function drawSelectionSeats() {
+                // Clear existing seats
+                document.querySelectorAll('.selection-seat').forEach(el => el.remove());
+                document.querySelectorAll('.row-label').forEach(el => el.remove());
+                
+                seats.forEach(seat => {
+                    const seatElement = document.createElement('div');
+                    seatElement.className = 'selection-seat';
+                    seatElement.id = `selection-${seat.id}`;
+                    seatElement.textContent = seat.number;
+                    seatElement.style.left = `${seat.x - 10}px`;
+                    seatElement.style.top = `${seat.y - 10}px`;
+                    seatElement.style.backgroundColor = seat.color;
+                    seatElement.style.border = `1px solid ${darkenColor(seat.color, 20)}`;
+                    
+                    if (!zones[seat.zone].visible) {
+                        seatElement.classList.add('greyed-out');
+                    }
+                    
+                    if (selectedSeats.includes(seat.id)) {
+                        seatElement.classList.add('selected');
+                    }
+                    
+                    if (highlightedSeatId === seat.id) {
+                        seatElement.classList.add('highlight-seat');
+                    }
+                    
+                    seatElement.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        
+                        // Toggle selection
+                        const seatIndex = selectedSeats.indexOf(seat.id);
+                        if (seatIndex === -1) {
+                            // Select seat
+                            selectedSeats.push(seat.id);
+                            seatElement.classList.add('selected');
+                        } else {
+                            // Deselect seat
+                            selectedSeats.splice(seatIndex, 1);
+                            seatElement.classList.remove('selected');
+                        }
+                        
+                        updateCart();
+                    });
+                    
+                    seatElement.addEventListener('mouseenter', function() {
+                        highlightSeat(seat.id);
+                    });
+                    
+                    seatElement.addEventListener('mouseleave', function() {
+                        unhighlightSeat();
+                    });
+                    
+                    selectionCanvasContainer.appendChild(seatElement);
+                });
+                
+                // Add row labels
+                Object.keys(rows).forEach(rowId => {
+                    const rowSeats = seats.filter(s => s.row === rowId);
+                    if (rowSeats.length > 0) {
+                        // Find average position for the row
+                        const avgX = rowSeats.reduce((sum, seat) => sum + seat.x, 0) / rowSeats.length;
+                        const avgY = rowSeats.reduce((sum, seat) => sum + seat.y, 0) / rowSeats.length;
+                        
+                        // Find the rightmost seat
+                        const rightmostSeat = rowSeats.reduce((rightmost, seat) => 
+                            seat.x > rightmost.x ? seat : rightmost, rowSeats[0]);
+                        
+                        // Place label to the right of the rightmost seat
+                        const label = document.createElement('div');
+                        label.className = 'row-label';
+                        label.textContent = rows[rowId].identifier;
+                        label.style.left = `${rightmostSeat.x + 15}px`;
+                        label.style.top = `${rightmostSeat.y - 10}px`;
+                        
+                        selectionCanvasContainer.appendChild(label);
+                    }
+                });
+            }
+            
+            function highlightSeat(seatId) {
+                if (highlightedSeatId === seatId) return;
+                
+                unhighlightSeat();
+                
+                highlightedSeatId = seatId;
+                const seatEl = document.getElementById(`selection-${seatId}`);
+                if (seatEl) {
+                    seatEl.classList.add('highlight-seat');
+                }
+            }
+            
+            function unhighlightSeat() {
+                if (highlightedSeatId) {
+                    const seatEl = document.getElementById(`selection-${highlightedSeatId}`);
+                    if (seatEl) {
+                        seatEl.classList.remove('highlight-seat');
+                    }
+                    highlightedSeatId = null;
+                }
+            }
+            
+            function updateSelectionSeatVisibility() {
+                document.querySelectorAll('.selection-seat').forEach(seatEl => {
+                    const seatId = seatEl.id.replace('selection-', '');
+                    const seat = seats.find(s => s.id === seatId);
+                    
+                    if (seat && zones[seat.zone]) {
+                        if (zones[seat.zone].visible) {
+                            seatEl.classList.remove('greyed-out');
+                        } else {
+                            seatEl.classList.add('greyed-out');
+                        }
+                    }
+                });
+            }
+            
+            function updateCart() {
+                if (selectedSeats.length === 0) {
+                    cartItems.innerHTML = '<p class="text-gray-500 text-sm">No seats selected yet</p>';
+                    subtotal.textContent = '$0.00';
+                    checkoutBtn.disabled = true;
+                    return;
+                }
+                
+                let html = '';
+                let total = 0;
+                
+                selectedSeats.forEach(seatId => {
+                    const seat = seats.find(s => s.id === seatId);
+                    if (seat) {
+                        const zone = zones[seat.zone];
+                        total += zone.price;
+                        
+                        html += `
+                            <div class="cart-item" data-seat-id="${seatId}">
+                                <div class="flex justify-between">
+                                    <span>${zone.name} ${rows[seat.row].identifier}${seat.number}</span>
+                                    <span>$${zone.price}</span>
+                                </div>
+                                <div class="flex justify-end">
+                                    <button onclick="removeFromCart('${seatId}')" class="text-red-500 text-xs">
+                                        <i class="fas fa-times mr-1"></i>Remove
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+                
+                cartItems.innerHTML = html;
+                subtotal.textContent = `$${total.toFixed(2)}`;
+                checkoutBtn.disabled = false;
+                
+                // Add hover effects to cart items
+                document.querySelectorAll('.cart-item').forEach(item => {
+                    const seatId = item.getAttribute('data-seat-id');
+                    
+                    item.addEventListener('mouseenter', () => {
+                        highlightSeat(seatId);
+                    });
+                    
+                    item.addEventListener('mouseleave', () => {
+                        unhighlightSeat();
+                    });
+                });
+            }
+            
+            function removeFromCart(seatId) {
+                const seatIndex = selectedSeats.indexOf(seatId);
+                if (seatIndex !== -1) {
+                    selectedSeats.splice(seatIndex, 1);
+                    
+                    // Update seat appearance
+                    const seatEl = document.getElementById(`selection-${seatId}`);
+                    if (seatEl) {
+                        seatEl.classList.remove('selected');
+                    }
+                    
+                    updateCart();
+                }
+            }
+            
+            window.removeFromCart = removeFromCart;
+            
+            // EDITOR FUNCTIONS
+            function resizeCanvases() {
+                const width = canvasContainer.clientWidth;
+                const height = canvasContainer.clientHeight;
+                
+                backgroundCanvas.width = width;
+                backgroundCanvas.height = height;
+                drawingCanvas.width = width;
+                drawingCanvas.height = height;
+                
+                redrawBackground();
+                redrawSeats();
+            }
+            
+            resizeCanvases();
+            window.addEventListener('resize', resizeCanvases);
+            
+            // Initialize UI
+            updateCurrentRowDisplay();
+            updateZoneDropdowns();
+            updateZonesList();
+            
+            function updateCurrentRowDisplay() {
+                rowLetter.value = currentRowLetter;
+            }
+            
+            function getNextRowLetter() {
+                const currentCharCode = currentRowLetter.charCodeAt(0);
+                const nextCharCode = currentCharCode + 1;
+                
+                // If we've passed 'Z', start over at 'A'
+                if (nextCharCode > 90) {
+                    return 'A';
+                }
+                
+                return String.fromCharCode(nextCharCode);
+            }
+            
+            // Tab switching
+            uploadTab.addEventListener('click', () => switchTab('upload'));
+            drawTab.addEventListener('click', () => switchTab('draw'));
+            zonesTab.addEventListener('click', () => switchTab('zones'));
+            
+            function switchTab(tab) {
+                uploadPanel.classList.add('hidden');
+                drawPanel.classList.add('hidden');
+                zonesPanel.classList.add('hidden');
+                
+                uploadTab.classList.remove('tab-active');
+                drawTab.classList.remove('tab-active');
+                zonesTab.classList.remove('tab-active');
+                
+                if (tab === 'upload') {
+                    uploadPanel.classList.remove('hidden');
+                    uploadTab.classList.add('tab-active');
+                } else if (tab === 'draw') {
+                    drawPanel.classList.remove('hidden');
+                    drawTab.classList.add('tab-active');
+                    updateRowsList();
+                } else if (tab === 'zones') {
+                    zonesPanel.classList.remove('hidden');
+                    zonesTab.classList.add('tab-active');
+                }
+            }
+            
+            // Image upload
+            imageUpload.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.onload = function() {
+                        // Clear existing seats
+                        seats = [];
+                        rows = {};
+                        clearSeatsFromDOM();
+                        
+                        // Draw the image on background canvas
+                        redrawBackground(img);
+                        
+                        // Switch to draw tab
+                        switchTab('draw');
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+            
+            function redrawBackground(img) {
+                bgCtx.clearRect(0, 0, backgroundCanvas.width, backgroundCanvas.height);
+                
+                if (img) {
+                    // Calculate dimensions to maintain aspect ratio
+                    const ratio = Math.min(
+                        backgroundCanvas.width / img.width,
+                        backgroundCanvas.height / img.height
+                    );
+                    const width = img.width * ratio;
+                    const height = img.height * ratio;
+                    const x = (backgroundCanvas.width - width) / 2;
+                    const y = (backgroundCanvas.height - height) / 2;
+                    
+                    bgCtx.drawImage(img, x, y, width, height);
+                }
+            }
+            
+            // Clear canvas
+            clearCanvasBtn.addEventListener('click', function() {
+                if (confirm('Are you sure you want to clear the canvas? This will remove all seats and the background image.')) {
+                    bgCtx.clearRect(0, 0, backgroundCanvas.width, backgroundCanvas.height);
+                    drawCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+                    seats = [];
+                    rows = {};
+                    clearSeatsFromDOM();
+                    imageUpload.value = '';
+                    currentRowLetter = 'A';
+                    updateCurrentRowDisplay();
+                    
+                    // Reset zones to defaults
+                    zones = {
+                        general: { id: 'general', name: 'General Admission', color: '#3b82f6', price: 50, seats: {}, visible: true },
+                        vip: { id: 'vip', name: 'VIP', color: '#ef4444', price: 100, seats: {}, visible: true },
+                        premium: { id: 'premium', name: 'Premium', color: '#10b981', price: 150, seats: {}, visible: true }
+                    };
+                    
+                    updateZoneDropdowns();
+                    updateZonesList();
+                    updateRowsList();
+                }
+            });
+            
+            // Zone settings
+            zoneType.addEventListener('change', function() {
+                currentZoneId = this.value;
+                const zone = zones[currentZoneId];
+                seatPrice.value = zone.price;
+            });
+            
+            previewZone.addEventListener('change', function() {
+                const zoneId = this.value;
+                
+                if (zoneId === 'all') {
+                    // Show all zones
+                    Object.values(zones).forEach(zone => {
+                        zone.visible = true;
+                    });
+                } else {
+                    // Show only selected zone
+                    Object.values(zones).forEach(zone => {
+                        zone.visible = (zone.id === zoneId);
+                    });
+                }
+                
+                updateSeatVisibility();
+            });
+            
+            seatPrice.addEventListener('change', function() {
+                currentPrice = parseInt(this.value);
+                zones[currentZoneId].price = currentPrice;
+                updateZonesList();
+            });
+            
+            // Add new zone
+            addZoneBtn.addEventListener('click', function() {
+                const name = newZoneName.value.trim();
+                const color = newZoneColor.value;
+                
+                if (!name) {
+                    alert('Please enter a zone name');
+                    return;
+                }
+                
+                // Generate a unique ID
+                const id = name.toLowerCase().replace(/\s+/g, '-');
+                
+                if (zones[id]) {
+                    alert('A zone with this name already exists');
+                    return;
+                }
+                
+                // Add new zone
+                zones[id] = {
+                    id: id,
+                    name: name,
+                    color: color,
+                    price: 50,
+                    seats: {},
+                    visible: true
+                };
+                
+                // Reset form
+                newZoneName.value = '';
+                newZoneColor.value = '#3b82f6';
+                
+                // Update UI
+                updateZoneDropdowns();
+                updateZonesList();
+                
+                // Switch to draw tab with new zone selected
+                currentZoneId = id;
+                zoneType.value = id;
+                switchTab('draw');
+            });
+            
+            // Preview controls
+            previewAllBtn.addEventListener('click', function() {
+                Object.values(zones).forEach(zone => {
+                    zone.visible = true;
+                });
+                previewZone.value = 'all';
+                updateSeatVisibility();
+            });
+            
+            previewNoneBtn.addEventListener('click', function() {
+                Object.values(zones).forEach(zone => {
+                    zone.visible = false;
+                });
+                previewZone.value = 'all';
+                updateSeatVisibility();
+            });
+            
+            // Zoom controls
+            zoomInBtn.addEventListener('click', function() {
+                scale *= 1.2;
+                applyZoom();
+            });
+            
+            zoomOutBtn.addEventListener('click', function() {
+                scale /= 1.2;
+                applyZoom();
+            });
+            
+            zoomResetBtn.addEventListener('click', function() {
+                scale = 1;
+                applyZoom();
+            });
+            
+            function applyZoom() {
+                canvasContainer.style.transform = `scale(${scale})`;
+                zoomResetBtn.textContent = `${Math.round(scale * 100)}%`;
+            }
+            
+            // Drawing functionality
+            drawingCanvas.addEventListener('mousedown', startDrawing);
+            drawingCanvas.addEventListener('mousemove', draw);
+            drawingCanvas.addEventListener('mouseup', endDrawing);
+            drawingCanvas.addEventListener('mouseout', endDrawing);
+            
+            function startDrawing(e) {
+                if (document.getElementById('draw-panel').classList.contains('hidden')) return;
+                
+                const rect = drawingCanvas.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / scale;
+                const y = (e.clientY - rect.top) / scale;
+                
+                isDrawing = true;
+                startPoint = { x, y };
+                
+                // Clear any temporary drawings
+                drawCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+            }
+            
+            function draw(e) {
+                if (!isDrawing) return;
+                
+                const rect = drawingCanvas.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / scale;
+                const y = (e.clientY - rect.top) / scale;
+                
+                drawCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+                
+                // Draw the line
+                drawCtx.beginPath();
+                drawCtx.moveTo(startPoint.x, startPoint.y);
+                drawCtx.lineTo(x, y);
+                drawCtx.strokeStyle = zones[currentZoneId].color;
+                drawCtx.lineWidth = 2;
+                drawCtx.stroke();
+                
+                // Draw start and end points
+                drawCtx.beginPath();
+                drawCtx.arc(startPoint.x, startPoint.y, 5, 0, Math.PI * 2);
+                drawCtx.fillStyle = zones[currentZoneId].color;
+                drawCtx.fill();
+                
+                drawCtx.beginPath();
+                drawCtx.arc(x, y, 5, 0, Math.PI * 2);
+                drawCtx.fillStyle = zones[currentZoneId].color;
+                drawCtx.fill();
+            }
+            
+            function endDrawing(e) {
+                if (!isDrawing) return;
+                
+                const rect = drawingCanvas.getBoundingClientRect();
+                const endX = (e.clientX - rect.left) / scale;
+                const endY = (e.clientY - rect.top) / scale;
+                
+                isDrawing = false;
+                drawCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+                
+                // Create seats along the line
+                createSeatsAlongLine(startPoint.x, startPoint.y, endX, endY, parseInt(seatsPerRow.value));
+                
+                // Move to next row letter
+                currentRowLetter = getNextRowLetter();
+                updateCurrentRowDisplay();
+            }
+            
+            function createSeatsAlongLine(x1, y1, x2, y2, count) {
+                const zone = zones[currentZoneId];
+                const rowIdentifier = currentRowLetter;
+                const rowId = `row-${rowIdentifier}`;
+                
+                // Create row if it doesn't exist
+                if (!rows[rowId]) {
+                    rows[rowId] = {
+                        id: rowId,
+                        identifier: rowIdentifier,
+                        zone: currentZoneId
+                    };
+                }
+                
+                // Calculate minimum distance between seats
+                const minDistance = 25; // pixels
+                const totalDistance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                const requiredDistance = (count - 1) * minDistance;
+                
+                if (totalDistance < requiredDistance) {
+                    showError(`Seats would overlap. Please draw a longer line (minimum ${Math.round(requiredDistance)}px)`);
+                    return;
+                }
+                
+                for (let i = 0; i < count; i++) {
+                    const t = i / (count - 1);
+                    const x = x1 + (x2 - x1) * t;
+                    const y = y1 + (y2 - y1) * t;
+                    
+                    // Check for nearby seats
+                    const tooClose = seats.some(seat => {
+                        const distance = Math.sqrt(Math.pow(seat.x - x, 2) + Math.pow(seat.y - y, 2));
+                        return distance < minDistance;
+                    });
+                    
+                    if (tooClose) {
+                        showError(`Seat would be too close to another seat. Please space them out more.`);
+                        return;
+                    }
+                    
+                    const seatNumber = i + 1;
+                    const seatId = `${rowId}-${seatNumber}`;
+                    const seat = {
+                        id: seatId,
+                        row: rowId,
+                        number: seatNumber,
+                        x: x,
+                        y: y,
+                        zone: currentZoneId,
+                        color: zone.color,
+                        price: zone.price,
+                        visible: true
+                    };
+                    
+                    seats.push(seat);
+                    zone.seats[rowId] = zone.seats[rowId] || {};
+                    zone.seats[rowId][seatNumber] = seat;
+                    createSeatElement(seat);
+                }
+                
+                // Add row label
+                const label = document.createElement('div');
+                label.className = 'row-label';
+                label.textContent = rowIdentifier;
+                label.style.left = `${x2 + 15}px`;
+                label.style.top = `${y2 - 10}px`;
+                canvasContainer.appendChild(label);
+                
+                // Update rows list
+                updateRowsList();
+            }
+            
+            function showError(message) {
+                const toast = document.createElement('div');
+                toast.className = 'error-toast';
+                toast.textContent = message;
+                
+                document.body.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
+            }
+            
+            function createSeatElement(seat) {
+                const seatElement = document.createElement('div');
+                seatElement.className = 'seat';
+                seatElement.id = seat.id;
+                seatElement.textContent = seat.number;
+                seatElement.style.left = `${seat.x - 10}px`;
+                seatElement.style.top = `${seat.y - 10}px`;
+                seatElement.style.backgroundColor = seat.color;
+                seatElement.style.border = `1px solid ${darkenColor(seat.color, 20)}`;
+                
+                if (!zones[seat.zone].visible) {
+                    seatElement.classList.add('greyed-out');
+                }
+                
+                seatElement.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    
+                    if (document.getElementById('zones-panel').classList.contains('hidden')) return;
+                    
+                    // Show zone selection for this seat
+                    const zoneOptions = Object.values(zones).map(zone => 
+                        `<button onclick="moveSeatToZone('${seat.id}', '${zone.id}')" class="w-full text-left px-3 py-1 hover:bg-gray-100 flex items-center">
+                            <span class="zone-color" style="background-color: ${zone.color};"></span>
+                            ${zone.name} ($${zone.price})
+                        </button>`
+                    ).join('');
+                    
+                    const popup = document.createElement('div');
+                    popup.className = 'absolute z-50 bg-white shadow-lg rounded-md p-2';
+                    popup.style.left = `${(seat.x + 20) * scale}px`;
+                    popup.style.top = `${(seat.y - 10) * scale}px`;
+                    popup.innerHTML = `
+                        <div class="text-sm font-medium mb-1">Move seat to:</div>
+                        <div class="space-y-1">${zoneOptions}</div>
+                    `;
+                    
+                    // Close when clicking outside
+                    const closePopup = function() {
+                        document.body.removeChild(popup);
+                        document.removeEventListener('click', closePopup);
+                    };
+                    
+                    setTimeout(() => {
+                        document.addEventListener('click', closePopup);
+                    }, 10);
+                    
+                    document.body.appendChild(popup);
+                });
+                
+                canvasContainer.appendChild(seatElement);
+            }
+            
+            function clearSeatsFromDOM() {
+                document.querySelectorAll('.seat').forEach(el => el.remove());
+                document.querySelectorAll('.row-label').forEach(el => el.remove());
+            }
+            
+            function redrawSeats() {
+                clearSeatsFromDOM();
+                seats.forEach(seat => createSeatElement(seat));
+                
+                // Add row labels
+                Object.keys(rows).forEach(rowId => {
+                    const rowSeats = seats.filter(s => s.row === rowId);
+                    if (rowSeats.length > 0) {
+                        // Find the rightmost seat
+                        const rightmostSeat = rowSeats.reduce((rightmost, seat) => 
+                            seat.x > rightmost.x ? seat : rightmost, rowSeats[0]);
+                        
+                        // Place label to the right of the rightmost seat
+                        const label = document.createElement('div');
+                        label.className = 'row-label';
+                        label.textContent = rows[rowId].identifier;
+                        label.style.left = `${rightmostSeat.x + 15}px`;
+                        label.style.top = `${rightmostSeat.y - 10}px`;
+                        
+                        canvasContainer.appendChild(label);
+                    }
+                });
+            }
+            
+            function updateSeatVisibility() {
+                document.querySelectorAll('.seat').forEach(seatEl => {
+                    const seatId = seatEl.id;
+                    const seat = seats.find(s => s.id === seatId);
+                    
+                    if (seat && zones[seat.zone]) {
+                        if (zones[seat.zone].visible) {
+                            seatEl.classList.remove('greyed-out');
+                        } else {
+                            seatEl.classList.add('greyed-out');
+                        }
+                    }
+                });
+            }
+            
+            function moveSeatToZone(seatId, zoneKey) {
+                const seat = seats.find(s => s.id === seatId);
+                if (!seat) return;
+                
+                // Remove from current zone
+                delete zones[seat.zone].seats[seat.row][seat.number];
+                
+                // If the row is empty, remove it
+                if (Object.keys(zones[seat.zone].seats[seat.row]).length === 0) {
+                    delete zones[seat.zone].seats[seat.row];
+                }
+                
+                // Update seat properties
+                seat.zone = zoneKey;
+                seat.color = zones[zoneKey].color;
+                seat.price = zones[zoneKey].price;
+                
+                // Add to new zone
+                if (!zones[zoneKey].seats[seat.row]) {
+                    zones[zoneKey].seats[seat.row] = {};
+                }
+                zones[zoneKey].seats[seat.row][seat.number] = seat;
+                
+                // Redraw
+                redrawSeats();
+                updateZonesList();
+                updateRowsList();
+            }
+            
+            function updateRowsList() {
+                let html = '';
+                
+                Object.keys(rows).forEach(rowId => {
+                    const row = rows[rowId];
+                    const zone = zones[row.zone];
+                    const seatCount = seats.filter(s => s.row === rowId).length;
+                    
+                    html += `
+                        <div class="row-list-item" data-row-id="${rowId}">
+                            <div class="flex items-center">
+                                <span class="zone-color" style="background-color: ${zone.color};"></span>
+                                <span>${row.identifier}</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="text-xs mr-2">${seatCount} seats</span>
+                                <button onclick="editRow('${rowId}')" class="text-blue-500 hover:text-blue-700 mr-1">
+                                    <i class="fas fa-edit text-xs"></i>
+                                </button>
+                                <button onclick="deleteRow('${rowId}')" class="text-red-500 hover:text-red-700">
+                                    <i class="fas fa-trash text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                rowsList.innerHTML = html;
+                
+                // Make rows sortable
+                makeRowsSortable();
+            }
+            
+            function editRow(rowId) {
+                const row = rows[rowId];
+                const identifier = row.identifier;
+                
+                // Create modal for editing
+                const modal = document.createElement('div');
+                modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+                modal.innerHTML = `
+                    <div class="bg-white rounded-lg p-6 w-full max-w-md">
+                        <h3 class="text-lg font-medium mb-4">Edit Row: ${identifier}</h3>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Zone</label>
+                                <select id="edit-row-zone" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                    <!-- Zones will be populated here -->
+                                </select>
+                            </div>
+                            
+                            <div class="flex justify-end space-x-2 pt-4">
+                                <button onclick="this.closest('div[class*=\"fixed\"]').remove()" class="px-4 py-2 border border-gray-300 rounded-md">
+                                    Cancel
+                                </button>
+                                <button onclick="saveRowChanges('${rowId}')" class="px-4 py-2 bg-blue-500 text-white rounded-md">
+                                    Save Changes
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Populate zones dropdown
+                const editRowZone = modal.querySelector('#edit-row-zone');
+                Object.values(zones).forEach(zone => {
+                    const option = document.createElement('option');
+                    option.value = zone.id;
+                    option.textContent = zone.name;
+                    option.selected = (zone.id === row.zone);
+                    editRowZone.appendChild(option);
+                });
+                
+                document.body.appendChild(modal);
+            }
+            
+            function saveRowChanges(rowId) {
+                const modal = document.querySelector('div[class*="fixed"]');
+                const editRowZone = document.getElementById('edit-row-zone');
+                
+                const newZoneId = editRowZone.value;
+                
+                const row = rows[rowId];
+                
+                // Update row properties
+                row.zone = newZoneId;
+                
+                // Update all seats in this row
+                seats.forEach(seat => {
+                    if (seat.row === rowId) {
+                        // Remove from old zone
+                        delete zones[seat.zone].seats[rowId][seat.number];
+                        
+                        // Update seat properties
+                        seat.zone = newZoneId;
+                        seat.color = zones[newZoneId].color;
+                        seat.price = zones[newZoneId].price;
+                        
+                        // Add to new zone
+                        if (!zones[newZoneId].seats[rowId]) {
+                            zones[newZoneId].seats[rowId] = {};
+                        }
+                        zones[newZoneId].seats[rowId][seat.number] = seat;
+                    }
+                });
+                
+                // Update UI
+                updateZonesList();
+                updateRowsList();
+                redrawSeats();
+                
+                // Close modal
+                modal.remove();
+            }
+            
+            function deleteRow(rowId) {
+                if (confirm(`Are you sure you want to delete row ${rows[rowId].identifier}? All seats in this row will be removed.`)) {
+                    // Remove all seats in this row
+                    seats = seats.filter(seat => seat.row !== rowId);
+                    
+                    // Remove from zone data
+                    Object.values(zones).forEach(zone => {
+                        if (zone.seats[rowId]) {
+                            delete zone.seats[rowId];
+                        }
+                    });
+                    
+                    // Remove the row
+                    delete rows[rowId];
+                    
+                    // Update UI
+                    updateZonesList();
+                    updateRowsList();
+                    redrawSeats();
+                }
+            }
+            
+            function makeRowsSortable() {
+                const container = document.getElementById('rows-list');
+                let draggedItem = null;
+                
+                container.querySelectorAll('.row-list-item').forEach(item => {
+                    item.setAttribute('draggable', 'true');
+                    
+                    item.addEventListener('dragstart', function(e) {
+                        draggedItem = this;
+                        setTimeout(() => {
+                            this.classList.add('dragging');
+                        }, 0);
+                    });
+                    
+                    item.addEventListener('dragend', function() {
+                        this.classList.remove('dragging');
+                        draggedItem = null;
+                    });
+                });
+                
+                container.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    const afterElement = getDragAfterElement(container, e.clientY);
+                    if (afterElement == null) {
+                        container.appendChild(draggedItem);
+                    } else {
+                        container.insertBefore(draggedItem, afterElement);
+                    }
+                });
+            }
+            
+            function getDragAfterElement(container, y) {
+                const draggableElements = [...container.querySelectorAll('.row-list-item:not(.dragging)')];
+                
+                return draggableElements.reduce((closest, child) => {
+                    const box = child.getBoundingClientRect();
+                    const offset = y - box.top - box.height / 2;
+                    if (offset < 0 && offset > closest.offset) {
+                        return { offset: offset, element: child };
+                    } else {
+                        return closest;
+                    }
+                }, { offset: Number.NEGATIVE_INFINITY }).element;
+            }
+            
+            function updateZoneDropdowns() {
+                // Update zone type dropdown
+                let zoneOptions = '';
+                Object.values(zones).forEach(zone => {
+                    zoneOptions += `<option value="${zone.id}">${zone.name}</option>`;
+                });
+                zoneType.innerHTML = zoneOptions;
+                
+                // Update preview zone dropdown
+                let previewOptions = '<option value="all">All Zones</option>';
+                Object.values(zones).forEach(zone => {
+                    previewOptions += `<option value="${zone.id}">${zone.name}</option>`;
+                });
+                previewZone.innerHTML = previewOptions;
+            }
+            
+            function updateZonesList() {
+                let html = '';
+                
+                Object.values(zones).forEach(zone => {
+                    const seatCount = Object.values(zone.seats).reduce((acc, row) => acc + Object.keys(row).length, 0);
+                    
+                    html += `
+                        <div class="border rounded-md p-2 zone-item" data-zone-id="${zone.id}">
+                            <div class="flex justify-between items-center mb-1">
+                                <div class="flex items-center">
+                                    <span class="zone-color" style="background-color: ${zone.color};"></span>
+                                    <span class="font-medium">${zone.name}</span>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button onclick="editZone('${zone.id}')" class="text-blue-500 hover:text-blue-700">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button onclick="deleteZone('${zone.id}')" class="text-red-500 hover:text-red-700">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="text-sm">Price: $${zone.price} per seat</div>
+                            <div class="text-sm">Seats: ${seatCount}</div>
+                        </div>
+                    `;
+                });
+                
+                zonesList.innerHTML = html;
+                
+                // Make zones sortable
+                makeZonesSortable();
+            }
+            
+            function makeZonesSortable() {
+                const container = document.getElementById('zones-list');
+                let draggedItem = null;
+                
+                container.querySelectorAll('.zone-item').forEach(item => {
+                    item.setAttribute('draggable', 'true');
+                    
+                    item.addEventListener('dragstart', function(e) {
+                        draggedItem = this;
+                        setTimeout(() => {
+                            this.classList.add('dragging');
+                        }, 0);
+                    });
+                    
+                    item.addEventListener('dragend', function() {
+                        this.classList.remove('dragging');
+                        draggedItem = null;
+                        
+                        // Reorder zones based on new order
+                        const newZones = {};
+                        const zoneItems = container.querySelectorAll('.zone-item');
+                        zoneItems.forEach(item => {
+                            const zoneId = item.getAttribute('data-zone-id');
+                            newZones[zoneId] = zones[zoneId];
+                        });
+                        
+                        zones = newZones;
+                        updateZoneDropdowns();
+                    });
+                });
+                
+                container.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    const afterElement = getDragAfterElement(container, e.clientY);
+                    if (afterElement == null) {
+                        container.appendChild(draggedItem);
+                    } else {
+                        container.insertBefore(draggedItem, afterElement);
+                    }
+                });
+            }
+            
+            function editZone(zoneId) {
+                const zone = zones[zoneId];
+                
+                // Create modal for editing
+                const modal = document.createElement('div');
+                modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+                modal.innerHTML = `
+                    <div class="bg-white rounded-lg p-6 w-full max-w-md">
+                        <h3 class="text-lg font-medium mb-4">Edit Zone: ${zone.name}</h3>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Zone Name</label>
+                                <input type="text" id="edit-zone-name" value="${zone.name}" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Zone Color</label>
+                                <input type="color" id="edit-zone-color" value="${zone.color}" class="w-20 h-10">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Price per Seat ($)</label>
+                                <input type="number" id="edit-zone-price" min="0" value="${zone.price}" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                            </div>
+                            
+                            <div class="flex justify-end space-x-2 pt-4">
+                                <button onclick="this.closest('div[class*=\"fixed\"]').remove()" class="px-4 py-2 border border-gray-300 rounded-md">
+                                    Cancel
+                                </button>
+                                <button onclick="saveZoneChanges('${zoneId}')" class="px-4 py-2 bg-blue-500 text-white rounded-md">
+                                    Save Changes
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+            }
+            
+            function saveZoneChanges(zoneId) {
+                const modal = document.querySelector('div[class*="fixed"]');
+                const nameInput = document.getElementById('edit-zone-name');
+                const colorInput = document.getElementById('edit-zone-color');
+                const priceInput = document.getElementById('edit-zone-price');
+                
+                const newName = nameInput.value.trim();
+                const newColor = colorInput.value;
+                const newPrice = parseInt(priceInput.value);
+                
+                if (!newName) {
+                    alert('Zone name cannot be empty');
+                    return;
+                }
+                
+                const zone = zones[zoneId];
+                
+                // Update zone properties
+                zone.name = newName;
+                zone.color = newColor;
+                zone.price = newPrice;
+                
+                // Update all seats in this zone
+                seats.forEach(seat => {
+                    if (seat.zone === zoneId) {
+                        seat.color = newColor;
+                        seat.price = newPrice;
+                    }
+                });
+                
+                // Update UI
+                updateZoneDropdowns();
+                updateZonesList();
+                redrawSeats();
+                updateRowsList();
+                
+                // Close modal
+                modal.remove();
+            }
+            
+            function deleteZone(zoneId) {
+                if (zoneId === 'general') {
+                    alert('Cannot delete the General Admission zone');
+                    return;
+                }
+                
+                if (confirm(`Are you sure you want to delete the ${zones[zoneId].name} zone? All seats in this zone will be moved to General Admission.`)) {
+                    // Move all seats to General Admission
+                    const seatsToMove = seats.filter(seat => seat.zone === zoneId);
+                    
+                    seatsToMove.forEach(seat => {
+                        // Remove from current zone
+                        delete zones[zoneId].seats[seat.row][seat.number];
+                        
+                        // If the row is empty, remove it
+                        if (Object.keys(zones[zoneId].seats[seat.row]).length === 0) {
+                            delete zones[zoneId].seats[seat.row];
+                        }
+                        
+                        // Update seat properties
+                        seat.zone = 'general';
+                        seat.color = zones.general.color;
+                        seat.price = zones.general.price;
+                        
+                        // Add to General Admission
+                        if (!zones.general.seats[seat.row]) {
+                            zones.general.seats[seat.row] = {};
+                        }
+                        zones.general.seats[seat.row][seat.number] = seat;
+                    });
+                    
+                    // Delete the zone
+                    delete zones[zoneId];
+                    
+                    // Update UI
+                    updateZoneDropdowns();
+                    updateZonesList();
+                    redrawSeats();
+                    updateRowsList();
+                }
+            }
+            
+            function darkenColor(color, percent) {
+                const num = parseInt(color.replace("#", ""), 16);
+                const amt = Math.round(2.55 * percent);
+                const R = (num >> 16) - amt;
+                const G = (num >> 8 & 0x00FF) - amt;
+                const B = (num & 0x0000FF) - amt;
+                
+                return `#${(
+                    0x1000000 +
+                    (R < 0 ? 0 : R) * 0x10000 +
+                    (G < 0 ? 0 : G) * 0x100 +
+                    (B < 0 ? 0 : B)
+                ).toString(16).slice(1)}`;
+            }
+            
+            // Export JSON
+            exportJsonBtn.addEventListener('click', function() {
+                const exportData = {
+                    zones: {},
+                    rows: rows,
+                    seats: seats
+                };
+                
+                for (const [zoneKey, zone] of Object.entries(zones)) {
+                    exportData.zones[zoneKey] = {
+                        name: zone.name,
+                        color: zone.color,
+                        price: zone.price
+                    };
+                }
+                
+                jsonData.value = JSON.stringify(exportData, null, 2);
+                jsonOutput.classList.remove('hidden');
+            });
+            
+            // Checkout button
+            checkoutBtn.addEventListener('click', function() {
+                alert('Checkout functionality would be implemented here!');
+            });
+            
+            // Make functions available globally for inline event handlers
+            window.moveSeatToZone = moveSeatToZone;
+            window.editZone = editZone;
+            window.deleteZone = deleteZone;
+            window.saveZoneChanges = saveZoneChanges;
+            window.editRow = editRow;
+            window.deleteRow = deleteRow;
+            window.saveRowChanges = saveRowChanges;
+        });
+    </script>
+</body>
+</html>
