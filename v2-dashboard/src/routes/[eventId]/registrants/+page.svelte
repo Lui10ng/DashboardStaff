@@ -19,11 +19,6 @@
 	// Get the data from props
 	let { data } = $props();
 
-	// Initialize the store when data loads
-	$effect(() => {
-		registrantStore.set(data.guestList);
-	});
-
 	const registrantList = $derived(data.registrantList);
 
 	// Handler functions

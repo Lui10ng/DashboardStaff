@@ -21,8 +21,7 @@ export async function load({ url, params, fetch: svelteKitFetch }) {
 		const registrantList = response.docs;
 
 		return {
-			registrantList,
-			guestList
+			registrantList
 		};
 	} catch (err) {
 		const { statusCode, errorMessage } = handleSvelteError(
