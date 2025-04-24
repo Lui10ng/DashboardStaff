@@ -13,7 +13,17 @@ export const registration = (fields: any): any => {
 			: (z_object_fields[field.id] = z.string());
 	}
 	z_object_fields['payment'] = z.any();
+
 	return z.object({
-		tabs: z.object(z_object_fields).array()
+		tabs: z.array(z.object(z_object_fields)).transform((tabs) =>
+			tabs.map((tab) =>
+				Object.fromEntries(
+					Object.entries(tab).map(([id, value]) => {
+						const name = fields.find((f: any) => f.id === id)?.name;
+						return [name, { id, value }];
+					})
+				)
+			)
+		)
 	});
 };

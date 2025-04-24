@@ -467,6 +467,7 @@
 														? 'border-primary text-red-500'
 														: ''}"
 													type={getInputType(field.fieldType)}
+													id={field.id}
 													name={field.name}
 													data-invalid={$errors.tabs?.[i]?.[field.id]}
 													bind:value={$form.tabs[i][field.id]}

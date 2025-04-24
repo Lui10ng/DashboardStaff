@@ -44,3 +44,16 @@ export function formatDateTimeRange(formData: {
 		raw: { ...formData }
 	};
 }
+
+export const formatRegisteredDate = (date: string) => {
+	const registeredDate = new Date(date);
+	return registeredDate.toLocaleString('en-US', {
+		year: 'numeric',
+		month: 'long',
+		day: 'numeric',
+		hour: 'numeric',
+		minute: 'numeric',
+		second: 'numeric',
+		hour12: true
+	});
+};

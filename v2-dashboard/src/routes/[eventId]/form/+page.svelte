@@ -67,6 +67,7 @@
 
 	let dragging = $state(false);
 	let dragDisabled = $derived(!dragging);
+	const excluded = ['firstName', 'lastName', 'contactNumber', 'email', 'region', 'city'];
 
 	async function fetchRegions() {
 		try {
@@ -223,6 +224,11 @@
 
 			const sanitizedFormBuilder = formData.formBuilder.map((field) => ({
 				...field,
+
+				name: !excluded.includes(field.name)
+					? field.label.toLowerCase().replace(/\s+/g, '')
+					: field.name,
+
 				fieldType: field.fieldType,
 				options: field.options?.map((opt) => ({ value: opt.value }))
 			}));
@@ -375,7 +381,7 @@
 						{formData.description}
 					</div>
 					<button
-						class="absolute top-0 right-0 flex items-center gap-2 rounded-lg border border-[#d32f2f] px-4 py-2 text-[#d32f2f]"
+						class="absolute right-0 top-0 flex items-center gap-2 rounded-lg border border-[#d32f2f] px-4 py-2 text-[#d32f2f]"
 						on:click={toggleEditMode}
 					>
 						<span>Edit Form</span>
@@ -510,7 +516,7 @@
 								</select>
 							{:else if field.fieldType === 'phone'}
 								<div class="relative">
-									<span class="absolute top-2 left-3">+63</span>
+									<span class="absolute left-3 top-2">+63</span>
 									<input
 										type="tel"
 										id={field.id}
