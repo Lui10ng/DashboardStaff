@@ -5,6 +5,8 @@
 	import Drawer from '$lib/components/ui/Drawer.svelte';
 	import { themeDrawer } from '$lib/stores/state.svelte';
 
+	let { data } = $props();
+
 	let themeImgSrc: string | null = $state(null);
 	let logoImgSrc: string | null = $state(null);
 	let eventLogoImgSrc: string | null = $state(null);
@@ -71,8 +73,8 @@
 					positionOut={{ y: 600, duration: 200 }}
 				>
 					<div>
-						<!-- <iframe id="myIframe" title="themeSelector" src={data.siteUrl} class="h-[70svh] w-full"></iframe>
-						</iframe> -->
+						<iframe id="myIframe" title="themeSelector" src={data.siteUrl} class="h-[70svh] w-full"
+						></iframe>
 					</div>
 				</Drawer>
 			</div>
