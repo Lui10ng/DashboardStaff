@@ -728,20 +728,7 @@ export interface Promotion {
  */
 export interface Registrant {
   id: number;
-  /**
-   * The unique ticket this registration data belongs to.
-   */
-  ticket: number | Ticket;
   event: number | Event;
-  /**
-   * The logged-in user account associated with this registration.
-   */
-  registeredUser?: (number | null) | User;
-  guestDetails?: {
-    guestEmail?: string | null;
-    guestFirstName: string;
-    guestLastName: string;
-  };
   /**
    * The actual data submitted by the attendee via the event's registration form.
    */
@@ -1150,16 +1137,7 @@ export interface PromotionsSelect<T extends boolean = true> {
  * via the `definition` "registrants_select".
  */
 export interface RegistrantsSelect<T extends boolean = true> {
-  ticket?: T;
   event?: T;
-  registeredUser?: T;
-  guestDetails?:
-    | T
-    | {
-        guestEmail?: T;
-        guestFirstName?: T;
-        guestLastName?: T;
-      };
   submittedAnswers?: T;
   updatedAt?: T;
   createdAt?: T;
