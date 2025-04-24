@@ -1,6 +1,8 @@
-// src/collections/Promotions.ts
 import type { CollectionConfig } from 'payload';
-// import { isAdmin } from '../access/isAdmin'; // Assume only admins manage promotions
+import { isAdminOrEventRole } from '@/access/isAdminOrEventRole';
+import { EVENT_ROLES } from '@/types/eventRoles';
+
+const { MANAGER, EDITOR, VIEWER } = EVENT_ROLES;
 
 const Promotions: CollectionConfig = {
   slug: 'promotions',
@@ -12,15 +14,10 @@ const Promotions: CollectionConfig = {
     group: 'Configuration', // Group with other config items
   },
   access: {
-    // Usually restricted to Admins
-    // read: isAdmin,
-    // create: isAdmin,
-    // update: isAdmin,
-    // delete: isAdmin,
-    read: () => true,
-    create: () => true,
-    update: () => true,
-    delete: () => true,
+    read: isAdminOrEventRole([MANAGER, EDITOR, VIEWER]),
+    create: isAdminOrEventRole([MANAGER, EDITOR]),
+    update: isAdminOrEventRole([MANAGER, EDITOR]),
+    delete: isAdminOrEventRole([MANAGER, EDITOR]),
   },
   hooks: {
     // Force code to uppercase for easier case-insensitive lookup

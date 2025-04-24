@@ -17,11 +17,11 @@ const clerkOrPayloadAdminStrategy: AuthStrategy = {
 	 * Tries to log in a user for an incoming request.
 	 *
 	 * How it works:
-	 * 1. **Check Payload Login:** Looks for a Payload cookie or JWT header.
+	 * 1. **Check Payload Admin Login:** Looks for a Payload cookie or JWT header.
 	 *    - If found, tries Payload's own login check (`payload.auth`).
-	 *    - If Payload login works, returns the Payload user.
-	 *    - If Payload login fails (even with cookie/JWT), stops and
-	 *      returns `null` (no user). Clerk is NOT checked.
+	 *    - If Payload login works AND the authenticated user has the 'admin' role (in `clerkRoles`), returns the Payload user.
+	 *    - If Payload login fails, or the user is authenticated but is NOT an admin, stops and
+	 *      returns `null` (no user). Clerk is NOT checked in these Payload auth attempt cases.
 	 * 2. **Check Clerk Login:** If no Payload cookie/JWT was found, looks
 	 *    for a Clerk `Bearer` token in the `Authorization` header.
 	 *    - If found, verifies the token with Clerk.
@@ -57,15 +57,25 @@ const clerkOrPayloadAdminStrategy: AuthStrategy = {
 			const payloadAuthResult = await payload.auth({ headers }); // Pass headers
 
 			if (payloadAuthResult?.user) {
-			  // --- Payload Auth Successful ---
-			  console.log(`Payload strategy authenticated Payload user: ${payloadAuthResult.user.id}`);
-			  // Return the user found by Payload's internal auth
-			  // Ensure the collection slug is included if not already present
-			  const userWithCollection = {
-				 ...payloadAuthResult.user,
-				 collection: payloadAuthResult.user.collection || 'users' // Add collection slug if missing
-			  };
-			  return { user: userWithCollection };
+			  // --- Payload Auth Successful, NOW check for admin role --- 
+			  // Ensure clerkRoles is defined and includes 'admin'
+			  // Note: This relies on clerkRoles being correctly added to the User type and populated.
+			  // Cast to 'any' temporarily if TS complains about clerkRoles before type regeneration
+			  const userIsAdmin = (payloadAuthResult.user as any)?.clerkRoles?.includes('admin');
+			  
+			  if (userIsAdmin) {
+				console.log(`Payload strategy authenticated Payload ADMIN user: ${payloadAuthResult.user.id}`);
+				// Return the user found by Payload's internal auth
+				// Ensure the collection slug is included if not already present
+				const userWithCollection = {
+				  ...payloadAuthResult.user,
+				  collection: payloadAuthResult.user.collection || 'users' // Add collection slug if missing
+				};
+				return { user: userWithCollection };
+			  } else {
+				console.log(`Payload user ${payloadAuthResult.user.id} authenticated but is NOT an admin. Denying login via Payload method.`);
+				return { user: null }; // Deny login for non-admins using Payload auth
+			  }
 			} else {
 			  console.log('Payload auth indicators present, but payload.auth() failed.');
 			  // If Payload indicators were present but auth failed, stop here.

@@ -1,17 +1,11 @@
 import type { CollectionConfig } from 'payload'
-// import { isAdmin } from '../access/isAdmin';
-// import { isAdminOrPublished } from '../access/isAdminOrPublished'; // Requires refinement for non-admin draft visibility
-import { formatSlug } from '../utils/slugify'
-import type { User } from '../payload-types'
+import { formatSlug } from '@/utils/slugify'
 import crypto from 'crypto'
+import { isAdmin } from '@/access/isAdmin';
+import { isAdminOrEventRole } from '@/access/isAdminOrEventRole';
+import { EVENT_ROLES } from '@/types/eventRoles'
 
-interface EventData {
-  title?: string
-  slug?: string
-  id?: string
-  formId?: string | number
-  [key: string]: any
-}
+const { MANAGER, EDITOR, VIEWER } = EVENT_ROLES;
 
 const Events: CollectionConfig = {
   slug: 'events',
@@ -30,10 +24,10 @@ const Events: CollectionConfig = {
     // create: ({ req: { user } }) => Boolean(user), // Needs refinement - check roles/organizer link
     // update: ({ req: { user } }) => Boolean(user?.roles?.includes('admin')), // Needs refinement
     // delete: ({ req: { user } }) => Boolean(user?.roles?.includes('admin')), // Needs refinement
-    read: () => true,
-    create: () => true,
-    update: () => true,
-    delete: () => true,
+    read: isAdminOrEventRole([MANAGER, EDITOR, VIEWER]),
+    create: isAdminOrEventRole([MANAGER, EDITOR]),
+    update: isAdminOrEventRole([MANAGER, EDITOR]),
+    delete: isAdmin,
   },
   hooks: {
     beforeChange: [

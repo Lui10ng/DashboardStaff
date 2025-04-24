@@ -1,4 +1,8 @@
 import type { CollectionConfig } from 'payload'
+import { isAdminOrEventRole } from '@/access/isAdminOrEventRole';
+import { EVENT_ROLES } from '@/types/eventRoles'
+
+const { MANAGER, EDITOR, VIEWER } = EVENT_ROLES;
 
 const Forms: CollectionConfig = {
   slug: 'forms',
@@ -8,10 +12,10 @@ const Forms: CollectionConfig = {
     defaultColumns: ['title', 'eventId', 'description', 'createdAt'],
   },
   access: {
-    read: () => true,
-    create: () => true,
-    update: () => true,
-    delete: () => true,
+    read: isAdminOrEventRole([MANAGER, EDITOR, VIEWER]),
+    create: isAdminOrEventRole([MANAGER, EDITOR]),
+    update: isAdminOrEventRole([MANAGER, EDITOR]),
+    delete: isAdminOrEventRole([MANAGER, EDITOR]),
   },
   fields: [
     {

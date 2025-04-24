@@ -87,23 +87,23 @@ const Organizers: CollectionConfig = {
       }
     },
     // --- User Management Link ---
-    {
-      name: 'managingUsers',
-      label: 'Managing Users',
-      type: 'relationship',
-      relationTo: 'users',
-      hasMany: true,
-      required: false,
-      index: true,
-      access: {
-        // Only Admins can modify who manages the organizer profile
-        // create: isAdmin,
-        // update: isAdmin,
-      },
-      admin: {
-        description: 'Users permitted to manage this organizer profile and their events.',
-      },
-    },
+    // {
+    //   name: 'managingUsers',
+    //   label: 'Managing Users',
+    //   type: 'relationship',
+    //   relationTo: 'users',
+    //   hasMany: true,
+    //   required: false,
+    //   index: true,
+    //   access: {
+    //     // Only Admins can modify who manages the organizer profile
+    //     // create: isAdmin,
+    //     // update: isAdmin,
+    //   },
+    //   admin: {
+    //     description: 'Users permitted to manage this organizer profile and their events.',
+    //   },
+    // },
   ],
   timestamps: true,
 };

@@ -1,7 +1,7 @@
 import { Webhook } from 'svix';
-import type { PayloadRequest } from 'payload';
+import type { User, PayloadRequest } from 'payload';
 import crypto from 'crypto';
-import { USER_ROLES } from '../types/users';
+import { PLATFORM_ROLES } from '@/types/users';
 
 // Get the secret key needed to verify Clerk webhooks.
 // This should be stored securely, usually in environment variables.
@@ -18,7 +18,7 @@ const secret = process.env.CLERK_WEBHOOK_SIGNING_SECRET;
  *    genuinely came from Clerk and hasn't been tampered with.
  * 5. Parses the verified webhook data to understand the event type (like 'user.created').
  * 6. Processes the event based on its type:
- *    - 'user.created': Creates a new User and a related Organizer profile in Payload.
+ *    - 'user.created': Creates a new User in Payload.
  *    - 'user.updated': Finds the existing User in Payload and updates their details.
  *    - 'user.deleted': Finds the existing User in Payload and deletes them.
  * 7. Sends back a standard web Response indicating success or failure.
@@ -103,7 +103,7 @@ export const clerkWebhookHandler = async (req: PayloadRequest): Promise<Response
             case 'user.created':
                 /**
                  * Handles the 'user.created' event from Clerk.
-                 * Creates a corresponding User and Organizer document in Payload.
+                 * Creates a corresponding User in Payload.
                  * Uses a database transaction to ensure both creations succeed or fail together.
                  */
                 console.log(`Processing Clerk event: ${eventType} for Clerk User ID: ${eventData.id}`);
@@ -131,8 +131,8 @@ export const clerkWebhookHandler = async (req: PayloadRequest): Promise<Response
                         email: clerkUser.email_addresses[0].email_address,
                         name: `${clerkUser.first_name || ''} ${clerkUser.last_name || ''}`.trim(),
                         clerkId: clerkUser.id, // Store the Clerk User ID for linking.
-                        roles: [USER_ROLES.ORGANIZER], // Assign a default role.
                         password: randomPassword,
+                        clerkRoles: [PLATFORM_ROLES.ORGANIZER],
                     };
                     // Create the User document in Payload within the transaction.
                     const userDoc = await payload.create({
@@ -143,30 +143,7 @@ export const clerkWebhookHandler = async (req: PayloadRequest): Promise<Response
                     });
                     const payloadUserId = userDoc.id; // Get the ID of the newly created Payload user.
 
-                    // Prepare the data for the new Organizer document.
-                    const organizerData = {
-                        name: payloadUserData.name, // Use the user's name initially.
-                        // Link this organizer to the Payload user created above.
-                        managingUsers: [payloadUserId],
-                    };
-                    // Create the Organizer document in Payload within the same transaction.
-                    const organizerDoc = await payload.create({
-                        collection: 'organizers',
-                        data: organizerData,
-                        req: { transactionID: transactionID },
-                    });
-
-                    const organizerId = organizerDoc.id;
-
-                    // Update the user document with the organizer ID
-                    await payload.update({
-                        collection: 'users',
-                        id: payloadUserId,
-                        data: { organizer: organizerId },
-                        req: { transactionID: transactionID },
-                    });
-
-                    // If both creations were successful, commit (finalize) the transaction.
+                    // Commit (finalize) the transaction.
                     await payload.db.commitTransaction(transactionID);
 
                     console.log(`Successfully created Payload user ${payloadUserId} and organizer for Clerk user ${clerkUser.id}`);
@@ -217,8 +194,8 @@ export const clerkWebhookHandler = async (req: PayloadRequest): Promise<Response
                         const primaryEmail = updatedClerkUser.email_addresses.find(
                             (e: any) => e.id === updatedClerkUser.primary_email_address_id
                         )?.email_address;
-                        // If a primary email exists and it's different from the one in Payload, add it to updateData.
-                        if (primaryEmail && primaryEmail !== payloadUser.email) {
+                        // If a primary email exists, add it to updateData.
+                        if (primaryEmail) {
                            updateData.email = primaryEmail;
                         }
                     }

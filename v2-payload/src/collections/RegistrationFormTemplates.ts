@@ -1,7 +1,8 @@
-// src/collections/RegistrationFormTemplates.ts
 import type { CollectionConfig } from 'payload';
-// import { isAdmin } from '../access/isAdmin'; // Assume only admins manage these templates
-import type { User } from '../payload-types';
+import { isAdminOrEventRole } from '@/access/isAdminOrEventRole';
+import { EVENT_ROLES } from '@/types/eventRoles';
+
+const { MANAGER, EDITOR, VIEWER } = EVENT_ROLES;
 
 // Define a TypeScript interface for your expected form field structure (optional but helpful)
 // This helps ensure consistency in the JSON data and can be shared with the frontend.
@@ -32,10 +33,10 @@ const RegistrationFormTemplates: CollectionConfig = {
     // create: isAdmin,
     // update: isAdmin,
     // delete: isAdmin,
-    read: () => true,
-    create: () => true,
-    update: () => true,
-    delete: () => true,
+    read: isAdminOrEventRole([MANAGER, EDITOR, VIEWER]),
+    create: isAdminOrEventRole([MANAGER, EDITOR]),
+    update: isAdminOrEventRole([MANAGER, EDITOR]),
+    delete: isAdminOrEventRole([MANAGER, EDITOR]),
   },
   fields: [
     {

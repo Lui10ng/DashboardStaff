@@ -1,7 +1,9 @@
-// src/collections/TicketTypes.ts
+import { isAdminOrEventRole } from '@/access/isAdminOrEventRole';
+import { isAdmin } from '@/access/isAdmin';
 import type { CollectionConfig } from 'payload';
-// import { isAdmin } from '../access/isAdmin';
-// import { isEventManagerOrAdmin } from '../access/isEventManagerOrAdmin'; // Access likely depends on parent Event
+import { EVENT_ROLES } from '@/types/eventRoles';
+
+const { MANAGER, EDITOR, VIEWER } = EVENT_ROLES;
 
 const TicketTypes: CollectionConfig = {
   slug: 'ticket-types',
@@ -14,15 +16,10 @@ const TicketTypes: CollectionConfig = {
     // Consider adding filters for Event in the list view
   },
   access: {
-    // read: () => true, // Public needs to see ticket types/prices
-    // Write access controlled by association with the Event (e.g., Event Organizer or Admin)
-    // create: ({ req: { user } }) => Boolean(user), // Placeholder - Implement isEventManagerOrAdmin
-    // update: ({ req: { user } }) => Boolean(user), // Placeholder - Implement isEventManagerOrAdmin
-    // delete: isAdmin,                      // Placeholder - Implement isEventManagerOrAdmin or isAdmin
     read: () => true,
-    create: () => true,
-    update: () => true,
-    delete: () => true,
+    create: isAdminOrEventRole([MANAGER, EDITOR]),
+    update: isAdminOrEventRole([MANAGER, EDITOR]),
+    delete: isAdminOrEventRole([MANAGER, EDITOR]),
   },
   fields: [
     {

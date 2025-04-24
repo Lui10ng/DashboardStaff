@@ -1,6 +1,8 @@
-// src/collections/Venues.ts
 import type { CollectionConfig } from 'payload';
-import type { User } from '../payload-types';
+import { isAdminOrEventRole } from '@/access/isAdminOrEventRole';
+import { EVENT_ROLES } from '@/types/eventRoles';
+
+const { MANAGER, EDITOR, VIEWER } = EVENT_ROLES;
 
 const Venues: CollectionConfig = {
   slug: 'venues',
@@ -14,13 +16,10 @@ const Venues: CollectionConfig = {
   // Access Control Notes:
   // Public read often needed. Create/Update might be admin-only or restricted roles.
   access: {
-    read: () => true, // Public can view venue details
-    create: () => true,
-    update: () => true,
-    delete: () => true,
-    // create: ({ req: { user } }) => user?.roles?.includes('admin'), // Example: Only admins create
-    // update: ({ req: { user } }) => user?.roles?.includes('admin'), // Example: Only admins update
-    // delete: ({ req: { user } }) => user?.roles?.includes('admin'), // Example: Only admins delete
+    read: isAdminOrEventRole([MANAGER, EDITOR, VIEWER]), // Public can view venue details
+    create: isAdminOrEventRole([MANAGER, EDITOR]),
+    update: isAdminOrEventRole([MANAGER, EDITOR]),
+    delete: isAdminOrEventRole([MANAGER, EDITOR]),
   },
   fields: [
     {

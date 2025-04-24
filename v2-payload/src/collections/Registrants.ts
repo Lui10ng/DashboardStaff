@@ -1,8 +1,10 @@
-// src/collections/Registrants.ts
 import type { CollectionConfig } from 'payload';
-// import { isAdmin } from '../access/isAdmin';
-// import { isOwnerOrAdmin_Complex } from '../access/isOwnerOrAdmin_Complex'; // Needs careful implementation for guests/related data
-// import type { User } from '../payload-types';
+import { isAdmin } from '@/access/isAdmin';
+import { isAdminOrEventRole } from '@/access/isAdminOrEventRole';
+import { EVENT_ROLES } from '@/types/eventRoles';
+
+const { MANAGER, EDITOR, VIEWER } = EVENT_ROLES;
+
 
 const Registrants: CollectionConfig = {
   slug: 'registrants',
@@ -26,14 +28,10 @@ const Registrants: CollectionConfig = {
   // - The registered user (if applicable) should see their own submission.
   // - Guests need a secure way (unique link?) to view/manage their submission if allowed.
   access: {
-    // read: ({ req: { user } }) => true, // Placeholder - Needs refinement (e.g., isAdminOrEventOrganiserOrOwner)
-    // create: isAdmin, // Only system/admin creates this programmatically
-    // update: isAdmin, // Restrict updates
-    // delete: isAdmin, // Restrict deletion
-    read: () => true,
-    create: () => true,
-    update: () => true,
-    delete: () => true,
+    read: isAdminOrEventRole([MANAGER, EDITOR, VIEWER]),
+    create: isAdmin,
+    update: isAdmin,
+    delete: isAdmin,
   },
   fields: [
     // --- Links to Context ---

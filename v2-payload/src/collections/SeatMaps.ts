@@ -1,7 +1,9 @@
 // src/collections/SeatMaps.ts
 import type { CollectionConfig } from 'payload';
-// import { isAdmin } from '../access/isAdmin';
-import type { User } from '../payload-types';
+import { isAdminOrEventRole } from '@/access/isAdminOrEventRole';
+import { EVENT_ROLES } from '@/types/eventRoles';
+
+const { MANAGER, EDITOR, VIEWER } = EVENT_ROLES;
 
 const SeatMaps: CollectionConfig = {
   slug: 'seat-maps',
@@ -21,10 +23,10 @@ const SeatMaps: CollectionConfig = {
     // create: isAdmin,
     // update: isAdmin,
     // delete: isAdmin,
-    read: () => true,
-    create: () => true,
-    update: () => true,
-    delete: () => true,
+    read: isAdminOrEventRole([MANAGER, EDITOR, VIEWER]),
+    create: isAdminOrEventRole([MANAGER, EDITOR]),
+    update: isAdminOrEventRole([MANAGER, EDITOR]),
+    delete: isAdminOrEventRole([MANAGER, EDITOR]),
   },
   fields: [
     {

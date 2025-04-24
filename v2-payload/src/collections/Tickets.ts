@@ -1,10 +1,10 @@
-// src/collections/Tickets.ts
 import type { CollectionConfig } from 'payload';
 import { v4 as uuidv4 } from 'uuid'; // For unique ticket codes
-// import { isAdmin } from '../access/isAdmin';
-// Needs complex access control: Owner (user or via Order guest email), Organizer, Check-in Staff, Admin
-// import { isTicketHolderOrAdmin } from '../access/isTicketHolderOrAdmin'; // Example custom access
-import type { User } from '../payload-types';
+
+import { isAdminOrEventRole } from '@/access/isAdminOrEventRole';
+import { EVENT_ROLES } from '@/types/eventRoles';
+
+const { MANAGER, EDITOR } = EVENT_ROLES;
 
 const Tickets: CollectionConfig = {
   slug: 'tickets',
@@ -17,7 +17,7 @@ const Tickets: CollectionConfig = {
     // disableCreation: true, // Tickets generated programmatically from paid Orders
     group: 'Orders & Tickets',
   },
-  // Access Control Notes:
+  // FUTURE Access Control Notes:
   // - Logged-in User (`attendee`) should see their own tickets.
   // - Guests need a secure way (e.g., unique link via email using order details) to view their ticket/QR code.
   // - Organizer for the `event` should see all tickets for that event.
@@ -29,9 +29,9 @@ const Tickets: CollectionConfig = {
     // update: ({ req: { user } }) => user?.roles?.includes('admin') || user?.roles?.includes('check-in-staff'), // Example for check-in
     // delete: isAdmin,
     read: () => true,
-    create: () => true,
-    update: () => true,
-    delete: () => true,
+    create: isAdminOrEventRole([MANAGER, EDITOR]),
+    update: isAdminOrEventRole([MANAGER, EDITOR]),
+    delete: isAdminOrEventRole([MANAGER, EDITOR]),
   },
   hooks: {
     // Generate unique ticket code

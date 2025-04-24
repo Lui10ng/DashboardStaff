@@ -1,8 +1,5 @@
-// src/collections/Orders.ts
 import type { CollectionConfig } from 'payload';
-// import { isAdmin } from '../access/isAdmin';
-// import { isOwnerOrAdmin_Complex } from '../access/isOwnerOrAdmin_Complex'; // Needs custom logic for guests
-import type { User } from '../payload-types';
+import { isAdmin } from '@/access/isAdmin';
 
 const Orders: CollectionConfig = {
   slug: 'orders',
@@ -22,8 +19,8 @@ const Orders: CollectionConfig = {
     // read: isOwnerOrAdmin_Complex('orderedBy', 'guestEmail'), // Custom function needed
     read: () => true,
     create: () => true, // Allow programmatic creation via checkout endpoint (auth handled there)
-    update: () => true,
-    delete: () => true, 
+    update: isAdmin,
+    delete: isAdmin, 
     // update: isAdmin, // Only admins or system processes update orders
     // delete: isAdmin, // Restrict deletion
   },

@@ -1,8 +1,7 @@
-// src/collections/OrganizerPhotos.ts
 import type { CollectionConfig } from 'payload';
 import path from 'path';
-import type { User } from '../payload-types';
 import { fileURLToPath } from 'url';
+import { isAdminOrSelf } from '@/access/isAdminOrSelf';
 
 // Helper to check environment more reliably
 const isDevelopment = process.env.NODE_ENV === 'development';
@@ -29,13 +28,9 @@ const OrganizerPhotos: CollectionConfig = {
   // Write access should be limited, perhaps to managing users of the organizer it's linked from, or admins.
   access: {
     read: () => true, // Public can view images
-    create: () => true,
-    update: () => true,
-    delete: () => true,
-    // Create/Update/Delete might be restricted based on who manages the related Organizer
-    // create: ({ req: { user } }) => Boolean(user), // Logged-in user can upload (needs refinement)
-    // update: ({ req: { user } }) => Boolean(user), // Logged-in user can update alt text (needs refinement)
-    // delete: ({ req: { user } }) => user?.roles?.includes('admin'), // Admins can delete
+    create: isAdminOrSelf,
+    update: isAdminOrSelf,
+    delete: isAdminOrSelf,
   },
   // --- Enable Uploads ---
   upload: {

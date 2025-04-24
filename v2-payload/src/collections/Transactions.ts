@@ -1,9 +1,9 @@
-// src/collections/Transactions.ts
 import type { CollectionConfig } from 'payload';
-// import { isAdmin } from '../access/isAdmin';
-// Access requires checking if user is admin OR if user is linked to the transaction's organizer
-// import { isAdminOrLinkedOrganizer } from '../access/isAdminOrLinkedOrganizer';
-import type { User } from '../payload-types';
+import { isAdminOrEventRole } from '@/access/isAdminOrEventRole';
+import { isAdmin } from '@/access/isAdmin';
+import { EVENT_ROLES } from '@/types/eventRoles';
+
+const { MANAGER } = EVENT_ROLES;
 
 const Transactions: CollectionConfig = {
   slug: 'transactions',
@@ -32,14 +32,10 @@ const Transactions: CollectionConfig = {
   // VERY restricted. Admins see all. Organizers should ONLY see their own transactions.
   // No one should typically create/update/delete via API directly.
   access: {
-    // read: isAdminOrLinkedOrganizer('organizer'), // Custom function: isAdmin or user manages linked organizer
-    // create: isAdmin, // Only system processes (running as admin/trusted) should create transactions
-    // update: () => false, // Prevent updates
-    // delete: isAdmin, // Allow only admins to delete, if ever necessary
-    read: () => true,
-    create: () => true,
-    update: () => true,
-    delete: () => true,
+    read: isAdminOrEventRole([MANAGER]), // Custom function: isAdmin or user manages linked organizer
+    create: isAdmin, // Only system processes (running as admin/trusted) should create transactions
+    update: () => false, // Prevent updates
+    delete: isAdmin, // Allow only admins to delete, if ever necessary
   },
   fields: [
     // --- Core Transaction Details ---

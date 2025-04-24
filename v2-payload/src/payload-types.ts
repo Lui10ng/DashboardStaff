@@ -84,6 +84,7 @@ export interface Config {
     users: User;
     venues: Venue;
     forms: Form;
+    'event-user-roles': EventUserRole;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -114,6 +115,7 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     venues: VenuesSelect<false> | VenuesSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
+    'event-user-roles': EventUserRolesSelect<false> | EventUserRolesSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -309,10 +311,6 @@ export interface Organizer {
    * Select additional photos associated with this organizer.
    */
   photoGallery?: (number | OrganizerPhoto)[] | null;
-  /**
-   * Users permitted to manage this organizer profile and their events.
-   */
-  managingUsers?: (number | User)[] | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -366,33 +364,6 @@ export interface OrganizerPhoto {
       filename?: string | null;
     };
   };
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users".
- */
-export interface User {
-  id: number;
-  name?: string | null;
-  /**
-   * Assign roles that grant specific permissions throughout the application.
-   */
-  roles: ('admin' | 'organizer' | 'attendee' | 'check-in-staff')[];
-  /**
-   * Internal ID linking to the Clerk authentication provider.
-   */
-  clerkId?: string | null;
-  organizer?: (number | null) | Organizer;
-  updatedAt: string;
-  createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  password?: string | null;
 }
 /**
  * Physical locations where events can be held.
@@ -632,6 +603,61 @@ export interface Form {
   createdAt: string;
 }
 /**
+ * Records of ticket purchases (by users or guests) and their status.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "orders".
+ */
+export interface Order {
+  id: number;
+  /**
+   * Link to the user account if the purchase was made while logged in.
+   */
+  orderedBy?: (number | null) | User;
+  guestEmail?: string | null;
+  event: number | Event;
+  items: {
+    ticketType: number | TicketType;
+    quantity: number;
+    pricePerTicket: number;
+    currency: string;
+    subtotal: number;
+    id?: string | null;
+  }[];
+  subtotalAmount?: number | null;
+  promotion?: (number | null) | Promotion;
+  discountAmount?: number | null;
+  /**
+   * Amount donated during checkout (if applicable).
+   */
+  donationAmount?: number | null;
+  finalAmount: number;
+  currency: string;
+  paymentIntentId?: string | null;
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users".
+ */
+export interface User {
+  id: number;
+  name?: string | null;
+  /**
+   * Internal ID linking to the Clerk authentication provider.
+   */
+  clerkId?: string | null;
+  organizer?: (number | null) | Organizer;
+  /**
+   * Roles synced from Clerk. This field is read-only and managed by the authentication system.
+   */
+  clerkRoles?: ('admin' | 'organizer' | 'attendee' | 'check-in-staff')[] | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Define specific ticket tiers for events (e.g., GA, VIP) and their available quantity.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -843,6 +869,20 @@ export interface Transaction {
   createdAt: string;
 }
 /**
+ * Assigns roles to users for specific events.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "event-user-roles".
+ */
+export interface EventUserRole {
+  id: number;
+  event: number | Event;
+  user: number | User;
+  role: 'manager' | 'editor' | 'viewer';
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
@@ -916,6 +956,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'forms';
         value: number | Form;
+      } | null)
+    | ({
+        relationTo: 'event-user-roles';
+        value: number | EventUserRole;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1129,7 +1173,6 @@ export interface OrganizersSelect<T extends boolean = true> {
   logo?: T;
   bannerImage?: T;
   photoGallery?: T;
-  managingUsers?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1274,18 +1317,11 @@ export interface TransactionsSelect<T extends boolean = true> {
  */
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
-  roles?: T;
   clerkId?: T;
   organizer?: T;
+  clerkRoles?: T;
   updatedAt?: T;
   createdAt?: T;
-  email?: T;
-  resetPasswordToken?: T;
-  resetPasswordExpiration?: T;
-  salt?: T;
-  hash?: T;
-  loginAttempts?: T;
-  lockUntil?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1345,6 +1381,17 @@ export interface FormsSelect<T extends boolean = true> {
         submittedAt?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "event-user-roles_select".
+ */
+export interface EventUserRolesSelect<T extends boolean = true> {
+  event?: T;
+  user?: T;
+  role?: T;
   updatedAt?: T;
   createdAt?: T;
 }

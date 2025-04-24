@@ -26,6 +26,7 @@ import Transactions from './collections/Transactions'
 import Users from './collections/Users'
 import Venues from './collections/Venues'
 import Forms from './collections/Forms'
+import UserEventRoles from './collections/UserEventRoles'
 
 import { clerkWebhookHandler } from './webhooks/clerk-webhook';
 
@@ -83,6 +84,7 @@ export default buildConfig({
     Users,
     Venues,
     Forms,
+    UserEventRoles,
   ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',

@@ -1,12 +1,12 @@
 // Define Roles - use const for consistency
-const USER_ROLES = {
+const PLATFORM_ROLES = {
   ADMIN: 'admin',
   ORGANIZER: 'organizer',
   ATTENDEE: 'attendee',
   CHECK_IN_STAFF: 'check-in-staff',
 } as const;
 
-type UserRole = typeof USER_ROLES[keyof typeof USER_ROLES];
+type UserRole = typeof PLATFORM_ROLES[keyof typeof PLATFORM_ROLES];
 
-export { USER_ROLES };
+export { PLATFORM_ROLES };
 export type { UserRole };
