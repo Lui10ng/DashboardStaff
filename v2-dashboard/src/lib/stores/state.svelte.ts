@@ -20,3 +20,7 @@ export const voucherDrawer = $state({
 export const themeDrawer = $state({
 	open: false
 });
+
+export const stateEditEvent = $state({
+	open: false
+});

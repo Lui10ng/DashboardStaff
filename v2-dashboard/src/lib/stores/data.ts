@@ -25,6 +25,29 @@ export const navItems = (eventId: string) => [
 	}
 ];
 
+export const navEditEvents = (eventId: string) => [
+	{
+		path: `/${eventId}/edit/details`,
+		label: 'Edit Details',
+		tab: 'details'
+	},
+	{
+		path: `/${eventId}/edit/visuals`,
+		label: 'Visual',
+		tab: 'visual'
+	},
+	{
+		path: `/${eventId}/edit/contacts`,
+		label: 'Contacts',
+		tab: 'contacts'
+	},
+	{
+		path: `/${eventId}/edit/instructions`,
+		label: 'Registration Instructions',
+		tab: 'instructions'
+	}
+];
+
 export const guestList = [
 	{
 		id: '1',
