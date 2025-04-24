@@ -1,53 +1,26 @@
 <script lang="ts">
-    export let showVouchers: boolean; // Receive the state from the parent
-    export let toggleVouchers: () => void; // Receive the toggle function
-  
-    const toggleText = showVouchers ? 'Hide Vouchers' : 'Show Vouchers';
-  </script>
-  
-  <button
-    aria-label={toggleText}
-    type="button"
-    class="toggle-button relative h-6 w-10 rounded-full bg-gray-400 p-0.5 transition-colors"
-    Onclick={toggleVouchers}
-  >
-    <span
-      class="pointer-events-none absolute left-0 top-0.5 h-5 w-5 rounded-full bg-white shadow-md transition-all duration-300"
-      style={showVouchers ? 'transform: translateX(100%);' : 'transform: translateX(0);'}
-    ></span>
-    <span
-      class="absolute left-1.5 top-1.5 text-xs font-medium text-gray-700 transition-opacity duration-100"
-      style={showVouchers ? 'opacity: 0;' : 'opacity: 1;'}
-    >
-    </span>
-    <span
-      class="absolute right-1.5 top-1.5 text-xs font-medium text-gray-700 transition-opacity duration-100"
-      style={showVouchers ? 'opacity: 1;' : 'opacity: 0;'}
-    >
-    </span>
-  </button>
-  
-  <style>
-    .toggle-button {
-      /* Base styles for the toggle */
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-    }
-  
-    /* Specific styles for the indicator (the circle) */
-    .toggle-button span:first-child {
-      /* Position the indicator */
-    }
-  
-    /* Styles for the "Show" text */
-    .toggle-button span:nth-child(2) {
-      /* Position and style the "Show" text */
-    }
-  
-    /* Styles for the "Hide" text */
-    .toggle-button span:nth-child(3) {
-      /* Position and style the "Hide" text */
-    }
-  </style>
+	// Props for the component
+	interface $$Props {
+		enabled: boolean;
+		onChange: () => void;
+	}
+
+	export let enabled: boolean;
+	export let onChange: () => void;
+</script>
+
+<div class="flex items-center">
+	<button
+		aria-labelledby="VoucherToggleLabel"
+		class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
+		class:bg-gray-500={enabled}
+		class:bg-gray-400={!enabled}
+		Onclick={onChange}
+	>
+		<span
+			class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+			class:translate-x-6={enabled}
+			class:translate-x-1={!enabled}
+		></span>
+	</button>
+</div>
