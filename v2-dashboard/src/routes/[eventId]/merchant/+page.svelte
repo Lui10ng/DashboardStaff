@@ -449,6 +449,7 @@
 												<div class="flex gap-2">
 													{#each colors as color}
 														<button
+															type="button"
 															class="h-8 w-8 rounded-full border-2 transition-all"
 															style="background-color: {color}; border-color: {selectedColor ===
 															color
@@ -1193,6 +1194,7 @@
 									<div class="flex gap-2">
 										{#each colors as color}
 											<button
+												type="button"
 												class="h-8 w-8 rounded-full border-2 transition-all"
 												style="background-color: {color}; border-color: {selectedColor === color
 													? 'black'
