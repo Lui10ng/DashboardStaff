@@ -15,29 +15,17 @@
 		return $page.url.pathname.includes(path) ? 'bg-primary text-white' : '';
 	};
 
-	let startTime: string | null = $state(null);
-	let endTime: string | null = $state(null);
-	let startDate: Date | null = $state(null);
-	let endDate: Date | null = $state(null);
+	const handleActiveEditEventNav = (path: string) => {
+		return $page.url.pathname.includes(path) ? 'bg-primary text-white' : '';
+	};
 
 	$effect(() => {
-		startTime = getTimeFromISO(event.startTime);
-		endTime = getTimeFromISO(event.endTime);
-		startDate = getDateFromISO(event.startTime);
-		endDate = getDateFromISO(event.endTime);
+		if ($page.url.pathname.includes('edit')) {
+			stateEditEvent.open = true;
+		} else {
+			stateEditEvent.open = false;
+		}
 	});
-	function getDateFromISO(isoString: string): Date {
-		const date = new Date(isoString);
-		date.setHours(0, 0, 0, 0); // Optional: zero out time
-		return date;
-	}
-	function getTimeFromISO(isoString) {
-		const date = new Date(isoString);
-		// Convert to local time and extract hours and minutes
-		const hours = date.getHours().toString().padStart(2, '0');
-		const minutes = date.getMinutes().toString().padStart(2, '0');
-		return `${hours}:${minutes}`;
-	}
 
 	const handleEditEvent = async () => {
 		stateEditEvent.open = true;
