@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
 	import Drawer from '$lib/components/ui/Drawer.svelte';
-	import { ticketStore, voucherStore } from '$lib/stores';
+	import { voucherStore } from '$lib/stores';
 	import { Tabs } from 'bits-ui';
 	import { seatGeneratorStore } from '$lib/stores/seat-generator.svelte';
 	import type { SeatConfig as SeatConfigType } from '$lib/types/seat-generator';
@@ -20,13 +20,26 @@
 	import SeatStats from '$lib/components/seat-generator/SeatStats.svelte';
 	import VenueImageUpload from '$lib/components/seat-generator/VenueImageUpload.svelte';
 	import VoucherToggle from '$lib/components/ui/VoucherToggle.svelte';
-	import Ticket from '$lib/components/merchant/Ticket.svelte';
-	import TicketCard from '$lib/components/merchant/TicketCard.svelte';
 	import Donation from '$lib/components/merchant/Donation.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
+	import { superForm } from 'sveltekit-superforms';
+	import PaymentToggle from '$lib/components/ui/PaymentToggle.svelte';
+	import type { TicketProps } from '$lib/types';
+	import { formatDate } from '$lib/utils/datetime.js';
+	import { editTicketDrawer } from '$lib/stores/state.svelte';
 
 	// Get server data
 	let { data } = $props();
+
+	const ticketList: TicketProps[] = $derived(data.ticketData);
+
+	const { form, errors, enhance, delayed, message } = superForm(data.form);
+
+	message.subscribe(async (msg) => {
+		if (msg && msg.success) {
+			ticketDrawer.open = false;
+		}
+	});
 
 	const TicketdrawerState = $derived(ticketDrawer.open);
 	const VoucherdrawerState = $derived(voucherDrawer.open);
@@ -54,31 +67,40 @@
 	let selectedVoucherStatus = $state<VoucherStatus | ''>('');
 
 	let isActive = $state(true);
-    let isSingleUse = $state(false);
-    let voucherCode = $state('');
+	let isSingleUse = $state(false);
+	let voucherCode = $state('');
 
-    const generateVoucherCode = () => {
-        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        let result = '';
-        for (let i = 0; i < 6; i++) {
-            result += characters.charAt(Math.floor(Math.random() * characters.length));
-        }
-        voucherCode = result;
-    };
+	const colors = ['#0066FF', '#F7D002', '#0FBA81', '#4B7B3B', '#DF4D60'];
+	let selectedColor = $state('#0FBA81');
+
+	let selectedTicket = $state<TicketProps>();
+
 	// Add the arrays here
 	const ticketFilterItems = ['active', 'disabled'] as const;
 	const voucherFilterItems = ['active', 'deactivated', 'expired'] as const;
 
+	const ticketBorderColors = ['black', 'green', 'yellow', 'red'];
+	let isActivePayment = $state(false);
+
+	const generateVoucherCode = () => {
+		const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+		let result = '';
+		for (let i = 0; i < 6; i++) {
+			result += characters.charAt(Math.floor(Math.random() * characters.length));
+		}
+		voucherCode = result;
+	};
+
 	const getTicketSelectionText = (selected: string[]) => {
-        if (selected.includes('all')) {
-            return 'All Tickets';
-        } else if (selected.length > 1) {
-            return `${selected.length} Tickets Selected`;
-        } else if (selected.length === 1) {
-            return selected[0];
-        }
-        return 'Select Tickets';
-    };
+		if (selected.includes('all')) {
+			return 'All Tickets';
+		} else if (selected.length > 1) {
+			return `${selected.length} Tickets Selected`;
+		} else if (selected.length === 1) {
+			return selected[0];
+		}
+		return 'Select Tickets';
+	};
 
 	// Update the handler functions to remove Clear Filter logic
 	const handleTicketFilterSelect = (event: CustomEvent<string>) => {
@@ -88,44 +110,41 @@
 	const handleVoucherFilterSelect = (event: CustomEvent<string>) => {
 		selectedVoucherStatus = event.detail as VoucherStatus;
 	};
-	$effect(() => {
-		ticketStore.set(data.tickets);
-	});
 
 	$effect(() => {
 		voucherStore.set(data.vouchers);
 	});
-	
-// Update the selectedTickets state declaration
-let selectedTickets: string[] = $state([]);
 
-// Update the handleTicketSelection function to handle multiple selections
-const handleTicketSelection = (event: Event) => {
-    const select = event.target as HTMLSelectElement;
-    const selectedOptions = Array.from(select.selectedOptions).map(option => option.value);
-    
-    if (selectedOptions.includes('all')) {
-        // If 'all' is selected, deselect other options
-        selectedTickets = ['all'];
-        Array.from(select.options).forEach(option => {
-            if (option.value !== 'all') {
-                option.selected = false;
-            }
-        });
-    } else if (selectedOptions.length > 0) {
-        // For multiple selections, deselect 'all' if it was previously selected
-        const allOption = select.querySelector('option[value="all"]') as HTMLOptionElement;
-        if (allOption) {
-            allOption.selected = false;
-        }
-        // Store the selected ticket IDs
-        selectedTickets = selectedOptions;
-    } else {
-        // If nothing is selected, default to showing all tickets
-        selectedTickets = ['all'];
-    }
-    console.log('Selected tickets:', selectedTickets);
-};
+	// Update the selectedTickets state declaration
+	let selectedTickets: string[] = $state([]);
+
+	// Update the handleTicketSelection function to handle multiple selections
+	const handleTicketSelection = (event: Event) => {
+		const select = event.target as HTMLSelectElement;
+		const selectedOptions = Array.from(select.selectedOptions).map((option) => option.value);
+
+		if (selectedOptions.includes('all')) {
+			// If 'all' is selected, deselect other options
+			selectedTickets = ['all'];
+			Array.from(select.options).forEach((option) => {
+				if (option.value !== 'all') {
+					option.selected = false;
+				}
+			});
+		} else if (selectedOptions.length > 0) {
+			// For multiple selections, deselect 'all' if it was previously selected
+			const allOption = select.querySelector('option[value="all"]') as HTMLOptionElement;
+			if (allOption) {
+				allOption.selected = false;
+			}
+			// Store the selected ticket IDs
+			selectedTickets = selectedOptions;
+		} else {
+			// If nothing is selected, default to showing all tickets
+			selectedTickets = ['all'];
+		}
+		console.log('Selected tickets:', selectedTickets);
+	};
 	const getStatusColor = (status: string) => {
 		if (status === 'Active') return 'bg-green-500';
 		else if (status === 'Expired') return 'bg-red-500';
@@ -134,13 +153,11 @@ const handleTicketSelection = (event: Event) => {
 	};
 
 	const getStatusTextColor = (status: string) => {
-		if (status === 'Active') return 'text-green-500';
-		if (status === 'Expired') return 'text-red-500';
-		if (status === 'Deactivated') return 'text-gray-500';
+		if (status === 'active') return 'text-green-500';
+		if (status === 'expired') return 'text-red-500';
+		if (status === 'inactive') return 'text-gray-500';
 		return 'text-gray-400';
 	};
-
-	const ticketBorderColors = ['black', 'green', 'yellow', 'red'];
 
 	const getTicketColor = (index: number) => {
 		return ticketBorderColors[index % ticketBorderColors.length];
@@ -169,6 +186,15 @@ const handleTicketSelection = (event: Event) => {
 	const handleVoucherDrawer = () => {
 		return (voucherDrawer.open = true);
 	};
+
+	function handleTogglePayment(value: boolean) {
+		isActivePayment = value;
+	}
+
+	const handleEditTicket = (ticket: TicketProps) => {
+		selectedTicket = ticket;
+		editTicketDrawer.open = true;
+	};
 </script>
 
 <div class="space-y-8" in:fly={{ y: -50, duration: 200 }}>
@@ -182,7 +208,7 @@ const handleTicketSelection = (event: Event) => {
 				<span class="mr-1 inline-block h-2 w-2 rounded-full bg-green-500"></span>
 				<span class="text-xs text-gray-500">Test Mode Active</span>
 			</div>
-			<div class="mt-2 text-xs text-gray-500 md:mt-0 md:ml-2">
+			<div class="mt-2 text-xs text-gray-500 md:ml-2 md:mt-0">
 				Transactions will be logged as "test transaction".
 				<a href="#contactus" class="text-blue-600 hover:underline">Contact us here</a> to enable receiving
 				live payments.
@@ -205,7 +231,7 @@ const handleTicketSelection = (event: Event) => {
 		<Tabs.List class="flex space-x-4 border-b border-gray-200">
 			<Tabs.Trigger
 				value="tickets"
-				class="border-b-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none data-[state=active]:border-[#DF4D60] data-[state=active]:text-[#DF4D60] data-[state=inactive]:border-transparent data-[state=inactive]:text-gray-500 data-[state=inactive]:hover:border-gray-300 data-[state=inactive]:hover:text-gray-700"
+				class="border-b-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none data-[state=active]:border-[#DF4D60] data-[state=inactive]:border-transparent data-[state=active]:text-[#DF4D60] data-[state=inactive]:text-gray-500 data-[state=inactive]:hover:border-gray-300 data-[state=inactive]:hover:text-gray-700"
 				aria-label="Switch to Tickets tab"
 			>
 				<div class="flex items-center">
@@ -216,7 +242,7 @@ const handleTicketSelection = (event: Event) => {
 
 			<Tabs.Trigger
 				value="donations"
-				class="border-b-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none data-[state=active]:border-[#DF4D60] data-[state=active]:text-[#DF4D60] data-[state=inactive]:border-transparent data-[state=inactive]:text-gray-500 data-[state=inactive]:hover:border-gray-300 data-[state=inactive]:hover:text-gray-700"
+				class="border-b-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none data-[state=active]:border-[#DF4D60] data-[state=inactive]:border-transparent data-[state=active]:text-[#DF4D60] data-[state=inactive]:text-gray-500 data-[state=inactive]:hover:border-gray-300 data-[state=inactive]:hover:text-gray-700"
 				aria-label="Switch to Donations tab"
 			>
 				<div class="flex items-center">
@@ -227,7 +253,7 @@ const handleTicketSelection = (event: Event) => {
 
 			<Tabs.Trigger
 				value="store"
-				class="border-b-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none data-[state=active]:border-[#DF4D60] data-[state=active]:text-[#DF4D60] data-[state=inactive]:border-transparent data-[state=inactive]:text-gray-500 data-[state=inactive]:hover:border-gray-300 data-[state=inactive]:hover:text-gray-700"
+				class="border-b-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none data-[state=active]:border-[#DF4D60] data-[state=inactive]:border-transparent data-[state=active]:text-[#DF4D60] data-[state=inactive]:text-gray-500 data-[state=inactive]:hover:border-gray-300 data-[state=inactive]:hover:text-gray-700"
 				aria-label="Switch to Store tab"
 			>
 				<div class="flex items-center">
@@ -243,12 +269,12 @@ const handleTicketSelection = (event: Event) => {
 				<h2 class="text-xl font-semibold">Tickets</h2>
 				<div class="flex gap-2">
 					<DropdownMenu
-					icon="fa-solid fa-filter"
-					className={selectedTicketStatus ? " p-2" : "p-2 rounded"}
-					items={ticketFilterItems}
-					alignContent="end"
-					Onselect={handleTicketFilterSelect}
-				  />
+						icon="fa-solid fa-filter"
+						className={selectedTicketStatus ? ' p-2' : 'p-2 rounded'}
+						items={ticketFilterItems}
+						alignContent="end"
+						Onselect={handleTicketFilterSelect}
+					/>
 					<Button
 						label="Add Ticket"
 						icon="fa-solid fa-plus text-sm"
@@ -256,15 +282,15 @@ const handleTicketSelection = (event: Event) => {
 						onClick={() => handleTicketDrawer()}
 					/>
 					<Drawer
-					isOpen={TicketdrawerState}
-					contentBaseClass="bg-white p-4 space-y-4 shadow-xl w-full h-[90vh] rounded-t-xl overflow-y-auto"
-					alignment="items-end"
-					positionIn={{ y: 600, duration: 200 }}
-					positionOut={{ y: 600, duration: 200 }}
-					title="Add Ticket"
-				>
-				<div class="w-full">
-					<p class="text-gray-500 text-sm mb-6">Please fill up your ticket information</p>
+						isOpen={TicketdrawerState}
+						contentBaseClass="bg-white p-4 space-y-4 shadow-xl w-full h-[90vh] rounded-t-xl overflow-y-auto"
+						alignment="items-end"
+						positionIn={{ y: 600, duration: 200 }}
+						positionOut={{ y: 600, duration: 200 }}
+						title="Add Ticket"
+					>
+						<div class="w-full">
+							<p class="mb-6 text-sm text-gray-500">Please fill up your ticket information</p>
 							<Tabs.Root
 								value={seatGeneratorStore.activeTab}
 								onValueChange={(value: string) =>
@@ -274,7 +300,7 @@ const handleTicketSelection = (event: Event) => {
 								<Tabs.List class="flex space-x-4 border-b border-gray-200">
 									<Tabs.Trigger
 										value="ticket"
-										class="border-b-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none data-[state=active]:border-[#DF4D60] data-[state=active]:text-[#DF4D60] data-[state=inactive]:border-transparent data-[state=inactive]:text-gray-500 data-[state=inactive]:hover:border-gray-300 data-[state=inactive]:hover:text-gray-700"
+										class="border-b-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none data-[state=active]:border-[#DF4D60] data-[state=inactive]:border-transparent data-[state=active]:text-[#DF4D60] data-[state=inactive]:text-gray-500 data-[state=inactive]:hover:border-gray-300 data-[state=inactive]:hover:text-gray-700"
 										aria-label="Switch to Ticket tab"
 										tabindex={0}
 									>
@@ -286,7 +312,7 @@ const handleTicketSelection = (event: Event) => {
 
 									<Tabs.Trigger
 										value="reserve-seating"
-										class="border-b-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none data-[state=active]:border-[#DF4D60] data-[state=active]:text-[#DF4D60] data-[state=inactive]:border-transparent data-[state=inactive]:text-gray-500 data-[state=inactive]:hover:border-gray-300 data-[state=inactive]:hover:text-gray-700"
+										class="border-b-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none data-[state=active]:border-[#DF4D60] data-[state=inactive]:border-transparent data-[state=active]:text-[#DF4D60] data-[state=inactive]:text-gray-500 data-[state=inactive]:hover:border-gray-300 data-[state=inactive]:hover:text-gray-700"
 										aria-label="Switch to Reserve Seating tab"
 										tabindex={0}
 									>
@@ -299,7 +325,176 @@ const handleTicketSelection = (event: Event) => {
 
 								<Tabs.Content value="ticket">
 									<div class="mx-auto max-w-xl p-8">
-										<Ticket />
+										<form action="?/createTicket" method="POST" use:enhance>
+											<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+												<div class="space-y-6">
+													<div>
+														<label for="ticket" class="mb-2 block text-sm">Ticket Name</label>
+														<input
+															type="text"
+															name="ticketName"
+															placeholder="Enter ticket name"
+															class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
+														/>
+														{#if $errors.ticketName}
+															<p class="text-primary text-sm">
+																{$errors.ticketName}
+															</p>
+														{/if}
+													</div>
+													<div>
+														<label for="price" class="mb-2 block text-sm">Price</label>
+														<input
+															type="number"
+															name="price"
+															placeholder="Enter ticket price"
+															class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
+														/>
+														{#if $errors.price}
+															<p class="text-primary text-sm">
+																{$errors.price}
+															</p>
+														{/if}
+													</div>
+													<div>
+														<label for="validfrom" class="mb-2 block text-sm"
+															>Valid from (DD/MM/YYYY)</label
+														>
+														<DatePicker name="validfrom" className="" />
+														{#if $errors.validfrom}
+															<p class="text-primary text-sm">
+																{$errors.validfrom}
+															</p>
+														{/if}
+													</div>
+													<div>
+														<label for="valid-in" class="mb-2 block text-sm"
+															>Valid to (DD/MM/YYYY)</label
+														>
+														<DatePicker name="validto" className="" />
+														{#if $errors.validto}
+															<p class="text-primary text-sm">
+																{$errors.validto}
+															</p>
+														{/if}
+													</div>
+												</div>
+												<div class="space-y-6">
+													<div>
+														<label for="quantity" class="mb-2 block text-sm">
+															Available For Sale</label
+														>
+														<input
+															type="number"
+															name="quantity"
+															placeholder="Enter quantity"
+															class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
+														/>
+														{#if $errors.quantity}
+															<p class="text-primary text-sm">
+																{$errors.quantity}
+															</p>
+														{/if}
+													</div>
+													<div>
+														<label for="quantity" class="mb-2 block text-sm"
+															>Min Order Quantity</label
+														>
+														<input
+															type="number"
+															name="minOrderQuantity"
+															placeholder="Enter min quantity"
+															class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
+														/>
+														{#if $errors.minOrderQuantity}
+															<p class="text-primary text-sm">
+																{$errors.minOrderQuantity}
+															</p>
+														{/if}
+													</div>
+													<div>
+														<label for="quantity" class="mb-2 block text-sm"
+															>Max Order Quantity</label
+														>
+														<input
+															type="number"
+															name="maxOrderQuantity"
+															placeholder="Enter max quantity"
+															class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
+														/>
+														{#if $errors.maxOrderQuantity}
+															<p class="text-primary text-sm">
+																{$errors.maxOrderQuantity}
+															</p>
+														{/if}
+													</div>
+
+													<div>
+														<label for="activePayment" class="mb-2 block text-sm"
+															>Active payment</label
+														>
+														<PaymentToggle value={isActivePayment} OnChange={handleTogglePayment} />
+													</div>
+												</div>
+											</div>
+
+											<div>
+												<label for="Label-color" class="my-4 block text-sm">Label Color</label>
+												<div
+													class="mb-3 rounded-md p-3 text-center text-white"
+													style="background-color: {selectedColor}"
+												>
+													{selectedColor}
+												</div>
+												<div class="flex gap-2">
+													{#each colors as color}
+														<button
+															class="h-8 w-8 rounded-full border-2 transition-all"
+															style="background-color: {color}; border-color: {selectedColor ===
+															color
+																? 'black'
+																: 'transparent'}"
+															onclick={() => (selectedColor = color)}
+															aria-label="Select color {color}"
+														></button>
+													{/each}
+
+													<label
+														class="relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-2 border-gray-500"
+													>
+														<input
+															class="absolute right-0 top-0 hidden"
+															type="color"
+															name="color"
+															bind:value={selectedColor}
+														/>
+														+
+													</label>
+												</div>
+
+												{#if $errors.color}
+													<p class="text-primary text-sm">
+														{$errors.color}
+													</p>
+												{/if}
+											</div>
+
+											<div class="mt-8 grid grid-cols-2 gap-4">
+												<Button
+													onClick={() => {}}
+													type="submit"
+													label="Save Ticket"
+													className="bg-[#DF4D60] text-white p-2 rounded-md"
+												/>
+												<Button
+													onClick={() => {
+														ticketDrawer.open = false;
+													}}
+													label="Cancel"
+													className="border border-gray-300 text-gray-700 p-2 rounded-md"
+												/>
+											</div>
+										</form>
 									</div>
 								</Tabs.Content>
 
@@ -336,10 +531,60 @@ const handleTicketSelection = (event: Event) => {
 					</Drawer>
 				</div>
 			</div>
-			<TicketCard />
+
+			<div class="flex gap-4 overflow-x-auto pb-4">
+				{#if ticketList}
+					{#each ticketList as ticket, index}
+						<div
+							class="border-l-10 min-w-[298px] flex-shrink-0 rounded-lg border border-gray-400"
+							style="border-left-color: {ticket.color};"
+						>
+							<div class="p-4">
+								<div class="mb-1 text-xs text-gray-500">
+									Valid from {formatDate(ticket.salesStart)} to {formatDate(ticket.salesEnd)}
+								</div>
+								<div class="flex justify-between">
+									<div class="font-medium">{ticket.name}</div>
+									<div class="flex gap-1">
+										<span
+											class="inline-flex items-center rounded-full px-2 py-1 text-xs {getStatusTextColor(
+												ticket.status
+											)}"
+										>
+											{ticket.status}
+										</span>
+										<Button
+											onClick={() => handleEditTicket(ticket)}
+											icon="fa-solid fa-pen-to-square"
+											className="text-xs text-gray-400 hover:text-primary p-1"
+										/>
+										<Button
+											onClick={() => {}}
+											icon="fa-regular fa-trash-can"
+											className="text-xs text-gray-400 hover:text-primary p-1"
+										/>
+									</div>
+								</div>
+								<div class="mb-4 mt-2 text-lg font-bold">₱{ticket.price}</div>
+								<div class="space-y-1">
+									<div class="flex justify-between text-xs">
+										<p>0/{ticket.quantityAvailable} Sold</p>
+									</div>
+									<div class="h-1.5 w-full rounded-full bg-gray-200">
+										<div
+											class="h-1.5 rounded-full"
+											style="width: 0%; background-color: {ticket.color};"
+										></div>
+									</div>
+								</div>
+							</div>
+						</div>
+					{/each}
+				{/if}
+			</div>
 
 			<!-- Voucher Toggle Section -->
-			<div class="mt-4 mb-4 flex items-center justify-between">
+			<div class="mb-4 mt-4 flex items-center justify-between">
 				<div class="flex items-center gap-4">
 					<h2 class="text-xl font-semibold">Vouchers</h2>
 					<VoucherToggle enabled={voucherEnabled} onChange={toggleVouchers} />
@@ -347,279 +592,329 @@ const handleTicketSelection = (event: Event) => {
 				{#if voucherEnabled}
 					<div class="flex gap-2">
 						<DropdownMenu
-						icon="fa-solid fa-filter"
-						className={selectedVoucherStatus ? "p-2" : "p-2 rounded"}
-						items={voucherFilterItems}
-						alignContent="end"
-						Onselect={handleVoucherFilterSelect}
-					  />
-					  <Button
-						onClick={handleVoucherDrawer}
-						label="Add Voucher"
-						icon="fa-solid fa-plus text-sm"
-						className="bg-gray-200 px-4 py-2 rounded-md"
-					/>
+							icon="fa-solid fa-filter"
+							className={selectedVoucherStatus ? 'p-2' : 'p-2 rounded'}
+							items={voucherFilterItems}
+							alignContent="end"
+							Onselect={handleVoucherFilterSelect}
+						/>
+						<Button
+							onClick={handleVoucherDrawer}
+							label="Add Voucher"
+							icon="fa-solid fa-plus text-sm"
+							className="bg-gray-200 px-4 py-2 rounded-md"
+						/>
 					</div>
 				{/if}
 			</div>
 			<Drawer
-			isOpen={VoucherdrawerState}
-			contentBaseClass="bg-white p-4 space-y-6 shadow-xl w-full h-[90vh] rounded-t-xl overflow-y-auto"
-			alignment="items-end"
-			positionIn={{ y: 600, duration: 200 }}
-			positionOut={{ y: 600, duration: 200 }}
-		>
-			<div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
-				<!-- Left Column - Form -->
-				<div class="space-y-6">
-					<div class="border-gray-200 pb-4">
-						<h2 class="text-xl font-semibold">Add Voucher</h2>
-						<p class="text-sm text-gray-500">Please fill up your voucher information</p>
-					</div>
-		
-					<div class="space-y-4">
-						<!-- Form inputs -->
-						<div>
-							<label for="voucher-name" class="mb-2 block text-sm">Voucher Name</label>
-							<input
-								type="text"
-								id="voucher-name"
-								placeholder="Enter voucher name"
-								class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
-							/>
+				isOpen={VoucherdrawerState}
+				contentBaseClass="bg-white p-4 space-y-6 shadow-xl w-full h-[90vh] rounded-t-xl overflow-y-auto"
+				alignment="items-end"
+				positionIn={{ y: 600, duration: 200 }}
+				positionOut={{ y: 600, duration: 200 }}
+			>
+				<div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
+					<!-- Left Column - Form -->
+					<div class="space-y-6">
+						<div class="border-gray-200 pb-4">
+							<h2 class="text-xl font-semibold">Add Voucher</h2>
+							<p class="text-sm text-gray-500">Please fill up your voucher information</p>
 						</div>
-		
-						<div>
-							<label for="discount-amount" class="mb-2 block text-sm">Discount amount</label>
-							<input
-								type="text"
-								id="discount-amount"
-								placeholder="e.g., 50 or 10%"
-								class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
-							/>
-						</div>
-		
-						<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+
+						<div class="space-y-4">
+							<!-- Form inputs -->
 							<div>
-								<label for="quantity" class="mb-2 block text-sm">Quantity</label>
+								<label for="voucher-name" class="mb-2 block text-sm">Voucher Name</label>
 								<input
-									type="number"
-									id="quantity"
-									placeholder="Enter quantity"
+									type="text"
+									id="voucher-name"
+									placeholder="Enter voucher name"
 									class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
 								/>
 							</div>
+
 							<div>
-								<label for="limit-bulk-quantity" class="mb-2 block text-sm">Limit Bulk Quantity</label>
+								<label for="discount-amount" class="mb-2 block text-sm">Discount amount</label>
 								<input
-									type="number"
-									id="limit-bulk-quantity"
-									placeholder="Enter quantity"
+									type="text"
+									id="discount-amount"
+									placeholder="e.g., 50 or 10%"
 									class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
 								/>
 							</div>
-						</div>
-		
-						<div>
-							<label for="expiry" class="mb-2 block text-sm">Expiry</label>
-							<DatePicker
-								name="expiry"
-								className="rounded-md border-none bg-[#F8F9FC] p-3 text-sm w-fit"
-							/>
-						</div>
-		
-						<div>
-							<label for="select-ticket" class="mb-2 flex text-sm">Select Ticket</label>
-							<DropdownMenu
-								buttonText={getTicketSelectionText(selectedTickets)}
-								className="w-full justify-between rounded-md border border-gray-200 bg-white px-4 py-2 text-sm hover:border-[#DF4D60]"
-								items={['all', ...$ticketStore.map(ticket => ticket.name)]}
-								multiple={true}
-								alignContent="start"
-								on:select={(event) => {
-									const selected = event.detail;
-									if (selected.includes('all')) {
-										selectedTickets = ['all'];
-									} else {
-										selectedTickets = selected;
-									}
-								}}
-							/>
-						</div>
-		
-						<!-- Toggles and Helper Text -->
-						<div class="mt-4 space-y-4">
-							<!-- Toggles -->
-							<div class="flex flex-col gap-4 sm:flex-row sm:gap-8">
-								<!-- Active Voucher -->
-								<div class="flex items-center justify-between sm:justify-start sm:space-x-4">
-									<label for="activevoucher" class="text-sm">Active Voucher</label>
-									<div class="relative inline-flex items-center">
-										<input
-											type="checkbox"
-											bind:checked={isActive}
-											class="peer sr-only"
-											id="active-toggle"
-										/>
-										<label
-											for="active-toggle"
-											class="peer h-6 w-11 cursor-pointer rounded-full bg-gray-200 transition-colors hover:bg-gray-300 peer-checked:bg-[#DF4D60] peer-checked:hover:bg-[#DF4D60]/90"
-										>
-											<span class="absolute left-[2px] top-[2px] h-5 w-5 rounded-full bg-white transition-all peer-checked:left-[22px]"></span>
-										</label>
-									</div>
+
+							<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+								<div>
+									<label for="quantity" class="mb-2 block text-sm">Quantity</label>
+									<input
+										type="number"
+										id="quantity"
+										placeholder="Enter quantity"
+										class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
+									/>
 								</div>
-		
-								<!-- Single Use -->
-								<div class="flex items-center justify-between sm:justify-start sm:space-x-4">
-									<label for="singleuse" class="text-sm">Single Use</label>
-									<div class="relative inline-flex items-center">
-										<input
-											type="checkbox"
-											bind:checked={isSingleUse}
-											class="peer sr-only"
-											id="single-use-toggle"
-										/>
-										<label
-											for="single-use-toggle"
-											class="peer h-6 w-11 cursor-pointer rounded-full bg-gray-200 transition-colors hover:bg-gray-300 peer-checked:bg-[#DF4D60] peer-checked:hover:bg-[#DF4D60]/90"
-										>
-											<span class="absolute left-[2px] top-[2px] h-5 w-5 rounded-full bg-white transition-all peer-checked:left-[22px]" ></span>
-										</label>
-									</div>
+								<div>
+									<label for="limit-bulk-quantity" class="mb-2 block text-sm"
+										>Limit Bulk Quantity</label
+									>
+									<input
+										type="number"
+										id="limit-bulk-quantity"
+										placeholder="Enter quantity"
+										class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
+									/>
 								</div>
 							</div>
-		
-							<!-- Helper Text -->
-							<div class="space-y-1">
-								<p class="text-xs text-gray-500">Single use vouchers will generate a unique voucher that can only be used once.</p>
-								<p class="text-xs text-gray-500">If you disable "Single Use", the voucher can only be used based on your defined quantity.</p>
-								<p class="text-xs text-gray-500">Entering "100%" discount will give the voucher user zero payment of their ticket while other values will entail a minimum of 100PHP transaction, thus discounts will be adjusted.</p>
+
+							<div>
+								<label for="expiry" class="mb-2 block text-sm">Expiry</label>
+								<DatePicker
+									name="expiry"
+									className="rounded-md border-none bg-[#F8F9FC] p-3 text-sm w-fit"
+								/>
 							</div>
-		
-							<!-- Voucher Code -->
-							<div class="space-y-2">
-								<label for="voucher-code" class="mb-2 block text-sm">Voucher Code</label>
-								<div class="flex flex-col gap-2 sm:flex-row">
-									<div class="relative ">
-										<select 
-											id="voucher-code"
-											bind:value={voucherCode}
-											class="w-full appearance-none rounded-md border-none bg-[#F8F9FC] p-3 pr-8 text-sm"
-										>
-											<option value="QGN342">QGN342</option>
-										</select>
-										<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
-											<i class="fa-solid fa-chevron-down text-gray-400"></i>
+
+							<div>
+								<label for="select-ticket" class="mb-2 flex text-sm">Select Ticket</label>
+								<DropdownMenu
+									buttonText={getTicketSelectionText(selectedTickets)}
+									className="w-full justify-between rounded-md border border-gray-200 bg-white px-4 py-2 text-sm hover:border-[#DF4D60]"
+									items={['all', ...ticketList.map((ticket) => ticket.name)]}
+									multiple={true}
+									alignContent="start"
+									on:select={(event) => {
+										const selected = event.detail;
+										if (selected.includes('all')) {
+											selectedTickets = ['all'];
+										} else {
+											selectedTickets = selected;
+										}
+									}}
+								/>
+							</div>
+
+							<!-- Toggles and Helper Text -->
+							<div class="mt-4 space-y-4">
+								<!-- Toggles -->
+								<div class="flex flex-col gap-4 sm:flex-row sm:gap-8">
+									<!-- Active Voucher -->
+									<div class="flex items-center justify-between sm:justify-start sm:space-x-4">
+										<label for="activevoucher" class="text-sm">Active Voucher</label>
+										<div class="relative inline-flex items-center">
+											<input
+												type="checkbox"
+												bind:checked={isActive}
+												class="peer sr-only"
+												id="active-toggle"
+											/>
+											<label
+												for="active-toggle"
+												class="peer h-6 w-11 cursor-pointer rounded-full bg-gray-200 transition-colors hover:bg-gray-300 peer-checked:bg-[#DF4D60] peer-checked:hover:bg-[#DF4D60]/90"
+											>
+												<span
+													class="absolute left-[2px] top-[2px] h-5 w-5 rounded-full bg-white transition-all peer-checked:left-[22px]"
+												></span>
+											</label>
 										</div>
 									</div>
-									<button
-										aria-labelledby="voucher-code"
-										Onclick={() => {
-											navigator.clipboard.writeText(voucherCode);
-										}}
-										class="flex w-full items-center justify-center rounded-md border border-gray-200 px-3 py-2 hover:bg-gray-50 sm:w-auto sm:py-0"
-										title="Copy voucher code"
-									>
-										<i class="fa-regular fa-copy text-gray-600"></i>
-									</button>
+
+									<!-- Single Use -->
+									<div class="flex items-center justify-between sm:justify-start sm:space-x-4">
+										<label for="singleuse" class="text-sm">Single Use</label>
+										<div class="relative inline-flex items-center">
+											<input
+												type="checkbox"
+												bind:checked={isSingleUse}
+												class="peer sr-only"
+												id="single-use-toggle"
+											/>
+											<label
+												for="single-use-toggle"
+												class="peer h-6 w-11 cursor-pointer rounded-full bg-gray-200 transition-colors hover:bg-gray-300 peer-checked:bg-[#DF4D60] peer-checked:hover:bg-[#DF4D60]/90"
+											>
+												<span
+													class="absolute left-[2px] top-[2px] h-5 w-5 rounded-full bg-white transition-all peer-checked:left-[22px]"
+												></span>
+											</label>
+										</div>
+									</div>
 								</div>
-		
-								<!-- Action Buttons -->
-								<div class="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-start">
-									<button
-										class="w-full rounded-md bg-[#DF4D60] px-4 py-2 text-sm text-white hover:bg-[#DF4D60]/90 sm:w-auto"
-										Onclick={() => {
-											voucherDrawer.open = false;
-										}}
-									>
-										Add Voucher
-									</button>
-									<button
-										class="w-full rounded-md border border-gray-200 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 sm:w-auto"
-										Onclick={() => {
-											voucherDrawer.open = false;
-										}}
-									>
-										Cancel
-									</button>
+
+								<!-- Helper Text -->
+								<div class="space-y-1">
+									<p class="text-xs text-gray-500">
+										Single use vouchers will generate a unique voucher that can only be used once.
+									</p>
+									<p class="text-xs text-gray-500">
+										If you disable "Single Use", the voucher can only be used based on your defined
+										quantity.
+									</p>
+									<p class="text-xs text-gray-500">
+										Entering "100%" discount will give the voucher user zero payment of their ticket
+										while other values will entail a minimum of 100PHP transaction, thus discounts
+										will be adjusted.
+									</p>
+								</div>
+
+								<!-- Voucher Code -->
+								<div class="space-y-2">
+									<label for="voucher-code" class="mb-2 block text-sm">Voucher Code</label>
+									<div class="flex flex-col gap-2 sm:flex-row">
+										<div class="relative">
+											<select
+												id="voucher-code"
+												bind:value={voucherCode}
+												class="w-full appearance-none rounded-md border-none bg-[#F8F9FC] p-3 pr-8 text-sm"
+											>
+												<option value="QGN342">QGN342</option>
+											</select>
+											<div
+												class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2"
+											>
+												<i class="fa-solid fa-chevron-down text-gray-400"></i>
+											</div>
+										</div>
+										<button
+											aria-labelledby="voucher-code"
+											Onclick={() => {
+												navigator.clipboard.writeText(voucherCode);
+											}}
+											class="flex w-full items-center justify-center rounded-md border border-gray-200 px-3 py-2 hover:bg-gray-50 sm:w-auto sm:py-0"
+											title="Copy voucher code"
+										>
+											<i class="fa-regular fa-copy text-gray-600"></i>
+										</button>
+									</div>
+
+									<!-- Action Buttons -->
+									<div class="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-start">
+										<button
+											class="w-full rounded-md bg-[#DF4D60] px-4 py-2 text-sm text-white hover:bg-[#DF4D60]/90 sm:w-auto"
+											Onclick={() => {
+												voucherDrawer.open = false;
+											}}
+										>
+											Add Voucher
+										</button>
+										<button
+											class="w-full rounded-md border border-gray-200 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 sm:w-auto"
+											Onclick={() => {
+												voucherDrawer.open = false;
+											}}
+										>
+											Cancel
+										</button>
+									</div>
 								</div>
 							</div>
 						</div>
 					</div>
-				</div>
-			<!-- Replace the preview section with this updated code -->
+					<!-- Replace the preview section with this updated code -->
 
-			<div class="space-y-6">
-				<h3 class="text-lg font-medium">Preview</h3>
-				<div class="grid grid-cols-2 gap-4">
-					{#if selectedTickets.includes('all')}
-						{#each $ticketStore as ticket, index}
-                <div 
-                    class="rounded-lg border border-l-8 border-gray-400 bg-white p-4 shadow-sm"
-                    style="border-left-color: {getTicketColor(index)};"
-                >
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm font-medium">{ticket.name}</span>
-                        <span class="inline-flex items-center rounded-full px-2 py-1 text-xs {getStatusTextColor(ticket.status)}">
-                            <span class="mr-1 h-2 w-2 rounded-full {getStatusColor(ticket.status)}"></span>
-                            {ticket.status || 'Active'}
-                        </span>
-                    </div>
-                    <div class="mt-4 space-y-2">
-                        <div class="text-2xl font-bold text-red-500">
-                            {(document.getElementById('discount-amount') as HTMLInputElement)?.value || '-50%'}
-                        </div>
-                        <div class="flex items-center justify-between text-xs text-gray-500">
-                            <span>Valid from {ticket.validFrom} to {ticket.validTo}</span>
-                            <span>{(document.getElementById('quantity') as HTMLInputElement)?.value || '0'}/{(document.getElementById('limit-bulk-quantity') as HTMLInputElement)?.value || '50'}</span>
-                        </div>
-                        <div class="h-1.5 w-full rounded-full bg-gray-200">
-                            <div 
-                                class="h-1.5 rounded-full"
-                                style="width: 30%; background-color: {getTicketColor(index)};"
-                            ></div>
-                        </div>
-                    </div>
-                </div>
-            {/each}
-        {:else}
-            <!-- Show only the selected ticket -->
-            {#each $ticketStore.filter(ticket => selectedTickets.includes(ticket.name)) as ticket, index}
-			<div 
-                    class="rounded-lg border border-l-8 border-gray-400 bg-white p-4 shadow-sm"
-                    style="border-left-color: {getTicketColor(index)};"
-                >
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm font-medium">{ticket.name}</span>
-                        <span class="inline-flex items-center rounded-full px-2 py-1 text-xs {getStatusTextColor(ticket.status)}">
-                            <span class="mr-1 h-2 w-2 rounded-full {getStatusColor(ticket.status)}"></span>
-                            {ticket.status || 'Active'}
-                        </span>
-                    </div>
-                    <div class="mt-4 space-y-2">
-                        <div class="text-2xl font-bold text-red-500">
-                            {(document.getElementById('discount-amount') as HTMLInputElement)?.value || '-50%'}
-                        </div>
-                        <div class="flex items-center justify-between text-xs text-gray-500">
-                            <span>Valid from {ticket.validFrom} to {ticket.validTo}</span>
-                            <span>{(document.getElementById('quantity') as HTMLInputElement)?.value || '0'}/{(document.getElementById('limit-bulk-quantity') as HTMLInputElement)?.value || '50'}</span>
-                        </div>
-                        <div class="h-1.5 w-full rounded-full bg-gray-200">
-                            <div 
-                                class="h-1.5 rounded-full"
-                                style="width: 30%; background-color: {getTicketColor(index)};"
-                            ></div>
-                        </div>
-                    </div>
-                </div>
-            {/each}
-        {/if}
-    </div>
-</div>
-
-
-		</Drawer>
+					<div class="space-y-6">
+						<h3 class="text-lg font-medium">Preview</h3>
+						<div class="grid grid-cols-2 gap-4">
+							{#if selectedTickets.includes('all')}
+								{#each ticketList as ticket, index}
+									<div
+										class="border-l-10 min-w-[298px] flex-shrink-0 rounded-lg border border-gray-400"
+										style="border-left-color: {ticket.color};"
+									>
+										<div class="p-4">
+											<div class="mb-1 text-xs text-gray-500">
+												Valid from {formatDate(ticket.salesStart)} to {formatDate(ticket.salesEnd)}
+											</div>
+											<div class="flex justify-between">
+												<div class="font-medium">{ticket.name}</div>
+												<div class="flex gap-1">
+													<span
+														class="inline-flex items-center rounded-full px-2 py-1 text-xs {getStatusTextColor(
+															ticket.status
+														)}"
+													>
+														{ticket.status}
+													</span>
+													<Button
+														onClick={() => handleEditTicket(ticket)}
+														icon="fa-solid fa-pen-to-square"
+														className="text-xs text-gray-400 hover:text-primary p-1"
+													/>
+													<Button
+														onClick={() => {}}
+														icon="fa-regular fa-trash-can"
+														className="text-xs text-gray-400 hover:text-primary p-1"
+													/>
+												</div>
+											</div>
+											<div class="mb-4 mt-2 text-lg font-bold">₱{ticket.price}</div>
+											<div class="space-y-1">
+												<div class="flex justify-between text-xs">
+													<p>0/{ticket.quantityAvailable} Sold</p>
+												</div>
+												<div class="h-1.5 w-full rounded-full bg-gray-200">
+													<div
+														class="h-1.5 rounded-full"
+														style="width: 0%; background-color: {ticket.color};"
+													></div>
+												</div>
+											</div>
+										</div>
+									</div>
+								{/each}
+							{:else}
+								<!-- Show only the selected ticket -->
+								{#each ticketList.filter( (ticket) => selectedTickets.includes(ticket.name) ) as ticket, index}
+									<div
+										class="border-l-10 min-w-[298px] flex-shrink-0 rounded-lg border border-gray-400"
+										style="border-left-color: {ticket.color};"
+									>
+										<div class="p-4">
+											<div class="mb-1 text-xs text-gray-500">
+												Valid from {formatDate(ticket.salesStart)} to {formatDate(ticket.salesEnd)}
+											</div>
+											<div class="flex justify-between">
+												<div class="font-medium">{ticket.name}</div>
+												<div class="flex gap-1">
+													<span
+														class="inline-flex items-center rounded-full px-2 py-1 text-xs {getStatusTextColor(
+															ticket.status
+														)}"
+													>
+														{ticket.status}
+													</span>
+													<Button
+														onClick={() => handleEditTicket(ticket)}
+														icon="fa-solid fa-pen-to-square"
+														className="text-xs text-gray-400 hover:text-primary p-1"
+													/>
+													<Button
+														onClick={() => {}}
+														icon="fa-regular fa-trash-can"
+														className="text-xs text-gray-400 hover:text-primary p-1"
+													/>
+												</div>
+											</div>
+											<div class="mb-4 mt-2 text-lg font-bold">₱{ticket.price}</div>
+											<div class="space-y-1">
+												<div class="flex justify-between text-xs">
+													<p>0/{ticket.quantityAvailable} Sold</p>
+												</div>
+												<div class="h-1.5 w-full rounded-full bg-gray-200">
+													<div
+														class="h-1.5 rounded-full"
+														style="width: 0%; background-color: {ticket.color};"
+													></div>
+												</div>
+											</div>
+										</div>
+									</div>
+								{/each}
+							{/if}
+						</div>
+					</div>
+				</div></Drawer
+			>
 			{#if voucherEnabled}
 				<div class="block">
 					<!-- Mobile Horizontal Scrolling Container (visible on small screens) -->
@@ -731,4 +1026,249 @@ const handleTicketSelection = (event: Event) => {
 			</div>
 		</Tabs.Content>
 	</Tabs.Root>
+	<Drawer
+		isOpen={editTicketDrawer.open}
+		contentBaseClass="bg-white p-4 space-y-4 shadow-xl w-full h-[90vh] rounded-t-xl overflow-y-auto"
+		alignment="items-end"
+		positionIn={{ y: 600, duration: 200 }}
+		positionOut={{ y: 600, duration: 200 }}
+	>
+		<div class="space-y-6">
+			{#if selectedTicket}
+				<div class="border-gray-200 pb-4">
+					<h2 class="text-xl font-semibold">{selectedTicket.name}</h2>
+					<p class="text-sm text-gray-500">Edit Ticket Details</p>
+				</div>
+
+				<div class="space-y-6">
+					<Tabs.Root
+						value={seatGeneratorStore.activeTab}
+						onValueChange={(value: string) =>
+							seatGeneratorStore.setActiveTab(value as 'ticket' | 'reserve-seating')}
+						class="mb-8"
+					>
+						<Tabs.List class="flex space-x-4 border-b border-gray-200">
+							<Tabs.Trigger
+								value="ticket"
+								class="border-b-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none data-[state=active]:border-[#DF4D60] data-[state=inactive]:border-transparent data-[state=active]:text-[#DF4D60] data-[state=inactive]:text-gray-500 data-[state=inactive]:hover:border-gray-300 data-[state=inactive]:hover:text-gray-700"
+								aria-label="Switch to Ticket tab"
+								tabindex={0}
+							>
+								<div class="flex items-center">
+									<i class="fa-solid fa-ticket-simple pe-2"></i>
+									Ticket
+								</div>
+							</Tabs.Trigger>
+
+							<Tabs.Trigger
+								value="reserve-seating"
+								class="border-b-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none data-[state=active]:border-[#DF4D60] data-[state=inactive]:border-transparent data-[state=active]:text-[#DF4D60] data-[state=inactive]:text-gray-500 data-[state=inactive]:hover:border-gray-300 data-[state=inactive]:hover:text-gray-700"
+								aria-label="Switch to Reserve Seating tab"
+								tabindex={0}
+							>
+								<div class="flex items-center">
+									<i class="fa-solid fa-chair pe-2"></i>
+									Reserve Seating
+								</div>
+							</Tabs.Trigger>
+						</Tabs.List>
+
+						<Tabs.Content value="ticket">
+							<form action="?/updateTicket" method="POST" use:enhance>
+								<div class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+									<div class="space-y-6">
+										<div>
+											<label for="ticket" class="mb-2 block text-sm">Ticket Name</label>
+											<input
+												type="text"
+												name="ticketName"
+												value={selectedTicket.name}
+												placeholder="Enter ticket name"
+												class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
+											/>
+											{#if $errors.ticketName}
+												<p class="text-primary text-sm">
+													{$errors.ticketName}
+												</p>
+											{/if}
+										</div>
+										<div>
+											<label for="price" class="mb-2 block text-sm">Price</label>
+											<input
+												type="number"
+												name="price"
+												value={selectedTicket.price}
+												placeholder="Enter ticket price"
+												class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
+											/>
+											{#if $errors.price}
+												<p class="text-primary text-sm">
+													{$errors.price}
+												</p>
+											{/if}
+										</div>
+										<div>
+											<label for="validfrom" class="mb-2 block text-sm"
+												>Valid from (DD/MM/YYYY)</label
+											>
+											<DatePicker name="validfrom" className="" />
+											{#if $errors.validfrom}
+												<p class="text-primary text-sm">
+													{$errors.validfrom}
+												</p>
+											{/if}
+										</div>
+										<div>
+											<label for="valid-in" class="mb-2 block text-sm">Valid to (DD/MM/YYYY)</label>
+											<DatePicker name="validto" className="" />
+											{#if $errors.validto}
+												<p class="text-primary text-sm">
+													{$errors.validto}
+												</p>
+											{/if}
+										</div>
+									</div>
+									<div class="space-y-6">
+										<div>
+											<label for="quantity" class="mb-2 block text-sm"> Available For Sale</label>
+											<input
+												type="number"
+												name="quantity"
+												value={selectedTicket.quantityAvailable}
+												placeholder="Enter quantity"
+												class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
+											/>
+											{#if $errors.quantity}
+												<p class="text-primary text-sm">
+													{$errors.quantity}
+												</p>
+											{/if}
+										</div>
+										<div>
+											<label for="quantity" class="mb-2 block text-sm">Min Order Quantity</label>
+											<input
+												type="number"
+												name="minOrderQuantity"
+												value={selectedTicket.minOrderQuantity}
+												placeholder="Enter min quantity"
+												class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
+											/>
+											{#if $errors.minOrderQuantity}
+												<p class="text-primary text-sm">
+													{$errors.minOrderQuantity}
+												</p>
+											{/if}
+										</div>
+										<div>
+											<label for="quantity" class="mb-2 block text-sm">Max Order Quantity</label>
+											<input
+												type="number"
+												name="maxOrderQuantity"
+												value={selectedTicket.maxOrderQuantity}
+												placeholder="Enter max quantity"
+												class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
+											/>
+											{#if $errors.maxOrderQuantity}
+												<p class="text-primary text-sm">
+													{$errors.maxOrderQuantity}
+												</p>
+											{/if}
+										</div>
+
+										<div>
+											<label for="activePayment" class="mb-2 block text-sm">Active payment</label>
+											<PaymentToggle value={isActivePayment} OnChange={handleTogglePayment} />
+										</div>
+									</div>
+								</div>
+
+								<div>
+									<label for="Label-color" class="my-4 block text-sm">Label Color</label>
+									<div
+										class="mb-3 rounded-md p-3 text-center text-white"
+										style="background-color: {selectedTicket.color}"
+									>
+										{selectedTicket.color}
+									</div>
+									<div class="flex gap-2">
+										{#each colors as color}
+											<button
+												class="h-8 w-8 rounded-full border-2 transition-all"
+												style="background-color: {color}; border-color: {selectedColor === color
+													? 'black'
+													: 'transparent'}"
+												onclick={() => (selectedColor = color)}
+												aria-label="Select color {color}"
+											></button>
+										{/each}
+
+										<label
+											class="relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-2 border-gray-500"
+										>
+											<input
+												class="absolute right-0 top-0 hidden"
+												type="color"
+												name="color"
+												bind:value={selectedTicket.color}
+											/>
+											+
+										</label>
+									</div>
+
+									{#if $errors.color}
+										<p class="text-primary text-sm">
+											{$errors.color}
+										</p>
+									{/if}
+								</div>
+
+								<div class="mt-8 grid grid-cols-2 gap-4">
+									<Button
+										onClick={() => {}}
+										type="submit"
+										label="Save Ticket"
+										className="bg-[#DF4D60] text-white p-2 rounded-md"
+									/>
+									<Button
+										onClick={() => {
+											editTicketDrawer.open = false;
+										}}
+										label="Cancel"
+										className="border border-gray-300 text-gray-700 p-2 rounded-md"
+									/>
+								</div>
+							</form>
+						</Tabs.Content>
+
+						<Tabs.Content value="reserve-seating">
+							<div class="flex flex-col space-y-6">
+								<ReserveToggle />
+
+								<!-- Reserve Seating Configuration (only shown when enabled) -->
+								{#if seatGeneratorStore.reserveSeatingEnabled}
+									<div class="flex gap-8">
+										<!-- Left Column -->
+										<div class="w-[400px] flex-shrink-0 space-y-6">
+											<SeatConfig />
+											<RenameControl />
+											<SaveLayout />
+										</div>
+
+										<!-- Venue Floor Plan Image Upload -->
+										<div class="min-w-0 flex-1 space-y-6">
+											<QuantityWarning />
+											<VenueImageUpload />
+											<PanzoomContainer />
+											<StatusControls />
+											<SeatStats />
+										</div>
+									</div>
+								{/if}
+							</div>
+						</Tabs.Content>
+					</Tabs.Root>
+				</div>
+			{/if}
+		</div>
+	</Drawer>
 </div>

@@ -57,3 +57,12 @@ export const formatRegisteredDate = (date: string) => {
 		hour12: true
 	});
 };
+
+export const formatDate = (date: string) => {
+	const registeredDate = new Date(date);
+	return registeredDate.toLocaleString('en-US', {
+		year: 'numeric',
+		month: 'numeric',
+		day: 'numeric'
+	});
+};

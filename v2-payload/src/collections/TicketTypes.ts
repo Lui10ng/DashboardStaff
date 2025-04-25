@@ -82,6 +82,7 @@ const TicketTypes: CollectionConfig = {
     // Optional: Min/Max per order for this specific type
     { name: 'minOrderQuantity', type: 'number', defaultValue: 1, min: 1 },
     { name: 'maxOrderQuantity', type: 'number', min: 1 },
+    { name: 'color', type: 'text', required: true },
   ],
   timestamps: true,
 };
