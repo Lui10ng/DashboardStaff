@@ -679,6 +679,7 @@ export interface TicketType {
   status: 'active' | 'inactive';
   minOrderQuantity?: number | null;
   maxOrderQuantity?: number | null;
+  color: string;
   updatedAt: string;
   createdAt: string;
 }
@@ -1223,6 +1224,7 @@ export interface TicketTypesSelect<T extends boolean = true> {
   status?: T;
   minOrderQuantity?: T;
   maxOrderQuantity?: T;
+  color?: T;
   updatedAt?: T;
   createdAt?: T;
 }

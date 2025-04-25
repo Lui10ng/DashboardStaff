@@ -29,15 +29,6 @@ export type VoucherProps = {
 	progressColor: string;
 };
 
-export type TicketProps = {
-	status: string;
-	validFrom: string;
-	validTo: string;
-	name: string;
-	price: number;
-	sold: string;
-};
-
 export type GuestProps = {
 	id: string;
 	name: string;
@@ -128,3 +119,16 @@ export interface PayloadError {
 	// Add other potential properties if known
 	[key: string]: any; // Allow other properties
 }
+
+export type TicketProps = {
+	name: string;
+	price: number;
+	currency: string;
+	quantityAvailable: number;
+	minOrderQuantity: number;
+	maxOrderQuantity: number;
+	salesStart: string;
+	salesEnd: string;
+	color: string;
+	status: string;
+};
