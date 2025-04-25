@@ -1,8 +1,8 @@
-import type { CollectionConfig } from 'payload';
-import { isAdminOrEventRole } from '@/access/isAdminOrEventRole';
+import type { CollectionConfig } from 'payload'
+import { isAdminOrEventRole } from '@/access/isAdminOrEventRole'
 import { EVENT_ROLES } from '@/types/eventRoles'
 
-const { MANAGER, EDITOR, VIEWER } = EVENT_ROLES;
+const { MANAGER, EDITOR, VIEWER } = EVENT_ROLES
 
 const EventCategories: CollectionConfig = {
   // Collection slug (API path: /api/event-categories)
@@ -32,9 +32,10 @@ const EventCategories: CollectionConfig = {
       type: 'text',
       required: true,
       unique: true, // Ensure category names are unique
-      index: true,  // Add a database index for faster lookups
+      index: true, // Add a database index for faster lookups
       admin: {
-        description: 'The name of the category (e.g., Technology, Music Festival, Charity). Must be unique.',
+        description:
+          'The name of the category (e.g., Technology, Music Festival, Charity). Must be unique.',
       },
     },
     {
@@ -53,6 +54,6 @@ const EventCategories: CollectionConfig = {
     // }
   ],
   timestamps: true, // Automatically add createdAt and updatedAt
-};
+}
 
-export default EventCategories;
+export default EventCategories

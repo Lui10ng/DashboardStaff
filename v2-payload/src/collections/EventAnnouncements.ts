@@ -1,8 +1,8 @@
-import type { CollectionConfig } from 'payload';
-import { isAdminOrEventRole } from '@/access/isAdminOrEventRole';
+import type { CollectionConfig } from 'payload'
+import { isAdminOrEventRole } from '@/access/isAdminOrEventRole'
 import { EVENT_ROLES } from '@/types/eventRoles'
 
-const { MANAGER, EDITOR, VIEWER } = EVENT_ROLES;
+const { MANAGER, EDITOR, VIEWER } = EVENT_ROLES
 
 const EventAnnouncements: CollectionConfig = {
   slug: 'event-announcements',
@@ -71,14 +71,15 @@ const EventAnnouncements: CollectionConfig = {
         date: {
           pickerAppearance: 'dayAndTime',
         },
-        description: 'Optional: Set a specific time for when this announcement is considered published (can be used for sorting/filtering). Defaults to creation time if published immediately.',
+        description:
+          'Optional: Set a specific time for when this announcement is considered published (can be used for sorting/filtering). Defaults to creation time if published immediately.',
         position: 'sidebar',
       },
-       // Optionally set default value using hooks if status is published
-       // hooks: { beforeChange: [...] }
+      // Optionally set default value using hooks if status is published
+      // hooks: { beforeChange: [...] }
     },
   ],
   timestamps: true, // Adds createdAt, updatedAt
-};
+}
 
-export default EventAnnouncements;
+export default EventAnnouncements

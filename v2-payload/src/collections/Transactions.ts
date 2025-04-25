@@ -1,9 +1,9 @@
-import type { CollectionConfig } from 'payload';
-import { isAdminOrEventRole } from '@/access/isAdminOrEventRole';
-import { isAdmin } from '@/access/isAdmin';
-import { EVENT_ROLES } from '@/types/eventRoles';
+import type { CollectionConfig } from 'payload'
+import { isAdminOrEventRole } from '@/access/isAdminOrEventRole'
+import { isAdmin } from '@/access/isAdmin'
+import { EVENT_ROLES } from '@/types/eventRoles'
 
-const { MANAGER } = EVENT_ROLES;
+const { MANAGER } = EVENT_ROLES
 
 const Transactions: CollectionConfig = {
   slug: 'transactions',
@@ -11,7 +11,15 @@ const Transactions: CollectionConfig = {
     // Use ID or maybe a generated description? ID is simplest default.
     useAsTitle: 'id',
     description: 'Financial ledger recording all monetary transactions per organizer.',
-    defaultColumns: ['transactionDate', 'organizer', 'type', 'amount', 'currency', 'relatedOrder', 'createdAt'],
+    defaultColumns: [
+      'transactionDate',
+      'organizer',
+      'type',
+      'amount',
+      'currency',
+      'relatedOrder',
+      'createdAt',
+    ],
     listSearchableFields: ['relatedOrder.id', 'relatedPaymentIntentId', 'description'], // Search by related IDs/memo
     group: 'Finance & Reporting',
     // --- CRITICAL: Prevent accidental modification in Admin UI ---
@@ -69,15 +77,15 @@ const Transactions: CollectionConfig = {
       index: true,
       options: [
         { label: 'Ticket Sale', value: 'ticket_sale' }, // Income for organizer
-        { label: 'Donation', value: 'donation' },       // Income for organizer
+        { label: 'Donation', value: 'donation' }, // Income for organizer
         { label: 'Sale Refund', value: 'refund_sale' }, // Expense for organizer
         { label: 'Donation Refund', value: 'refund_donation' }, // Expense for organizer
-        { label: 'Platform Fee', value: 'platform_fee' },   // Expense for organizer (your platform's cut)
-        { label: 'Payment Processor Fee', value: 'payment_fee' },// Expense for organizer (e.g., Stripe fee)
-        { label: 'Organizer Payout', value: 'payout' },      // Expense for organizer (money sent to them)
-        { label: 'Payout Fee', value: 'payout_fee' },      // Expense for organizer (cost of sending payout)
+        { label: 'Platform Fee', value: 'platform_fee' }, // Expense for organizer (your platform's cut)
+        { label: 'Payment Processor Fee', value: 'payment_fee' }, // Expense for organizer (e.g., Stripe fee)
+        { label: 'Organizer Payout', value: 'payout' }, // Expense for organizer (money sent to them)
+        { label: 'Payout Fee', value: 'payout_fee' }, // Expense for organizer (cost of sending payout)
         { label: 'Adjustment Credit', value: 'adj_credit' }, // Manual admin adjustment (+)
-        { label: 'Adjustment Debit', value: 'adj_debit' },  // Manual admin adjustment (-)
+        { label: 'Adjustment Debit', value: 'adj_debit' }, // Manual admin adjustment (-)
       ],
       admin: { width: '50%' },
     },
@@ -90,7 +98,8 @@ const Transactions: CollectionConfig = {
       admin: {
         width: '50%',
         step: 0.01,
-        description: 'Value of the transaction. Positive for income (sales, donations), Negative for expenses (refunds, fees, payouts).',
+        description:
+          'Value of the transaction. Positive for income (sales, donations), Negative for expenses (refunds, fees, payouts).',
       },
     },
     {
@@ -150,24 +159,23 @@ const Transactions: CollectionConfig = {
     beforeChange: [
       ({ data, operation }) => {
         if (operation === 'create' && !data.transactionDate) {
-          data.transactionDate = new Date().toISOString();
+          data.transactionDate = new Date().toISOString()
         }
         // Potentially auto-generate description based on type/related docs?
         // if (operation === 'create' && !data.description && data.type === 'ticket_sale' && data.relatedOrder) {
         //    data.description = `Ticket Sale for Order ${data.relatedOrder}`; // Needs fetching order ID if only relation is passed initially
         // }
-        return data;
-      }
+        return data
+      },
     ],
     // IMPORTANT: Most transaction entries should be created programmatically
     // in response to other events (e.g., Order status changing to 'paid',
     // payment gateway webhook confirming a charge/refund, payout script execution).
     // Do NOT rely on manual creation via Admin UI or direct API calls from untrusted sources.
-  }
-};
+  },
+}
 
-export default Transactions;
-
+export default Transactions
 
 // --- Example isAdminOrLinkedOrganizer Access Control ---
 // NOTE: Needs proper implementation using payload.findByID inside access control

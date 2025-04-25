@@ -28,7 +28,7 @@ import Venues from './collections/Venues'
 import Forms from './collections/Forms'
 import UserEventRoles from './collections/UserEventRoles'
 
-import { clerkWebhookHandler } from './webhooks/clerk-webhook';
+import { clerkWebhookHandler } from './webhooks/clerk-webhook'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -105,7 +105,7 @@ export default buildConfig({
       path: '/webhooks/clerk',
       method: 'post',
       handler: clerkWebhookHandler,
-    }
+    },
     // ... other endpoints
   ],
 })

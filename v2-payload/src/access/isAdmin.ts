@@ -12,6 +12,6 @@ import type { User } from '@/payload-types'
  * @returns {boolean} True if the user is a global admin, false otherwise.
  */
 export const isAdmin: Access<User> = ({ req: { user } }) => {
-	// Check if user exists and has the 'admin' role synced from Clerk
-	return Boolean(user?.clerkRoles?.includes('admin'))
+  // Check if user exists and has the 'admin' role synced from Clerk
+  return Boolean(user?.clerkRoles?.includes('admin'))
 }

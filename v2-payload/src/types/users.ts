@@ -4,9 +4,9 @@ const PLATFORM_ROLES = {
   ORGANIZER: 'organizer',
   ATTENDEE: 'attendee',
   CHECK_IN_STAFF: 'check-in-staff',
-} as const;
+} as const
 
-type UserRole = typeof PLATFORM_ROLES[keyof typeof PLATFORM_ROLES];
+type UserRole = (typeof PLATFORM_ROLES)[keyof typeof PLATFORM_ROLES]
 
-export { PLATFORM_ROLES };
-export type { UserRole };
+export { PLATFORM_ROLES }
+export type { UserRole }

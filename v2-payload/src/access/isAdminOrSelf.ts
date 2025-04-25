@@ -16,13 +16,13 @@ export const isAdminOrSelf: Access<User> = async (args) => {
   // Handle cases where args or req might be missing (e.g., during type generation)
   if (!args || !args.req) {
     // Default to false access if request context isn't available
-    return false;
+    return false
   }
-  const { req, id } = args; // Destructure after checking
-  const { user } = req;
+  const { req, id } = args // Destructure after checking
+  const { user } = req
 
   // Condition 1: User is a global admin
-  if (user && await isAdmin({ req })) {
+  if (user && (await isAdmin({ req }))) {
     return true
   }
 
@@ -47,14 +47,14 @@ export const isAdminOrSelf: Access<User> = async (args) => {
 export const readIsAdminOrSelf: Access<User> = async (args) => {
   // Handle cases where args or req might be missing
   if (!args || !args.req) {
-    return false;
+    return false
   }
-  const { req, id } = args; // Destructure after checking
+  const { req, id } = args // Destructure after checking
 
   // For simplicity, reuse the same logic as isAdminOrSelf for read.
   // A more advanced version could return a 'where' clause for list views
   // if (user && isAdmin({ req })) return true; // Admins see all
   // if (user) return { id: { equals: user.id } }; // Non-admins only see themselves
   // return false; // No user, no access
-  return isAdminOrSelf({ req, id }); // Pass the validated args down
+  return isAdminOrSelf({ req, id }) // Pass the validated args down
 }

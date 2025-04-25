@@ -1,6 +1,6 @@
 // src/collections/Organizers.ts
-import type { CollectionConfig } from 'payload';
-import type { User } from '../payload-types';
+import type { CollectionConfig } from 'payload'
+import type { User } from '../payload-types'
 // import { isAdmin } from '../access/isAdmin';
 // import { isAdminOrSelf } from '../access/isAdminOrSelf'; // Needs full implementation
 
@@ -74,7 +74,7 @@ const Organizers: CollectionConfig = {
       hasMany: false,
       admin: {
         description: 'Optional banner for profile pages.',
-      }
+      },
     },
     {
       name: 'photoGallery',
@@ -84,7 +84,7 @@ const Organizers: CollectionConfig = {
       hasMany: true, // Allow multiple gallery images
       admin: {
         description: 'Select additional photos associated with this organizer.',
-      }
+      },
     },
     // --- User Management Link ---
     // {
@@ -106,9 +106,9 @@ const Organizers: CollectionConfig = {
     // },
   ],
   timestamps: true,
-};
+}
 
-export default Organizers;
+export default Organizers
 
 // NOTE: The 'isAdminOrSelf' access control function needs to be implemented.
 // It should check if req.user is an admin OR if req.user.id exists within

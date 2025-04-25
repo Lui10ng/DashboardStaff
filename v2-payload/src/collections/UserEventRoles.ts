@@ -3,7 +3,7 @@ import type { CollectionConfig } from 'payload'
 import { isAdminOrEventRole } from '@/access/isAdminOrEventRole' // Assuming you create this helper
 import { EVENT_ROLES } from '@/types/eventRoles'
 
-const { MANAGER, EDITOR, VIEWER } = EVENT_ROLES;
+const { MANAGER, EDITOR, VIEWER } = EVENT_ROLES
 
 export const EventUserRoles: CollectionConfig = {
   slug: 'event-user-roles',
@@ -66,7 +66,10 @@ export const EventUserRoles: CollectionConfig = {
     {
       name: 'role',
       type: 'select',
-      options: Object.values(EVENT_ROLES).map((role) => ({ label: role.charAt(0).toUpperCase() + role.slice(1), value: role })),
+      options: Object.values(EVENT_ROLES).map((role) => ({
+        label: role.charAt(0).toUpperCase() + role.slice(1),
+        value: role,
+      })),
       required: true,
       defaultValue: 'viewer',
       admin: {

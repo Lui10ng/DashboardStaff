@@ -1,10 +1,9 @@
-import type { CollectionConfig } from 'payload';
-import { isAdmin } from '@/access/isAdmin';
-import { isAdminOrEventRole } from '@/access/isAdminOrEventRole';
-import { EVENT_ROLES } from '@/types/eventRoles';
+import type { CollectionConfig } from 'payload'
+import { isAdmin } from '@/access/isAdmin'
+import { isAdminOrEventRole } from '@/access/isAdminOrEventRole'
+import { EVENT_ROLES } from '@/types/eventRoles'
 
-const { MANAGER, EDITOR, VIEWER } = EVENT_ROLES;
-
+const { MANAGER, EDITOR, VIEWER } = EVENT_ROLES
 
 const Registrants: CollectionConfig = {
   slug: 'registrants',
@@ -13,7 +12,7 @@ const Registrants: CollectionConfig = {
     useAsTitle: 'id', // Defaulting to ID, could customize with hooks/virtual fields
     description: 'Stores submitted answers from mandatory registration forms per ticket.',
     // defaultColumns: ['id', 'ticket', 'registeredUser', 'guestEmail', 'event', 'createdAt'],
-    defaultColumns: ['id',  'event', 'createdAt'],
+    defaultColumns: ['id', 'event', 'createdAt'],
     // listSearchableFields: ['guestEmail', /* Add User email? Ticket code? */],
     group: 'Orders & Tickets',
     // Like Orders/Tickets, generally created programmatically, not via Admin UI
@@ -117,7 +116,7 @@ const Registrants: CollectionConfig = {
       required: true,
       admin: {
         readOnly: true, // Answers shouldn't be edited after submission
-        description: 'The actual data submitted by the attendee via the event\'s registration form.',
+        description: "The actual data submitted by the attendee via the event's registration form.",
       },
     },
     // Optional: Link back to the template used (for reference)
@@ -125,12 +124,12 @@ const Registrants: CollectionConfig = {
   ],
   timestamps: true, // Includes createdAt, updatedAt
   hooks: {
-      // Potential Hooks:
-      // - beforeValidate/beforeChange: Could potentially validate 'submittedAnswers' JSON
-      //   against the schema defined in the linked 'event.registrationForm.formDefinition',
-      //   although this can be complex and might be better handled during form submission logic.
-      // - afterChange: Trigger confirmation emails or other actions based on registration.
-  }
-};
+    // Potential Hooks:
+    // - beforeValidate/beforeChange: Could potentially validate 'submittedAnswers' JSON
+    //   against the schema defined in the linked 'event.registrationForm.formDefinition',
+    //   although this can be complex and might be better handled during form submission logic.
+    // - afterChange: Trigger confirmation emails or other actions based on registration.
+  },
+}
 
-export default Registrants;
+export default Registrants

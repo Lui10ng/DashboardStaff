@@ -1,16 +1,14 @@
-import type { CollectionConfig } from 'payload';
-import clerkOrPayloadAdminStrategy from '@/auth/clerk-strategy';
-import { PLATFORM_ROLES } from '@/types/users';
-import { isAdminOrSelf } from '@/access/isAdminOrSelf';
-import { isAdmin } from '@/access/isAdmin';
+import type { CollectionConfig } from 'payload'
+import clerkOrPayloadAdminStrategy from '@/auth/clerk-strategy'
+import { PLATFORM_ROLES } from '@/types/users'
+import { isAdminOrSelf } from '@/access/isAdminOrSelf'
+import { isAdmin } from '@/access/isAdmin'
 
 const Users: CollectionConfig = {
   slug: 'users',
   auth: {
     disableLocalStrategy: true,
-    strategies: [
-      clerkOrPayloadAdminStrategy,
-    ],
+    strategies: [clerkOrPayloadAdminStrategy],
   },
   admin: {
     useAsTitle: 'email', // Use email as the main identifier in lists
@@ -46,6 +44,7 @@ const Users: CollectionConfig = {
       // Make required if using Payload's local auth primarily.
       // required: true,
     },
+
     {
       name: 'clerkId', // Example field if using Clerk Auth
       label: 'Clerk User ID',
@@ -61,7 +60,7 @@ const Users: CollectionConfig = {
       access: {
         // read: isAdmin,
         // update: isAdmin,
-      }
+      },
     },
     {
       name: 'organizer', // Or 'associatedOrganizer', etc.
@@ -77,10 +76,11 @@ const Users: CollectionConfig = {
       label: 'Clerk Roles',
       type: 'select',
       hasMany: true,
-      options: Object.values(PLATFORM_ROLES).map(role => ({ label: role, value: role })),
+      options: Object.values(PLATFORM_ROLES).map((role) => ({ label: role, value: role })),
       admin: {
         position: 'sidebar',
-        description: 'Roles synced from Clerk. This field is read-only and managed by the authentication system.',
+        description:
+          'Roles synced from Clerk. This field is read-only and managed by the authentication system.',
       },
       access: {
         read: () => true, // Everyone can read their own roles
@@ -93,6 +93,6 @@ const Users: CollectionConfig = {
     // - Link to Organizer profile(s) they manage (though the link is primarily on Organizer collection)
   ],
   timestamps: true,
-};
+}
 
-export default Users;
+export default Users

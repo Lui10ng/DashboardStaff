@@ -1,8 +1,8 @@
 import type { CollectionConfig } from 'payload'
-import { isAdminOrEventRole } from '@/access/isAdminOrEventRole';
+import { isAdminOrEventRole } from '@/access/isAdminOrEventRole'
 import { EVENT_ROLES } from '@/types/eventRoles'
 
-const { MANAGER, EDITOR, VIEWER } = EVENT_ROLES;
+const { MANAGER, EDITOR, VIEWER } = EVENT_ROLES
 
 const Forms: CollectionConfig = {
   slug: 'forms',

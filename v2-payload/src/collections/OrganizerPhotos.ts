@@ -1,18 +1,18 @@
-import type { CollectionConfig } from 'payload';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { isAdminOrSelf } from '@/access/isAdminOrSelf';
+import type { CollectionConfig } from 'payload'
+import path from 'path'
+import { fileURLToPath } from 'url'
+import { isAdminOrSelf } from '@/access/isAdminOrSelf'
 
 // Helper to check environment more reliably
-const isDevelopment = process.env.NODE_ENV === 'development';
+const isDevelopment = process.env.NODE_ENV === 'development'
 
 // Calculate __dirname equivalent for ES Modules
-const filename = fileURLToPath(import.meta.url);
-const dirname = path.dirname(filename);
+const filename = fileURLToPath(import.meta.url)
+const dirname = path.dirname(filename)
 
 // Define local storage path (used only in development)
 // Use the calculated dirname instead of the CommonJS __dirname
-const localOrganizersMediaDir = path.resolve(dirname, '../../media/organizers'); 
+const localOrganizersMediaDir = path.resolve(dirname, '../../media/organizers')
 
 const OrganizerPhotos: CollectionConfig = {
   slug: 'organizer-photos',
@@ -40,9 +40,21 @@ const OrganizerPhotos: CollectionConfig = {
 
     // --- Image Resizing & Formatting (Optional) ---
     imageSizes: [
-      { name: 'thumbnail', width: 480, height: 320, position: 'centre', formatOptions: { format: 'webp' } },
+      {
+        name: 'thumbnail',
+        width: 480,
+        height: 320,
+        position: 'centre',
+        formatOptions: { format: 'webp' },
+      },
       { name: 'logo', width: 600, height: 600, fit: 'inside', formatOptions: { format: 'webp' } }, // Example size for logos
-      { name: 'banner', width: 1600, height: 400, position: 'centre', formatOptions: { format: 'webp' } }, // Example size for banners
+      {
+        name: 'banner',
+        width: 1600,
+        height: 400,
+        position: 'centre',
+        formatOptions: { format: 'webp' },
+      }, // Example size for banners
     ],
     // --- Other Upload Options ---
     mimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'], // Specify allowed image types
@@ -71,8 +83,8 @@ const OrganizerPhotos: CollectionConfig = {
     // if serving from a CDN in staging/production environments.
   ],
   timestamps: true,
-};
+}
 
 // IMPORTANT: Add '/media/organizers' (or your chosen local path) to your .gitignore file!
 
-export default OrganizerPhotos;
+export default OrganizerPhotos
