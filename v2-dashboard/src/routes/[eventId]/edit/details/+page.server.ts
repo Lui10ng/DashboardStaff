@@ -1,8 +1,15 @@
-import { apiClient } from '$lib/services/payload.server';
+import { createApiClient } from '$lib/services/payload.server';
+import type { PageServerLoad } from './$types';
+import type { RequestEvent } from '@sveltejs/kit';
+import { handleSvelteError } from '$lib/utils/errorHandler';
+import { error } from '@sveltejs/kit';
+import type { EventDetailsResponse } from '$lib/types/eventData';
 
-export const load = async ({ url, params, fetch: svelteKitFetch }) => {
+export const load: PageServerLoad = async (event: RequestEvent) => {
+	const { params } = event;
+
 	const paramContacts = new URLSearchParams({
-		'where[event][equals]': params.eventId,
+		'where[event][equals]': params.eventId!,
 		'select[title]': 'true',
 		'select[slug]': 'true',
 		'select[location]': 'true'
@@ -10,13 +17,19 @@ export const load = async ({ url, params, fetch: svelteKitFetch }) => {
 
 	try {
 		const eventId = params.eventId;
-
-		const eventDetails = await apiClient.get(`events/${eventId}`, paramContacts, {
-			fetchInstance: svelteKitFetch
-		});
+		const apiClient = createApiClient(event);
+		const eventDetails = await apiClient.get<EventDetailsResponse>(`events/${eventId}`, paramContacts);
 
 		return {
 			eventDetails
 		};
-	} catch (err) {}
+	} catch (err: unknown) {
+		const { statusCode, errorMessage } = handleSvelteError(
+			err,
+			'Loading Event Details (Edit Event)',
+			'Failed to Load Event Details (Edit Event)'
+		);
+
+		throw error(statusCode, errorMessage);
+	}
 };

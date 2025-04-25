@@ -1,18 +1,18 @@
-import { vouchers } from '$lib/stores/data';
 import type { SeatLayoutData } from '$lib/types/seat-generator';
 import { fail, message, superValidate } from 'sveltekit-superforms';
 import type { PageServerLoad, Actions } from './$types';
 import { zod } from 'sveltekit-superforms/adapters';
 import { ticketSchema } from '$lib/schema/ticket';
-import { apiClient } from '$lib/services/payload.server';
 import { voucherSchema } from '$lib/schema';
+import { createApiClient } from '$lib/services/payload.server';
+import type { RequestEvent } from './$types';
+import { handleSvelteError } from '$lib/utils/errorHandler';
+import { error } from '@sveltejs/kit';
+import type { TicketTypesResponse } from '$lib/types/tickets';
+import type { PromotionsResponse } from '$lib/types/merchant';
 
-export const load = (async ({ depends, params, fetch: svelteKitFetch }) => {
-	// for invalidation
-	depends('dashboard:registrants');
-
-	const ticketForm = await superValidate(zod(ticketSchema));
-	const voucherForm = await superValidate(zod(voucherSchema));
+export const load: PageServerLoad = async (event: RequestEvent) => {
+	const { params } = event;
 
 	const initialConfig = {
 		ticketQuantity: 0,
@@ -40,28 +40,38 @@ export const load = (async ({ depends, params, fetch: svelteKitFetch }) => {
 		depth: '0'
 	});
 
-	const responseTicket = await apiClient.get('/ticket-types', paramsTicket, {
-		fetchInstance: svelteKitFetch
-	});
+	const ticketForm = await superValidate(zod(ticketSchema));
+	const voucherForm = await superValidate(zod(voucherSchema));
 
-	const responseVoucher = await apiClient.get('/promotions', paramsVoucher, {
-		fetchInstance: svelteKitFetch
-	});
+	try {
+		const apiClient = createApiClient(event);
+		const response = await apiClient.get<TicketTypesResponse>('/ticket-types', paramsTicket);
+		const ticketData = response.docs;
 
-	const ticketData = responseTicket.docs;
-	const voucherData = responseVoucher.docs;
+		const responseVoucher = await apiClient.get<PromotionsResponse>('/promotions', paramsVoucher);
+		const voucherData = responseVoucher.docs;
 
-	return {
-		ticketForm,
-		voucherForm,
-		ticketData,
-		voucherData,
-		initialConfig
-	};
-}) satisfies PageServerLoad;
+		return {
+			ticketForm,
+			voucherForm,
+			ticketData,
+			voucherData,
+			initialConfig
+		};
+	} catch (err: unknown) {
+		const { statusCode, errorMessage } = handleSvelteError(
+			err,
+			'Loading Merchant',
+			'Failed to Load Merchant'
+		);
 
-export const actions = {
-	createTicket: async ({ request, params }) => {
+		throw error(statusCode, errorMessage);
+	}
+};
+
+export const actions: Actions = {
+	createTicket: async (event: RequestEvent) => {
+		const { request, params } = event;
 		const data = await request.formData();
 
 		const eventId = parseInt(params.eventId);
@@ -86,12 +96,19 @@ export const actions = {
 		};
 
 		try {
+			const apiClient = createApiClient(event);
 			const response = await apiClient.post('/ticket-types', formData);
 			console.log('response: ', response);
 
 			return message(form, { success: true, message: 'Ticket created successfully' });
-		} catch (err) {
-			return message(form, { success: false, message: 'Error creating ticket' });
+		} catch (err: unknown) {
+			const { statusCode, errorMessage } = handleSvelteError(
+				err,
+				'Creating Ticket',
+				'Failed to Create Ticket'
+			);
+
+			throw error(statusCode, errorMessage);
 		}
 	},
 
@@ -150,7 +167,8 @@ export const actions = {
 		}
 	},
 
-	createVoucher: async ({ request, params }) => {
+	createVoucher: async (event: RequestEvent) => {
+		const { request, params } = event;
 		const data = await request.formData();
 		const eventId = parseInt(params.eventId);
 
@@ -176,6 +194,7 @@ export const actions = {
 		};
 
 		try {
+			const apiClient = createApiClient(event);
 			const response = await apiClient.post('/promotions', formData);
 			console.log('response: ', response);
 
@@ -235,4 +254,4 @@ export const actions = {
 			};
 		}
 	}
-} satisfies Actions;
+};

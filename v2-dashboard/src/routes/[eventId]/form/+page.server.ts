@@ -1,6 +1,6 @@
 import type { RequestEvent } from '@sveltejs/kit';
 import type { FormData, FieldType } from './types';
-import type { PageServerLoad } from './$types';
+import type { PageServerLoad, Actions } from './$types';
 import { createApiClient } from '$lib/services/payload.server.js';
 import type { PayloadForm } from '$lib/types/formTypes';
 import { handleSvelteError } from '$lib/utils/errorHandler';
@@ -8,13 +8,9 @@ import { error } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async (event: RequestEvent) => {
 	try {
-		const { params: { eventId } } = event;
-		if (!eventId) {
-			return {
-				formData: null,
-				error: 'Event ID is required'
-			};
-		}
+		const {
+			params: { eventId }
+		} = event;
 
 		console.log('Fetching form data for event:', eventId);
 
@@ -25,7 +21,7 @@ export const load: PageServerLoad = async (event: RequestEvent) => {
 		console.log('Request URL params:', params);
 
 		const apiClient = createApiClient(event);
-		const response = (await apiClient.get<PayloadForm>('forms', params));
+		const response = await apiClient.get<PayloadForm>('forms', params);
 
 		console.log('Raw API Response:', JSON.stringify(response, null, 2));
 
@@ -41,9 +37,10 @@ export const load: PageServerLoad = async (event: RequestEvent) => {
 				label: field.label || 'Untitled Field',
 				required: !!field.required,
 				description: field.description || undefined,
-				options: field.options?.map((option: string | { value: string }) =>
-					typeof option === 'string' ? { value: option } : option
-				) || []
+				options:
+					field.options?.map((option: string | { value: string }) =>
+						typeof option === 'string' ? { value: option } : option
+					) || []
 			}))
 		};
 
@@ -64,7 +61,7 @@ export const load: PageServerLoad = async (event: RequestEvent) => {
 	}
 };
 
-export const actions = {
+export const actions: Actions = {
 	saveForm: async (event: RequestEvent) => {
 		try {
 			const { request } = event;
@@ -93,7 +90,7 @@ export const actions = {
 				'Saving Form Template',
 				'Failed to Save Form Template'
 			);
-	
+
 			throw error(statusCode, errorMessage);
 		}
 	},
@@ -120,7 +117,7 @@ export const actions = {
 			const queryParams = new URLSearchParams({
 				'where[eventId][equals]': eventId
 			});
-			const response = (await apiClient.get<PayloadForm>('forms', queryParams));
+			const response = await apiClient.get<PayloadForm>('forms', queryParams);
 
 			if (!response) {
 				return { success: false, error: 'Form not found for this event' };
@@ -142,14 +139,13 @@ export const actions = {
 
 			console.log(`Field ${fieldIdToDelete} deleted successfully from form ${currentFormId}`);
 			return { success: true, message: 'Field deleted successfully' };
-
 		} catch (err: unknown) {
 			const { statusCode, errorMessage } = handleSvelteError(
 				err,
 				'Deleting Form Field',
 				'Failed to Delete Form Field'
 			);
-	
+
 			throw error(statusCode, errorMessage);
 		}
 	}

@@ -54,3 +54,14 @@ export const currentEvent: Event = {
   imageUrl: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=2940&ixlib=rb-4.0.3',
   eventImages: []
 };
+
+export interface EventDetailsResponse {
+  id: string;       // The ID of the Event document fetched
+  title?: string;    // The selected title field (optional as it might not exist)
+  slug?: string;     // The selected slug field (optional)
+  location?: string; // The selected location field (optional, adjust type if it's structured)
+                     // If 'location' is an object with subfields (e.g., address, city),
+                     // define a specific Location type for it.
+  // Note: Depending on Payload's exact behavior with 'select', other default fields
+  // might be included. If you discover others, add them here.
+}

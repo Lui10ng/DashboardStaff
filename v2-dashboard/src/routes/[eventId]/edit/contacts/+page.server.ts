@@ -4,8 +4,9 @@ import type { RequestEvent } from '@sveltejs/kit';
 import { zod } from 'sveltekit-superforms/adapters';
 import { contactSchema } from '$lib/schema/contact.js';
 import { handleSvelteError } from '$lib/utils/errorHandler.js';
-import type { PageServerLoad } from './$types';
+import type { PageServerLoad, Actions } from './$types';
 import { error } from '@sveltejs/kit';
+import type { EventContactsResponse } from '$lib/types/eventContacts';
 
 export const load: PageServerLoad = async (event: RequestEvent) => { 
 	const { params } = event;
@@ -20,7 +21,7 @@ export const load: PageServerLoad = async (event: RequestEvent) => {
 		const form = await superValidate(zod(contactSchema));
 
 		const apiClient = createApiClient(event);
-		const respContact = await apiClient.get(`events/${eventId}`, paramContacts);
+		const respContact = await apiClient.get<EventContactsResponse>(`events/${eventId}`, paramContacts);
 
 		const contacts = respContact.eventContacts;
 
@@ -39,7 +40,7 @@ export const load: PageServerLoad = async (event: RequestEvent) => {
 	}
 };
 
-export const actions = {
+export const actions: Actions = {
 	updateContacts: async (event: RequestEvent) => {
 		const { request, params } = event
 		const formData = await request.formData();
