@@ -24,8 +24,8 @@ const Events: CollectionConfig = {
     // create: ({ req: { user } }) => Boolean(user), // Needs refinement - check roles/organizer link
     // update: ({ req: { user } }) => Boolean(user?.roles?.includes('admin')), // Needs refinement
     // delete: ({ req: { user } }) => Boolean(user?.roles?.includes('admin')), // Needs refinement
-    read: isAdminOrEventRole([MANAGER, EDITOR, VIEWER]),
-    create: isAdminOrEventRole([MANAGER, EDITOR]),
+    read: () => true,
+    create: () => true,
     update: isAdminOrEventRole([MANAGER, EDITOR]),
     delete: isAdmin,
   },

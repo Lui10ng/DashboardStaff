@@ -86,7 +86,32 @@ services:
       retries: 5
     restart: unless-stopped
 
-# Define named volumes used by the services
+  ####################
+  # Ngrok Tunnel Service
+  ####################
+  ngrok:
+    container_name: ngrok_dev # Optional: Name container
+    image: ngrok/ngrok:latest # Use the official ngrok image
+    ports:
+      - '4040:4040' # Expose ngrok web UI to host
+    environment:
+      # Reads NGROK_AUTHTOKEN from your .env file
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN?"NGROK_AUTHTOKEN environment variable is required."}
+    # Command to start ngrok tunnel
+    # http payload:3000 => expose the payload service running on port 3000
+    # --url <your-static-domain.ngrok-free.app> => use your static domain
+    command:
+      [
+        'http',
+        '--url',
+        "${NGROK_STATIC_DOMAIN?'NGROK_STATIC_DOMAIN environment variable is required.'}",
+        'payload:3000',
+      ]
+    depends_on:
+      - payload
+    restart: unless-stopped
+
+# Define named volumes used by the servicesF
 volumes:
   postgres_data:
   redis_data:
