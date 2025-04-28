@@ -1,4 +1,4 @@
-import { tickets, vouchers } from '$lib/stores/data';
+import { vouchers } from '$lib/stores/data';
 import type { SeatLayoutData } from '$lib/types/seat-generator';
 import { fail, message, superValidate } from 'sveltekit-superforms';
 import type { PageServerLoad, Actions } from './$types';
@@ -50,7 +50,6 @@ export const load = (async ({ depends, params, fetch: svelteKitFetch }) => {
 	return {
 		form,
 		ticketData,
-		tickets,
 		vouchers,
 		initialConfig
 	};

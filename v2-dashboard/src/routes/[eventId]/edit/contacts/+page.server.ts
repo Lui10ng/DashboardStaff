@@ -18,8 +18,10 @@ export const load = async ({ url, params, fetch: svelteKitFetch }) => {
 			fetchInstance: svelteKitFetch
 		});
 
+		const contacts = respContact.eventContacts;
+
 		return {
-			respContact,
+			contacts,
 			form
 		};
 	} catch (err) {}

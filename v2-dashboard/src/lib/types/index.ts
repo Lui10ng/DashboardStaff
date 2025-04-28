@@ -132,3 +132,6 @@ export type TicketProps = {
 	color: string;
 	status: string;
 };
+
+export type TicketStatus = 'active' | 'disabled';
+export type VoucherStatus = 'active' | 'deactivated' | 'expired';

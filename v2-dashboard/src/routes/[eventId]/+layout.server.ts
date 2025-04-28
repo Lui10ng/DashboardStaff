@@ -14,6 +14,7 @@ export const load: LayoutServerLoad = async ({ url, params, fetch: svelteKitFetc
 	});
 	try {
 		const eventId = params.eventId;
+		const pathname = url.pathname;
 
 		const response = await apiClient.get(`events/${eventId}`, paramsEvent, {
 			fetchInstance: svelteKitFetch
@@ -27,6 +28,7 @@ export const load: LayoutServerLoad = async ({ url, params, fetch: svelteKitFetc
 		return {
 			eventId,
 			siteUrl,
+			pathname,
 			currentEvent: {
 				id: response.id,
 				slug: response.slug,

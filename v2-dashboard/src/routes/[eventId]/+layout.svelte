@@ -2,7 +2,7 @@
 	import { goto } from '$app/navigation';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { navEditEvents, navItems } from '$lib/stores/data';
-	import { page } from '$app/stores';
+
 	import { stateEditEvent } from '$lib/stores/state.svelte.ts';
 
 	let { children, data } = $props();
@@ -12,15 +12,15 @@
 	const activeEditHeader = $derived(stateEditEvent.open);
 
 	const handleActiveNav = (path: string) => {
-		return $page.url.pathname.includes(path) ? 'bg-primary text-white' : '';
+		return data.pathname.includes(path) ? 'bg-primary text-white' : '';
 	};
 
 	const handleActiveEditEventNav = (path: string) => {
-		return $page.url.pathname.includes(path) ? 'bg-primary text-white' : '';
+		return data.pathname.includes(path) ? 'bg-primary text-white' : '';
 	};
 
 	$effect(() => {
-		if ($page.url.pathname.includes('edit')) {
+		if (data.pathname.includes('edit')) {
 			stateEditEvent.open = true;
 		} else {
 			stateEditEvent.open = false;
