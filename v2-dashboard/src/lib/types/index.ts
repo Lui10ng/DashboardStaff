@@ -135,3 +135,19 @@ export type TicketProps = {
 
 export type TicketStatus = 'active' | 'disabled';
 export type VoucherStatus = 'active' | 'deactivated' | 'expired';
+
+export type PromotionProps = {
+	id: string;
+	code: string;
+	description: string;
+	status: 'active' | 'inactive' | 'expired'; // Enum for the promotion status
+	discountType: 'percentage' | 'fixed_amount'; // Enum for the type of discount
+	discountValue: number;
+	currency: 'PHP' | 'USD' | 'EUR' | null; // Enum for currency, empty string for null or undefined
+	usageLimit: number;
+	validFrom: string;
+	validUntil: string;
+	minimumOrderAmount: number;
+	appliesToAllEvents: boolean;
+	applicableEvents: Event[];
+};

@@ -300,45 +300,6 @@ export const tickets = [
 	}
 ];
 
-export const vouchers = [
-	{
-		id: 'TJMON1',
-		discount: '-50%',
-		status: 'Expired',
-		validUntil: 'Feb 9, 2023',
-		validTime: '5:00 AM',
-		sold: '35/50',
-		progressColor: 'bg-purple-800'
-	},
-	{
-		id: 'TJMON1',
-		discount: '-25%',
-		status: 'Deactivated',
-		validUntil: 'Feb 8, 2023',
-		validTime: '6:00 AM',
-		sold: '35/50',
-		progressColor: 'bg-purple-800'
-	},
-	{
-		id: 'TJMON1',
-		discount: '-20%',
-		status: 'Active',
-		validUntil: 'Feb 8, 2023',
-		validTime: '8:00 AM',
-		sold: '35/50',
-		progressColor: 'bg-purple-800'
-	},
-	{
-		id: 'TJMON1',
-		discount: '-10%',
-		status: 'Expired',
-		validUntil: 'Feb 8, 2023',
-		validTime: '6:00 AM',
-		sold: '35/50',
-		progressColor: 'bg-purple-800'
-	}
-];
-
 export const eventList = [
 	{
 		id: '1',
