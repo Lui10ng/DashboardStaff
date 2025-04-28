@@ -1,4 +1,4 @@
-export const awsURL = "http://localhost:3000";
+export const awsURL = 'http://localhost:3000';
 export const navItems = (eventId: string) => [
 	{
 		path: `/${eventId}/registrants`,
@@ -13,7 +13,7 @@ export const navItems = (eventId: string) => [
 		label: 'form'
 	},
 	{
-		path: `/${eventId}/merchant`,
+		path: `/${eventId}/merchant/ticket`,
 		label: 'merchant'
 	},
 	{

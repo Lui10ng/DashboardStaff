@@ -2,86 +2,9 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Drawer from '$lib/components/ui/Drawer.svelte';
 
-	// Donations data
-	const donationData = [
-		{
-			id: 1,
-			name: 'Sean Kirk Handayan',
-			contact: '09123141245',
-			email: 'handayan.seankirk1@gmail.com',
-			donationAmount: 500.0,
-			netAmount: 450.0,
-			date: '3/11/2025',
-			time: '8:00 AM',
-			liveMode: true
-		},
-		{
-			id: 2,
-			name: 'Jie Clark Terec',
-			contact: '09123431245',
-			email: 'terec.jie1@gmail.com',
-			donationAmount: 200.0,
-			netAmount: 180.0,
-			date: '3/7/2025',
-			time: '8:00 AM',
-			liveMode: true
-		},
-		{
-			id: 3,
-			name: 'Kenneth Sayan',
-			contact: '09323360032',
-			email: 'sayan.kenneth1@gmail.com',
-			donationAmount: 1500.0,
-			netAmount: 1350.0,
-			date: '3/14/2025',
-			time: '8:00 AM',
-			liveMode: true
-		},
-		{
-			id: 4,
-			name: 'Jerald Timbang',
-			contact: '09845584545',
-			email: 'timbang.jerald1@gmail.com',
-			donationAmount: 5400.0,
-			netAmount: 4860.0,
-			date: '3/29/2025',
-			time: '8:00 AM',
-			liveMode: true
-		},
-		{
-			id: 5,
-			name: 'Renato Estravela',
-			contact: '09239847848',
-			email: 'estravela.renato1@gmail.com',
-			donationAmount: 7900.0,
-			netAmount: 7110.0,
-			date: '3/31/2025',
-			time: '8:00 AM',
-			liveMode: true
-		},
-		{
-			id: 6,
-			name: 'March Louie Macion',
-			contact: '09994423244',
-			email: 'macion.marchlouie1@gmail.com',
-			donationAmount: 10500.0,
-			netAmount: 9450.0,
-			date: '3/23/2025',
-			time: '8:00 AM',
-			liveMode: true
-		},
-		{
-			id: 7,
-			name: 'Harold Rhey Picos',
-			contact: '09424242424',
-			email: 'picos.haroldrhey1@gmail.com',
-			donationAmount: 32500.0,
-			netAmount: 29250.0,
-			date: '3/25/2025',
-			time: '8:00 AM',
-			liveMode: true
-		}
-	];
+	let { data } = $props();
+
+	const donationData = $derived(data.donationData);
 
 	// Donation settings
 	let donationEnabled = $state(true);
@@ -130,7 +53,7 @@
 				Onchange={() => (donationEnabled = !donationEnabled)}
 			/>
 			<div
-				class="peer h-6 w-11 rounded-full bg-gray-200 peer-checked:bg-gray-600 peer-focus:outline-none after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"
+				class="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none"
 			></div>
 		</div>
 	</div>
@@ -217,7 +140,7 @@
 								Onchange={() => (customDonationEnabled = !customDonationEnabled)}
 							/>
 							<div
-								class="peer h-6 w-11 rounded-full bg-gray-200 peer-checked:bg-gray-600 peer-focus:outline-none after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"
+								class="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none"
 							></div>
 						</div>
 					</div>
@@ -291,7 +214,7 @@
 
 		<div class="relative overflow-x-auto shadow-md sm:rounded-lg">
 			<table class="w-full text-left text-sm text-gray-500">
-				<thead class="bg-gray-50 text-xs text-gray-700 uppercase">
+				<thead class="bg-gray-50 text-xs uppercase text-gray-700">
 					<tr>
 						<th scope="col" class="px-6 py-3">#</th>
 						<th scope="col" class="px-6 py-3">Full Name</th>

@@ -4,9 +4,7 @@
 	let { data } = $props();
 	const { form, errors, enhance, delayed, message } = superForm(data.form);
 
-	let eventContacts = $derived(data.respContact.eventContacts);
-
-	$inspect('eventContacts: ', eventContacts);
+	let eventContacts = $derived(data.contacts);
 
 	let imagePreview: string | null = $state(null);
 	let imageFile: File | null = $state(null);
