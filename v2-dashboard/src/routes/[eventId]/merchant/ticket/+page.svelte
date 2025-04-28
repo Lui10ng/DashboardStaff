@@ -3,7 +3,7 @@
 	import Drawer from '$lib/components/ui/Drawer.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
 	import { ticketDrawer, voucherDrawer, editTicketDrawer } from '$lib/stores/state.svelte';
-	import type { TicketProps, TicketStatus, VoucherStatus } from '$lib/types';
+	import type { TicketProps, TicketStatus, PromotionProps, VoucherStatus } from '$lib/types';
 	import { Tabs } from 'bits-ui';
 	import { seatGeneratorStore } from '$lib/stores/seat-generator.svelte';
 	import type { SeatConfig as SeatConfigType } from '$lib/types/seat-generator';
@@ -21,17 +21,37 @@
 	import SeatStats from '$lib/components/seat-generator/SeatStats.svelte';
 	import { formatDate } from '$lib/utils/datetime.js';
 	import VoucherToggle from '$lib/components/ui/VoucherToggle.svelte';
-	import { voucherStore } from '$lib/stores';
 
 	let { data } = $props();
 
 	const ticketList: TicketProps[] = $derived(data.ticketData);
+	const voucherList: PromotionProps[] = $derived(data.voucherData);
 
-	const { form, errors, enhance, delayed, message } = superForm(data.form);
+	const {
+		form: ticketForm,
+		errors: ticketErrors,
+		enhance: ticketEnhance,
+		delayed: ticketDelayed,
+		message: ticketMessage
+	} = superForm(data.ticketForm);
 
-	message.subscribe(async (msg) => {
+	const {
+		form: voucherForm,
+		errors: voucherErrors,
+		enhance: voucherEnhance,
+		delayed: voucherDelayed,
+		message: voucherMessage
+	} = superForm(data.voucherForm);
+
+	ticketMessage.subscribe(async (msg) => {
 		if (msg && msg.success) {
 			ticketDrawer.open = false;
+		}
+	});
+
+	voucherMessage.subscribe(async (msg) => {
+		if (msg && msg.success) {
+			voucherDrawer.open = false;
 		}
 	});
 
@@ -63,6 +83,9 @@
 	// Add voucher toggle state
 	let voucherEnabled = $state(true);
 
+	let discountType = $state('percentage'); // default selected
+	// you can change this or make it dynamic
+
 	// Toggle function for vouchers
 	const toggleVouchers = () => {
 		voucherEnabled = !voucherEnabled;
@@ -85,9 +108,9 @@
 	};
 
 	const getStatusColor = (status: string) => {
-		if (status === 'Active') return 'bg-green-500';
-		else if (status === 'Expired') return 'bg-red-500';
-		else if (status === 'Deactivated') return 'bg-gray-500';
+		if (status === 'active') return 'bg-green-500';
+		else if (status === 'expired') return 'bg-red-500';
+		else if (status === 'deactivated') return 'bg-gray-500';
 		else return 'bg-gray-400';
 	};
 
@@ -117,10 +140,6 @@
 		}
 		return 'Select Tickets';
 	};
-
-	$effect(() => {
-		voucherStore.set(data.vouchers);
-	});
 
 	$effect(() => {
 		if (initialized) return;
@@ -200,7 +219,7 @@
 
 						<Tabs.Content value="ticket">
 							<div class="mx-auto max-w-xl p-8">
-								<form action="?/createTicket" method="POST" use:enhance>
+								<form action="?/createTicket" method="POST" use:ticketEnhance>
 									<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 										<div class="space-y-6">
 											<div>
@@ -211,9 +230,9 @@
 													placeholder="Enter ticket name"
 													class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
 												/>
-												{#if $errors.ticketName}
+												{#if $ticketErrors.ticketName}
 													<p class="text-primary text-sm">
-														{$errors.ticketName}
+														{$ticketErrors.ticketName}
 													</p>
 												{/if}
 											</div>
@@ -225,9 +244,9 @@
 													placeholder="Enter ticket price"
 													class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
 												/>
-												{#if $errors.price}
+												{#if $ticketErrors.price}
 													<p class="text-primary text-sm">
-														{$errors.price}
+														{$ticketErrors.price}
 													</p>
 												{/if}
 											</div>
@@ -236,9 +255,9 @@
 													>Valid from (DD/MM/YYYY)</label
 												>
 												<DatePicker name="validfrom" className="" />
-												{#if $errors.validfrom}
+												{#if $ticketErrors.validfrom}
 													<p class="text-primary text-sm">
-														{$errors.validfrom}
+														{$ticketErrors.validfrom}
 													</p>
 												{/if}
 											</div>
@@ -247,9 +266,9 @@
 													>Valid to (DD/MM/YYYY)</label
 												>
 												<DatePicker name="validto" className="" />
-												{#if $errors.validto}
+												{#if $ticketErrors.validto}
 													<p class="text-primary text-sm">
-														{$errors.validto}
+														{$ticketErrors.validto}
 													</p>
 												{/if}
 											</div>
@@ -263,9 +282,9 @@
 													placeholder="Enter quantity"
 													class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
 												/>
-												{#if $errors.quantity}
+												{#if $ticketErrors.quantity}
 													<p class="text-primary text-sm">
-														{$errors.quantity}
+														{$ticketErrors.quantity}
 													</p>
 												{/if}
 											</div>
@@ -277,9 +296,9 @@
 													placeholder="Enter min quantity"
 													class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
 												/>
-												{#if $errors.minOrderQuantity}
+												{#if $ticketErrors.minOrderQuantity}
 													<p class="text-primary text-sm">
-														{$errors.minOrderQuantity}
+														{$ticketErrors.minOrderQuantity}
 													</p>
 												{/if}
 											</div>
@@ -291,9 +310,9 @@
 													placeholder="Enter max quantity"
 													class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
 												/>
-												{#if $errors.maxOrderQuantity}
+												{#if $ticketErrors.maxOrderQuantity}
 													<p class="text-primary text-sm">
-														{$errors.maxOrderQuantity}
+														{$ticketErrors.maxOrderQuantity}
 													</p>
 												{/if}
 											</div>
@@ -339,9 +358,9 @@
 											</label>
 										</div>
 
-										{#if $errors.color}
+										{#if $ticketErrors.color}
 											<p class="text-primary text-sm">
-												{$errors.color}
+												{$ticketErrors.color}
 											</p>
 										{/if}
 									</div>
@@ -456,9 +475,9 @@
 														placeholder="Enter ticket name"
 														class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
 													/>
-													{#if $errors.ticketName}
+													{#if $ticketErrors.ticketName}
 														<p class="text-primary text-sm">
-															{$errors.ticketName}
+															{$ticketErrors.ticketName}
 														</p>
 													{/if}
 												</div>
@@ -471,9 +490,9 @@
 														placeholder="Enter ticket price"
 														class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
 													/>
-													{#if $errors.price}
+													{#if $ticketErrors.price}
 														<p class="text-primary text-sm">
-															{$errors.price}
+															{$ticketErrors.price}
 														</p>
 													{/if}
 												</div>
@@ -482,9 +501,9 @@
 														>Valid from (DD/MM/YYYY)</label
 													>
 													<DatePicker name="validfrom" className="" />
-													{#if $errors.validfrom}
+													{#if $ticketErrors.validfrom}
 														<p class="text-primary text-sm">
-															{$errors.validfrom}
+															{$ticketErrors.validfrom}
 														</p>
 													{/if}
 												</div>
@@ -493,9 +512,9 @@
 														>Valid to (DD/MM/YYYY)</label
 													>
 													<DatePicker name="validto" className="" />
-													{#if $errors.validto}
+													{#if $ticketErrors.validto}
 														<p class="text-primary text-sm">
-															{$errors.validto}
+															{$ticketErrors.validto}
 														</p>
 													{/if}
 												</div>
@@ -512,9 +531,9 @@
 														placeholder="Enter quantity"
 														class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
 													/>
-													{#if $errors.quantity}
+													{#if $ticketErrors.quantity}
 														<p class="text-primary text-sm">
-															{$errors.quantity}
+															{$ticketErrors.quantity}
 														</p>
 													{/if}
 												</div>
@@ -528,9 +547,9 @@
 														placeholder="Enter min quantity"
 														class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
 													/>
-													{#if $errors.minOrderQuantity}
+													{#if $ticketErrors.minOrderQuantity}
 														<p class="text-primary text-sm">
-															{$errors.minOrderQuantity}
+															{$ticketErrors.minOrderQuantity}
 														</p>
 													{/if}
 												</div>
@@ -544,9 +563,9 @@
 														placeholder="Enter max quantity"
 														class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
 													/>
-													{#if $errors.maxOrderQuantity}
+													{#if $ticketErrors.maxOrderQuantity}
 														<p class="text-primary text-sm">
-															{$errors.maxOrderQuantity}
+															{$ticketErrors.maxOrderQuantity}
 														</p>
 													{/if}
 												</div>
@@ -594,9 +613,9 @@
 												</label>
 											</div>
 
-											{#if $errors.color}
+											{#if $ticketErrors.color}
 												<p class="text-primary text-sm">
-													{$errors.color}
+													{$ticketErrors.color}
 												</p>
 											{/if}
 										</div>
@@ -743,56 +762,144 @@
 					<p class="text-sm text-gray-500">Please fill up your voucher information</p>
 				</div>
 
-				<div class="space-y-4">
+				<form action="?/createVoucher" method="POST" use:voucherEnhance class="space-y-4">
 					<!-- Form inputs -->
-					<div>
-						<label for="voucher-name" class="mb-2 block text-sm">Voucher Name</label>
-						<input
-							type="text"
-							id="voucher-name"
-							placeholder="Enter voucher name"
-							class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
-						/>
-					</div>
 
 					<div>
-						<label for="discount-amount" class="mb-2 block text-sm">Discount amount</label>
+						<label for="code" class="mb-2 block text-sm">Voucher Code</label>
 						<input
 							type="text"
-							id="discount-amount"
-							placeholder="e.g., 50 or 10%"
-							class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
+							name="code"
+							placeholder="Enter voucher code"
+							class="w-full rounded-md border-none bg-gray-100 p-3 uppercase"
 						/>
+						{#if $voucherErrors.code}
+							<p class="text-primary text-sm">
+								{$voucherErrors.code}
+							</p>
+						{/if}
+					</div>
+					<div>
+						<label for="code" class="mb-2 block text-sm"
+							>Description <span class="text-gray-500">(optional)</span></label
+						>
+						<input
+							type="text"
+							name="description"
+							placeholder="Enter description"
+							class="w-full rounded-md border-none bg-gray-100 p-3"
+						/>
+						{#if $voucherErrors.description}
+							<p class="text-primary text-sm">
+								{$voucherErrors.description}
+							</p>
+						{/if}
 					</div>
 
 					<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 						<div>
-							<label for="quantity" class="mb-2 block text-sm">Quantity</label>
-							<input
-								type="number"
-								id="quantity"
-								placeholder="Enter quantity"
-								class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
+							<label for="discountType" class="mb-2 block text-sm">Type</label>
+							<select
+								bind:value={discountType}
+								name="discountType"
+								class="w-full rounded-md border-none bg-gray-100 p-3"
+							>
+								<option value="percentage">Percentage Off (%)</option>
+								<option value="fixed_amount">Fixed Amount Off</option>
+							</select>
+							{#if $voucherErrors.discountType}
+								<p class="text-primary text-sm">
+									{$voucherErrors.discountType}
+								</p>
+							{/if}
+						</div>
+
+						<div>
+							<label for="discountValue" class="mb-2 block text-sm">Discount amount</label>
+							<div class="relative w-full">
+								{#if discountType === 'fixed_amount'}
+									<select
+										name="currency"
+										class="absolute left-2 top-1/2 -translate-y-1/2 rounded-md bg-gray-100 py-1 pl-1 pr-6 text-sm font-medium"
+									>
+										<option value="PHP">PHP</option>
+										<option value="USD">USD</option>
+										<option value="EUR">EUR</option>
+									</select>
+								{/if}
+								<input
+									type="number"
+									name="discountValue"
+									placeholder="e.g., 50 or 10%"
+									class="w-full rounded-md border-none bg-gray-100 p-3 {discountType ===
+									'fixed_amount'
+										? 'pl-24'
+										: ''}"
+								/>
+							</div>
+							{#if $voucherErrors.discountValue}
+								<p class="text-primary text-sm">
+									{$voucherErrors.discountValue}
+								</p>
+							{/if}
+						</div>
+					</div>
+
+					<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+						<div>
+							<label for="validFrom" class="mb-2 block text-sm">Valid From</label>
+							<DatePicker
+								name="validFrom"
+								className="h-input rounded-input  flex w-full select-none items-center border px-2 py-4 bg-gray-100"
 							/>
+							{#if $voucherErrors.validFrom}
+								<p class="text-primary text-sm">
+									{$voucherErrors.validFrom}
+								</p>
+							{/if}
 						</div>
 						<div>
-							<label for="limit-bulk-quantity" class="mb-2 block text-sm">Limit Bulk Quantity</label
-							>
-							<input
-								type="number"
-								id="limit-bulk-quantity"
-								placeholder="Enter quantity"
-								class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
+							<label for="validUntil" class="mb-2 block text-sm">Valid Until</label>
+							<DatePicker
+								name="validUntil"
+								className="h-input rounded-input  flex w-full select-none items-center border px-2 py-4 bg-gray-100"
 							/>
+							{#if $voucherErrors.validUntil}
+								<p class="text-primary text-sm">
+									{$voucherErrors.validUntil}
+								</p>
+							{/if}
 						</div>
 					</div>
 
 					<div>
-						<label for="expiry" class="mb-2 block text-sm">Expiry</label>
-						<DatePicker
-							name="expiry"
-							className="rounded-md border-none bg-[#F8F9FC] p-3 text-sm w-fit"
+						<label for="quantity" class="mb-2 block text-sm">Quantity</label>
+						<input
+							type="number"
+							name="quantity"
+							placeholder="Enter quantity"
+							class="w-full rounded-md border-none bg-gray-100 p-3"
 						/>
+						{#if $voucherErrors.quantity}
+							<p class="text-primary text-sm">
+								{$voucherErrors.quantity}
+							</p>
+						{/if}
+					</div>
+
+					<div>
+						<label for="code" class="mb-2 block text-sm">Minimum Order Amount</label>
+						<input
+							type="text"
+							name="minOrderAmount"
+							placeholder="Enter minimum order"
+							class="w-full rounded-md border-none bg-gray-100 p-3"
+						/>
+						{#if $voucherErrors.minOrderAmount}
+							<p class="text-primary text-sm">
+								{$voucherErrors.minOrderAmount}
+							</p>
+						{/if}
 					</div>
 
 					<div>
@@ -879,56 +986,25 @@
 
 						<!-- Voucher Code -->
 						<div class="space-y-2">
-							<label for="voucher-code" class="mb-2 block text-sm">Voucher Code</label>
-							<div class="flex flex-col gap-2 sm:flex-row">
-								<div class="relative">
-									<select
-										id="voucher-code"
-										bind:value={voucherCode}
-										class="w-full appearance-none rounded-md border-none bg-[#F8F9FC] p-3 pr-8 text-sm"
-									>
-										<option value="QGN342">QGN342</option>
-									</select>
-									<div
-										class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2"
-									>
-										<i class="fa-solid fa-chevron-down text-gray-400"></i>
-									</div>
-								</div>
-								<button
-									aria-labelledby="voucher-code"
-									Onclick={() => {
-										navigator.clipboard.writeText(voucherCode);
-									}}
-									class="flex w-full items-center justify-center rounded-md border border-gray-200 px-3 py-2 hover:bg-gray-50 sm:w-auto sm:py-0"
-									title="Copy voucher code"
-								>
-									<i class="fa-regular fa-copy text-gray-600"></i>
-								</button>
-							</div>
-
 							<!-- Action Buttons -->
 							<div class="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-start">
-								<button
-									class="w-full rounded-md bg-[#DF4D60] px-4 py-2 text-sm text-white hover:bg-[#DF4D60]/90 sm:w-auto"
-									Onclick={() => {
+								<Button
+									type="submit"
+									onClick={() => {}}
+									label="Add Voucher"
+									className="w-full rounded-md bg-primary px-4 py-2  text-white  sm:w-auto"
+								/>
+								<Button
+									onClick={() => {
 										voucherDrawer.open = false;
 									}}
-								>
-									Add Voucher
-								</button>
-								<button
-									class="w-full rounded-md border border-gray-200 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 sm:w-auto"
-									Onclick={() => {
-										voucherDrawer.open = false;
-									}}
-								>
-									Cancel
-								</button>
+									label="Cancel"
+									className="w-full rounded-md border border-gray-200 px-4 py-2  text-gray-700 hover:bg-gray-50 sm:w-auto"
+								/>
 							</div>
 						</div>
 					</div>
-				</div>
+				</form>
 			</div>
 			<!-- Replace the preview section with this updated code -->
 
@@ -1037,72 +1113,41 @@
 	>
 	{#if voucherEnabled}
 		<div class="block">
-			<!-- Mobile Horizontal Scrolling Container (visible on small screens) -->
-			<div class="flex gap-4 overflow-x-auto pb-4 sm:hidden">
-				{#each $voucherStore as voucher}
-					<div class="min-w-[260px] flex-shrink-0 rounded-lg border border-gray-400 shadow-sm">
-						<div class="space-y-2 p-4">
-							<div class="flex items-start justify-between">
-								<div class="font-medium">{voucher.id}</div>
-								<div class="flex items-center text-xs">
-									<span class="mr-1 h-2 w-2 rounded-full {getStatusColor(voucher.status)}"></span>
-									{voucher.status}
-								</div>
-							</div>
-							<div class="space-y-4">
-								<div class="text-2xl font-bold text-red-500">{voucher.discount}</div>
-								<div class="space-y-1">
-									<div class="flex justify-between text-xs">
-										<p class="text-gray-500">
-											Valid until {voucher.validUntil} - {voucher.validTime}
-										</p>
-										<p>{voucher.sold}</p>
-									</div>
-									<div class="h-1.5 w-full rounded-full bg-gray-200">
-										<div
-											class={`${voucher.progressColor} h-1.5 rounded-full`}
-											style="width: 70%"
-										></div>
+			<div class="flex gap-4 overflow-x-auto pb-4">
+				{#if voucherList}
+					{#each voucherList as voucher}
+						<div class="min-w-[298px] flex-shrink-0 rounded-lg border border-gray-400 shadow-sm">
+							<div class="space-y-2 p-4">
+								<div class="flex items-start justify-between">
+									<div class="font-medium">{voucher.code}</div>
+									<div class="flex items-center text-xs">
+										<span class="mr-1 h-2 w-2 rounded-full {getStatusColor(voucher.status)}"></span>
+										{voucher.status}
 									</div>
 								</div>
-							</div>
-						</div>
-					</div>
-				{/each}
-			</div>
-
-			<!-- Desktop Grid Layout (hidden on mobile) -->
-			<div class="hidden gap-4 sm:grid sm:grid-cols-2 lg:grid-cols-4">
-				{#each $voucherStore as voucher}
-					<div class="rounded-lg border border-gray-400 shadow-sm">
-						<div class="space-y-2 p-4">
-							<div class="flex items-start justify-between">
-								<div class="font-medium">{voucher.id}</div>
-								<div class="flex items-center text-xs">
-									<span class="mr-1 h-2 w-2 rounded-full {getStatusColor(voucher.status)}"></span>
-									{voucher.status}
-								</div>
-							</div>
-							<div class="space-y-4">
-								<div class="text-2xl font-bold text-red-500">{voucher.discount}</div>
-								<div class="space-y-1">
-									<div class="flex justify-between text-xs">
-										<p class="text-gray-500">
-											Valid until {voucher.validUntil} - {voucher.validTime}
-										</p>
-										<p>{voucher.sold}</p>
+								<div class="space-y-4">
+									<div class="text-2xl font-bold text-red-500">
+										{voucher.currency}
+										{voucher.discountValue}{voucher.currency ? '' : '%'}
 									</div>
-									<div class="h-1.5 w-full rounded-full bg-gray-200">
-										<div
-											class={`${voucher.progressColor} h-1.5 rounded-full`}
-											style="width: 70%"
-										></div>
+									<div class="space-y-1">
+										<div class="flex justify-between text-xs">
+											<p class="text-gray-500">
+												Valid until {formatDate(voucher.validUntil)} - {formatDate(
+													voucher.validFrom
+												)}
+											</p>
+											<p>0/{voucher.usageLimit}</p>
+										</div>
+										<div class="h-1.5 w-full rounded-full bg-gray-200">
+											<div class={`bg-primary h-1.5 rounded-full`} style="width: 70%"></div>
+										</div>
 									</div>
 								</div>
 							</div>
 						</div>
-					</div>
-				{/each}
+					{/each}
+				{/if}
 			</div>
 		</div>
 	{/if}

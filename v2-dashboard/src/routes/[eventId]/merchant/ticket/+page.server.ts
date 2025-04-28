@@ -5,12 +5,14 @@ import type { PageServerLoad, Actions } from './$types';
 import { zod } from 'sveltekit-superforms/adapters';
 import { ticketSchema } from '$lib/schema/ticket';
 import { apiClient } from '$lib/services/payload.server';
+import { voucherSchema } from '$lib/schema';
 
 export const load = (async ({ depends, params, fetch: svelteKitFetch }) => {
 	// for invalidation
 	depends('dashboard:registrants');
 
-	const form = await superValidate(zod(ticketSchema));
+	const ticketForm = await superValidate(zod(ticketSchema));
+	const voucherForm = await superValidate(zod(voucherSchema));
 
 	const initialConfig = {
 		ticketQuantity: 0,
@@ -28,29 +30,32 @@ export const load = (async ({ depends, params, fetch: svelteKitFetch }) => {
 
 	const paramsTicket = new URLSearchParams({
 		'where[event][equals]': params.eventId,
-		'select[name]': 'true',
-		'select[price]': 'true',
-		'select[currency]': 'true',
-		'select[quantityAvailable]': 'true',
-		'select[minOrderQuantity]': 'true',
-		'select[maxOrderQuantity]': 'true',
-		'select[salesStart]': 'true',
-		'select[salesEnd]': 'true',
-		'select[color]': 'true',
-		'select[status]': 'true',
-		sort: 'date'
+		sort: 'date',
+		depth: '0'
 	});
 
-	const response = await apiClient.get('/ticket-types', paramsTicket, {
+	const paramsVoucher = new URLSearchParams({
+		'where[applicableEvents][equals]': params.eventId,
+		sort: 'date',
+		depth: '0'
+	});
+
+	const responseTicket = await apiClient.get('/ticket-types', paramsTicket, {
 		fetchInstance: svelteKitFetch
 	});
 
-	const ticketData = response.docs;
+	const responseVoucher = await apiClient.get('/promotions', paramsVoucher, {
+		fetchInstance: svelteKitFetch
+	});
+
+	const ticketData = responseTicket.docs;
+	const voucherData = responseVoucher.docs;
 
 	return {
-		form,
+		ticketForm,
+		voucherForm,
 		ticketData,
-		vouchers,
+		voucherData,
 		initialConfig
 	};
 }) satisfies PageServerLoad;
@@ -107,9 +112,39 @@ export const actions = {
 		console.log(form.data);
 	},
 
-	createVoucher: async ({ request }) => {
+	createVoucher: async ({ request, params }) => {
 		const data = await request.formData();
-		console.log(data);
+		const eventId = parseInt(params.eventId);
+
+		const form = await superValidate(data, zod(voucherSchema));
+
+		if (!form.valid) {
+			return fail(400, { form });
+		}
+
+		const formData = {
+			code: form.data.code,
+			description: form.data.description,
+			status: 'active', // init
+			discountType: form.data.discountType,
+			discountValue: form.data.discountValue,
+			currency: form.data.currency || null,
+			usageLimit: form.data.quantity,
+			validFrom: new Date(`${form.data.validFrom}T00:00:00Z`).toISOString(),
+			validUntil: new Date(`${form.data.validUntil}T23:59:00Z`).toISOString(),
+			minimumOrderAmount: form.data.minOrderAmount,
+			appliesToAllEvents: false,
+			applicableEvents: [eventId]
+		};
+
+		try {
+			const response = await apiClient.post('/promotions', formData);
+			console.log('response: ', response);
+
+			return message(form, { success: true, message: 'Voucher created successfully' });
+		} catch (err) {
+			return message(form, { success: false, message: 'Error creating voucher' });
+		}
 	},
 
 	updateVoucher: async ({ request }) => {

@@ -58,16 +58,15 @@ export const actions = {
 		});
 
 		try {
-
 			const eventId = await apiClient.get('/events', params, { fetchInstance: svelteKitFetch });
 
-			const registrantData = {				
+			const registrantData = {
 				event: eventId.docs[0].id,
 				submittedAnswers: form.data.tabs
 			};
 
 			const response = await apiClient.post('/registrants', registrantData);
-			console.log("response: ", response);
+			console.log('response: ', response);
 
 			return message(form, { success: true, message: 'Registration successful!' });
 		} catch (error: any) {
