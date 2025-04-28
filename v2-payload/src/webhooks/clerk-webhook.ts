@@ -121,12 +121,15 @@ export const clerkWebhookHandler = async (req: PayloadRequest): Promise<Response
             status: 500,
           })
         }
+        console.log('Successful check if the transaction started successfully')
 
         try {
           // Generate a secure, random password.
           // Even though Clerk handles authentication, Payload often requires a password field.
           // This dummy password won't be used for login if Clerk is the primary auth.
           const randomPassword = crypto.randomBytes(32).toString('hex')
+
+          console.log('Generating random password:', randomPassword)
 
           // Prepare the data for the new Payload User document, mapping fields from Clerk.
           const payloadUserData = {
@@ -136,13 +139,16 @@ export const clerkWebhookHandler = async (req: PayloadRequest): Promise<Response
             password: randomPassword,
             clerkRoles: [PLATFORM_ROLES.ORGANIZER],
           }
+
+          console.log('Creating user in Payload:', payloadUserData)
           // Create the User document in Payload within the transaction.
-          const userDoc = await payload.create({
+          const userDoc = await payload.db.create({
             collection: 'users',
             data: payloadUserData,
             // Pass the transaction ID to include this operation in the transaction.
             req: { transactionID: transactionID },
           })
+          console.log('Created user in Payload:', userDoc)
           const payloadUserId = userDoc.id // Get the ID of the newly created Payload user.
 
           // Commit (finalize) the transaction.
@@ -158,11 +164,12 @@ export const clerkWebhookHandler = async (req: PayloadRequest): Promise<Response
           // If any error occurred during the try block (user or organizer creation),
           // rollback (undo) the transaction.
           await payload.db.rollbackTransaction(transactionID)
-
+          console.log('Error creating user and organizer:', JSON.stringify(error,null,2), msg)
           payload.logger.error(
             'Failed to process Clerk user.created webhook within transaction',
             error,
           )
+          
           return new Response(
             JSON.stringify({ success: false, message: 'Failed to create user and organizer' }),
             { status: 500 },

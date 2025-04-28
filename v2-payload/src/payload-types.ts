@@ -649,13 +649,20 @@ export interface User {
    * Internal ID linking to the Clerk authentication provider.
    */
   clerkId?: string | null;
-  organizer?: (number | null) | Organizer;
   /**
    * Roles synced from Clerk. This field is read-only and managed by the authentication system.
    */
   clerkRoles?: ('admin' | 'organizer' | 'attendee' | 'check-in-staff')[] | null;
   updatedAt: string;
   createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  password?: string | null;
 }
 /**
  * Define specific ticket tiers for events (e.g., GA, VIP) and their available quantity.
@@ -1318,10 +1325,16 @@ export interface TransactionsSelect<T extends boolean = true> {
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
   clerkId?: T;
-  organizer?: T;
   clerkRoles?: T;
   updatedAt?: T;
   createdAt?: T;
+  email?: T;
+  resetPasswordToken?: T;
+  resetPasswordExpiration?: T;
+  salt?: T;
+  hash?: T;
+  loginAttempts?: T;
+  lockUntil?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

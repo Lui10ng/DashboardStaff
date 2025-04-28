@@ -7,7 +7,7 @@ import { isAdmin } from '@/access/isAdmin'
 const Users: CollectionConfig = {
   slug: 'users',
   auth: {
-    disableLocalStrategy: true,
+    // disableLocalStrategy: true,
     strategies: [clerkOrPayloadAdminStrategy],
   },
   admin: {
@@ -56,21 +56,16 @@ const Users: CollectionConfig = {
         position: 'sidebar',
         description: 'Internal ID linking to the Clerk authentication provider.',
       },
-      // Access should be highly restricted, likely admin only read/update
-      access: {
-        // read: isAdmin,
-        // update: isAdmin,
-      },
     },
-    {
-      name: 'organizer', // Or 'associatedOrganizer', etc.
-      label: 'Associated Organizer',
-      type: 'relationship',
-      relationTo: 'organizers',
-      hasMany: false, // A user typically belongs to/manages one primary organizer
-      required: false, // Or true if every user MUST be linked
-      index: true,
-    },
+    // {
+    //   name: 'organizer', // Or 'associatedOrganizer', etc.
+    //   label: 'Associated Organizer',
+    //   type: 'relationship',
+    //   relationTo: 'organizers',
+    //   hasMany: false, // A user typically belongs to/manages one primary organizer
+    //   required: false, // Or true if every user MUST be linked
+    //   index: true,
+    // },
     {
       name: 'clerkRoles',
       label: 'Clerk Roles',
