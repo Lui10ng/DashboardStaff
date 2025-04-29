@@ -421,6 +421,12 @@ const Events: CollectionConfig = {
         readOnly: true,
       },
     },
+    {
+      name: 'ticketType',
+      type: 'join',
+      collection: 'ticket-types',
+      on: 'event',
+    },
   ],
   timestamps: true,
 }

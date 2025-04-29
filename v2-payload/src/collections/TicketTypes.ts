@@ -83,6 +83,12 @@ const TicketTypes: CollectionConfig = {
     { name: 'minOrderQuantity', type: 'number', defaultValue: 1, min: 1 },
     { name: 'maxOrderQuantity', type: 'number', min: 1 },
     { name: 'color', type: 'text', required: true },
+    {
+      name: 'promotion',
+      type: 'join',
+      collection: 'promotions',
+      on: 'applicableTicketTypes',
+    },
   ],
   timestamps: true,
 };

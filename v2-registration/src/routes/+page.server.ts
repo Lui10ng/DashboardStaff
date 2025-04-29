@@ -5,18 +5,19 @@ import { zod } from 'sveltekit-superforms/adapters';
 import { message, superValidate } from 'sveltekit-superforms/server';
 
 let schema: any = null;
+let eventId = '';
 
 export const load = async ({ url, fetch: svelteKitFetch }) => {
 	const hostName = url.hostname;
 	const subdomain = hostName.split('.')[0];
 
 	const params = new URLSearchParams({
-		'where[slug][equals]': subdomain,
-		depth: '1'
+		'where[slug][equals]': subdomain
 	});
 
 	try {
 		const formData = await apiClient.get('/events', params, { fetchInstance: svelteKitFetch });
+
 		if (formData && formData.docs[0].formId.formBuilder) {
 			const formBuilder = formData.docs[0].formId.formBuilder;
 
@@ -27,6 +28,7 @@ export const load = async ({ url, fetch: svelteKitFetch }) => {
 
 			const eventDetails = formData.docs[0];
 			const buttonText = eventDetails.formId.buttonText;
+			eventId = formData.docs[0].id;
 
 			return {
 				form,
@@ -40,10 +42,7 @@ export const load = async ({ url, fetch: svelteKitFetch }) => {
 };
 
 export const actions = {
-	register: async ({ url, request, fetch: svelteKitFetch }) => {
-		const hostName = url.hostname;
-		const subdomain = hostName.split('.')[0];
-
+	register: async ({ request }) => {
 		const formData = await request.formData();
 
 		const form = await superValidate(formData, zod(schema));
@@ -52,16 +51,9 @@ export const actions = {
 			return fail(400, { form });
 		}
 
-		const params = new URLSearchParams({
-			'where[slug][equals]': subdomain,
-			select: 'id'
-		});
-
 		try {
-			const eventId = await apiClient.get('/events', params, { fetchInstance: svelteKitFetch });
-
 			const registrantData = {
-				event: eventId.docs[0].id,
+				event: eventId,
 				submittedAnswers: form.data.tabs
 			};
 

@@ -88,7 +88,14 @@ export interface Config {
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
-  collectionsJoins: {};
+  collectionsJoins: {
+    events: {
+      ticketType: 'ticket-types';
+    };
+    'ticket-types': {
+      promotion: 'promotions';
+    };
+  };
   collectionsSelect: {
     'event-announcements': EventAnnouncementsSelect<false> | EventAnnouncementsSelect<true>;
     'event-categories': EventCategoriesSelect<false> | EventCategoriesSelect<true>;
@@ -259,6 +266,11 @@ export interface Event {
    * The registration form for this event
    */
   formId?: (number | null) | Form;
+  ticketType?: {
+    docs?: (number | TicketType)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -619,42 +631,6 @@ export interface Form {
   createdAt: string;
 }
 /**
- * Records of ticket purchases (by users or guests) and their status.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "orders".
- */
-export interface Order {
-  id: number;
-  /**
-   * Link to the user account if the purchase was made while logged in.
-   */
-  orderedBy?: (number | null) | User;
-  guestEmail?: string | null;
-  event: number | Event;
-  items: {
-    ticketType: number | TicketType;
-    quantity: number;
-    pricePerTicket: number;
-    currency: string;
-    subtotal: number;
-    id?: string | null;
-  }[];
-  subtotalAmount?: number | null;
-  promotion?: (number | null) | Promotion;
-  discountAmount?: number | null;
-  /**
-   * Amount donated during checkout (if applicable).
-   */
-  donationAmount?: number | null;
-  finalAmount: number;
-  currency: string;
-  paymentIntentId?: string | null;
-  notes?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
  * Define specific ticket tiers for events (e.g., GA, VIP) and their available quantity.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -680,6 +656,11 @@ export interface TicketType {
   minOrderQuantity?: number | null;
   maxOrderQuantity?: number | null;
   color: string;
+  promotion?: {
+    docs?: (number | Promotion)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -718,6 +699,43 @@ export interface Promotion {
    * Only applies to these specific events if not checked above.
    */
   applicableEvents?: (number | Event)[] | null;
+  applicableTicketTypes?: (number | TicketType)[] | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Records of ticket purchases (by users or guests) and their status.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "orders".
+ */
+export interface Order {
+  id: number;
+  /**
+   * Link to the user account if the purchase was made while logged in.
+   */
+  orderedBy?: (number | null) | User;
+  guestEmail?: string | null;
+  event: number | Event;
+  items: {
+    ticketType: number | TicketType;
+    quantity: number;
+    pricePerTicket: number;
+    currency: string;
+    subtotal: number;
+    id?: string | null;
+  }[];
+  subtotalAmount?: number | null;
+  promotion?: (number | null) | Promotion;
+  discountAmount?: number | null;
+  /**
+   * Amount donated during checkout (if applicable).
+   */
+  donationAmount?: number | null;
+  finalAmount: number;
+  currency: string;
+  paymentIntentId?: string | null;
+  notes?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -994,6 +1012,7 @@ export interface EventsSelect<T extends boolean = true> {
         id?: T;
       };
   formId?: T;
+  ticketType?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1130,6 +1149,7 @@ export interface PromotionsSelect<T extends boolean = true> {
   minimumOrderAmount?: T;
   appliesToAllEvents?: T;
   applicableEvents?: T;
+  applicableTicketTypes?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1225,6 +1245,7 @@ export interface TicketTypesSelect<T extends boolean = true> {
   minOrderQuantity?: T;
   maxOrderQuantity?: T;
   color?: T;
+  promotion?: T;
   updatedAt?: T;
   createdAt?: T;
 }
