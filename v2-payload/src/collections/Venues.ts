@@ -1,6 +1,8 @@
-// src/collections/Venues.ts
-import type { CollectionConfig } from 'payload';
-import type { User } from '../payload-types';
+import type { CollectionConfig } from 'payload'
+import { isAdminOrEventRole } from '@/access/isAdminOrEventRole'
+import { EVENT_ROLES } from '@/types/eventRoles'
+
+const { MANAGER, EDITOR, VIEWER } = EVENT_ROLES
 
 const Venues: CollectionConfig = {
   slug: 'venues',
@@ -14,13 +16,10 @@ const Venues: CollectionConfig = {
   // Access Control Notes:
   // Public read often needed. Create/Update might be admin-only or restricted roles.
   access: {
-    read: () => true, // Public can view venue details
-    create: () => true,
-    update: () => true,
-    delete: () => true,
-    // create: ({ req: { user } }) => user?.roles?.includes('admin'), // Example: Only admins create
-    // update: ({ req: { user } }) => user?.roles?.includes('admin'), // Example: Only admins update
-    // delete: ({ req: { user } }) => user?.roles?.includes('admin'), // Example: Only admins delete
+    read: isAdminOrEventRole([MANAGER, EDITOR, VIEWER]), // Public can view venue details
+    create: isAdminOrEventRole([MANAGER, EDITOR]),
+    update: isAdminOrEventRole([MANAGER, EDITOR]),
+    delete: isAdminOrEventRole([MANAGER, EDITOR]),
   },
   fields: [
     {
@@ -67,23 +66,23 @@ const Venues: CollectionConfig = {
         step: 10,
       },
     },
-     // --- Contact Info ---
+    // --- Contact Info ---
     {
-        type: 'row', // Layout helper for admin UI
-        fields: [
-             {
-                name: 'contactEmail',
-                label: 'Venue Contact Email',
-                type: 'email',
-                 admin: { width: '50%' },
-            },
-            {
-                name: 'contactPhone',
-                label: 'Venue Contact Phone',
-                type: 'text',
-                 admin: { width: '50%' },
-            },
-        ]
+      type: 'row', // Layout helper for admin UI
+      fields: [
+        {
+          name: 'contactEmail',
+          label: 'Venue Contact Email',
+          type: 'email',
+          admin: { width: '50%' },
+        },
+        {
+          name: 'contactPhone',
+          label: 'Venue Contact Phone',
+          type: 'text',
+          admin: { width: '50%' },
+        },
+      ],
     },
     {
       name: 'website',
@@ -110,8 +109,8 @@ const Venues: CollectionConfig = {
       label: 'Seating Chart Notes',
       type: 'textarea',
       admin: {
-          description: 'Internal notes about typical seating arrangements or venue specifics.',
-      }
+        description: 'Internal notes about typical seating arrangements or venue specifics.',
+      },
     },
     // Optional link to a default seat map associated with this venue.
     // An Event using this venue could potentially inherit this map if not specified otherwise.
@@ -123,10 +122,10 @@ const Venues: CollectionConfig = {
       hasMany: false,
       admin: {
         description: 'Optional: Select a default seat map layout commonly used at this venue.',
-      }
-    }
+      },
+    },
   ],
   timestamps: true,
-};
+}
 
-export default Venues;
+export default Venues

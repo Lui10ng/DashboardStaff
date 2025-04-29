@@ -1,16 +1,22 @@
-// src/collections/Orders.ts
-import type { CollectionConfig } from 'payload';
-// import { isAdmin } from '../access/isAdmin';
-// import { isOwnerOrAdmin_Complex } from '../access/isOwnerOrAdmin_Complex'; // Needs custom logic for guests
-import type { User } from '../payload-types';
+import type { CollectionConfig } from 'payload'
+import { isAdmin } from '@/access/isAdmin'
 
 const Orders: CollectionConfig = {
   slug: 'orders',
   admin: {
     useAsTitle: 'id',
     description: 'Records of ticket purchases (by users or guests) and their status.',
-    defaultColumns: ['id', 'orderStatus', 'orderedBy', 'guestEmail', 'event', 'finalAmount', 'currency', 'createdAt'],
-    listSearchableFields: ['id', 'paymentIntentId', 'guestEmail', /* Add user email? */],
+    defaultColumns: [
+      'id',
+      'orderStatus',
+      'orderedBy',
+      'guestEmail',
+      'event',
+      'finalAmount',
+      'currency',
+      'createdAt',
+    ],
+    listSearchableFields: ['id', 'paymentIntentId', 'guestEmail' /* Add user email? */],
     // disableCreation: true, // Orders created via checkout flow, not manually
   },
   // Access Control Notes:
@@ -22,8 +28,8 @@ const Orders: CollectionConfig = {
     // read: isOwnerOrAdmin_Complex('orderedBy', 'guestEmail'), // Custom function needed
     read: () => true,
     create: () => true, // Allow programmatic creation via checkout endpoint (auth handled there)
-    update: () => true,
-    delete: () => true, 
+    update: isAdmin,
+    delete: isAdmin,
     // update: isAdmin, // Only admins or system processes update orders
     // delete: isAdmin, // Restrict deletion
   },
@@ -39,7 +45,7 @@ const Orders: CollectionConfig = {
       admin: {
         readOnly: true,
         description: 'Link to the user account if the purchase was made while logged in.',
-      }
+      },
     },
     {
       name: 'guestEmail',
@@ -47,15 +53,15 @@ const Orders: CollectionConfig = {
       type: 'email',
       index: true,
       // Required only if 'orderedBy' is null/empty
-    //   validate: (value, { siblingData }) => {
-    //     if (!siblingData.orderedBy && !value) {
-    //       return 'Guest Email is required if the order is not placed by a logged-in user.';
-    //     }
-    //     if (value && typeof value === 'string' && !value.includes('@')) {
-    //         return 'Please enter a valid email address.'; // Basic format check
-    //     }
-    //     return true;
-    //   },
+      //   validate: (value, { siblingData }) => {
+      //     if (!siblingData.orderedBy && !value) {
+      //       return 'Guest Email is required if the order is not placed by a logged-in user.';
+      //     }
+      //     if (value && typeof value === 'string' && !value.includes('@')) {
+      //         return 'Please enter a valid email address.'; // Basic format check
+      //     }
+      //     return true;
+      //   },
       admin: {
         readOnly: true,
         condition: (data) => !data.orderedBy, // Show only if orderedBy is empty
@@ -65,7 +71,11 @@ const Orders: CollectionConfig = {
     {
       name: 'event',
       label: 'Event',
-      type: 'relationship', relationTo: 'events', required: true, hasMany: false, index: true,
+      type: 'relationship',
+      relationTo: 'events',
+      required: true,
+      hasMany: false,
+      index: true,
       admin: { readOnly: true },
     },
     // --- Order Status ---
@@ -76,31 +86,107 @@ const Orders: CollectionConfig = {
     // },
     // --- Order Items (Snapshot) ---
     {
-      name: 'items', label: 'Order Items', type: 'array', required: true, minRows: 1, admin: { readOnly: true },
-      fields: [ // Fields: ticketType (relationship), quantity, pricePerTicket, currency, subtotal (as defined before)
-        { name: 'ticketType', label: 'Ticket Type', type: 'relationship', relationTo: 'ticket-types', required: true },
-        { name: 'quantity', label: 'Qty', type: 'number', required: true, min: 1, admin: { width: '20%' } },
-        { name: 'pricePerTicket', label: 'Price/Ticket', type: 'number', required: true, min: 0, admin: { width: '30%', step: 0.01 } },
-        { name: 'currency', label: 'Currency', type: 'text', required: true, admin: { width: '20%' } },
-        { name: 'subtotal', label: 'Subtotal', type: 'number', required: true, admin: { width: '30%', step: 0.01 } },
+      name: 'items',
+      label: 'Order Items',
+      type: 'array',
+      required: true,
+      minRows: 1,
+      admin: { readOnly: true },
+      fields: [
+        // Fields: ticketType (relationship), quantity, pricePerTicket, currency, subtotal (as defined before)
+        {
+          name: 'ticketType',
+          label: 'Ticket Type',
+          type: 'relationship',
+          relationTo: 'ticket-types',
+          required: true,
+        },
+        {
+          name: 'quantity',
+          label: 'Qty',
+          type: 'number',
+          required: true,
+          min: 1,
+          admin: { width: '20%' },
+        },
+        {
+          name: 'pricePerTicket',
+          label: 'Price/Ticket',
+          type: 'number',
+          required: true,
+          min: 0,
+          admin: { width: '30%', step: 0.01 },
+        },
+        {
+          name: 'currency',
+          label: 'Currency',
+          type: 'text',
+          required: true,
+          admin: { width: '20%' },
+        },
+        {
+          name: 'subtotal',
+          label: 'Subtotal',
+          type: 'number',
+          required: true,
+          admin: { width: '30%', step: 0.01 },
+        },
       ],
     },
     // --- Financial Summary ---
     { name: 'subtotalAmount', label: 'Items Subtotal', type: 'number', admin: { readOnly: true } }, // Sum of item subtotals
-    { name: 'promotion', label: 'Applied Promotion', type: 'relationship', relationTo: 'promotions', hasMany: false, admin: { readOnly: true } },
-    { name: 'discountAmount', label: 'Discount Applied', type: 'number', defaultValue: 0, admin: { readOnly: true } },
-    { name: 'donationAmount', // ** NEW FIELD for Optional Donation **
-      label: 'Optional Donation', type: 'number', min: 0, defaultValue: 0,
-      admin: { description: 'Amount donated during checkout (if applicable).' }
+    {
+      name: 'promotion',
+      label: 'Applied Promotion',
+      type: 'relationship',
+      relationTo: 'promotions',
+      hasMany: false,
+      admin: { readOnly: true },
     },
-     { type: 'row', fields: [
+    {
+      name: 'discountAmount',
+      label: 'Discount Applied',
+      type: 'number',
+      defaultValue: 0,
+      admin: { readOnly: true },
+    },
+    {
+      name: 'donationAmount', // ** NEW FIELD for Optional Donation **
+      label: 'Optional Donation',
+      type: 'number',
+      min: 0,
+      defaultValue: 0,
+      admin: { description: 'Amount donated during checkout (if applicable).' },
+    },
+    {
+      type: 'row',
+      fields: [
         // Final amount needs calculation: subtotal + donation - discount
-        { name: 'finalAmount', label: 'Final Amount Charged', type: 'number', required: true, min: 0, admin: { readOnly: true, width: '50%' } },
-        { name: 'currency', label: 'Order Currency', type: 'text', required: true, admin: { readOnly: true, width: '50%' } },
-      ]
+        {
+          name: 'finalAmount',
+          label: 'Final Amount Charged',
+          type: 'number',
+          required: true,
+          min: 0,
+          admin: { readOnly: true, width: '50%' },
+        },
+        {
+          name: 'currency',
+          label: 'Order Currency',
+          type: 'text',
+          required: true,
+          admin: { readOnly: true, width: '50%' },
+        },
+      ],
     },
     // --- Payment & Notes ---
-    { name: 'paymentIntentId', label: 'Payment Intent ID', type: 'text', index: true, admin: { readOnly: true } },
+    {
+      name: 'paymentIntentId',
+      label: 'Payment Intent ID',
+      type: 'text',
+      index: true,
+      admin: { readOnly: true },
+    },
     { name: 'notes', label: 'Internal Order Notes', type: 'textarea' },
     // NOTE: Removed 'registrationData' JSON field - this will be handled by the dedicated 'Registrants' collection linked to this order.
   ],
@@ -110,10 +196,10 @@ const Orders: CollectionConfig = {
     // - beforeChange: Calculate/validate totals (subtotalAmount, finalAmount including donation/discount).
     // - afterChange: Trigger 'Transactions' log entry on status change (paid, refunded).
     //              Trigger ticket generation on 'paid' status (likely better in worker/saga).
-  }
-};
+  },
+}
 
-export default Orders;
+export default Orders
 
 // --- Example Complex Access Control Function Signature ---
 // Needs careful implementation based on how guest identity is verified (e.g., session, signed URL?)

@@ -23,7 +23,7 @@ services:
       # - /app/dist
       # - /app/.next
     # Run the development command from your package.json
-    command: npm run dev # Or: yarn dev
+    command: pnpm run dev # Or: yarn dev
     env_file:
       - .env # Load variables from .env file
     environment:
@@ -50,7 +50,7 @@ services:
   ####################
   postgres:
     container_name: postgres_dev # Optional: Name container
-    image: postgres:14-alpine # Specific version recommended over latest
+    image: postgres:17-alpine # Specific version recommended over latest
     ports:
       - '${POSTGRES_PORT:-5432}:5432' # Expose port to host (use var from .env or default 5432)
     environment:
@@ -73,7 +73,7 @@ services:
   ####################
   redis:
     container_name: redis_dev # Optional: Name container
-    image: redis:6-alpine # Specific version recommended over latest
+    image: redis:7-alpine # Specific version recommended over latest
     ports:
       - '${REDIS_PORT:-6379}:6379' # Expose port to host (use var from .env or default 6379)
     volumes:
@@ -86,7 +86,32 @@ services:
       retries: 5
     restart: unless-stopped
 
-# Define named volumes used by the services
+  ####################
+  # Ngrok Tunnel Service
+  ####################
+  ngrok:
+    container_name: ngrok_dev # Optional: Name container
+    image: ngrok/ngrok:latest # Use the official ngrok image
+    ports:
+      - '4040:4040' # Expose ngrok web UI to host
+    environment:
+      # Reads NGROK_AUTHTOKEN from your .env file
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN?"NGROK_AUTHTOKEN environment variable is required."}
+    # Command to start ngrok tunnel
+    # http payload:3000 => expose the payload service running on port 3000
+    # --url <your-static-domain.ngrok-free.app> => use your static domain
+    command:
+      [
+        'http',
+        '--url',
+        "${NGROK_STATIC_DOMAIN?'NGROK_STATIC_DOMAIN environment variable is required.'}",
+        'payload:3000',
+      ]
+    depends_on:
+      - payload
+    restart: unless-stopped
+
+# Define named volumes used by the servicesF
 volumes:
   postgres_data:
   redis_data:

@@ -1,12 +1,18 @@
-import { apiClient } from '$lib/services/payload.server';
+import { createApiClient } from '$lib/services/payload.server';
 import { superValidate } from 'sveltekit-superforms';
-
+import type { RequestEvent } from '@sveltejs/kit';
 import { zod } from 'sveltekit-superforms/adapters';
 import { contactSchema } from '$lib/schema/contact.js';
+import { handleSvelteError } from '$lib/utils/errorHandler.js';
+import type { PageServerLoad, Actions } from './$types';
+import { error } from '@sveltejs/kit';
+import type { EventContactsResponse } from '$lib/types/eventContacts';
 
-export const load = async ({ url, params, fetch: svelteKitFetch }) => {
+export const load: PageServerLoad = async (event: RequestEvent) => { 
+	const { params } = event;
+
 	const paramContacts = new URLSearchParams({
-		'where[event][equals]': params.eventId,
+		'where[event][equals]': params.eventId!,
 		'select[eventContacts]': 'true'
 	});
 
@@ -14,9 +20,8 @@ export const load = async ({ url, params, fetch: svelteKitFetch }) => {
 		const eventId = params.eventId;
 		const form = await superValidate(zod(contactSchema));
 
-		const respContact = await apiClient.get(`events/${eventId}`, paramContacts, {
-			fetchInstance: svelteKitFetch
-		});
+		const apiClient = createApiClient(event);
+		const respContact = await apiClient.get<EventContactsResponse>(`events/${eventId}`, paramContacts);
 
 		const contacts = respContact.eventContacts;
 
@@ -24,11 +29,20 @@ export const load = async ({ url, params, fetch: svelteKitFetch }) => {
 			contacts,
 			form
 		};
-	} catch (err) {}
+	} catch (err: unknown) {
+		const { statusCode, errorMessage } = handleSvelteError(
+			err,
+			'Loading Event Contact',
+			'Failed to Load Event Contacts'
+		);
+
+		throw error(statusCode, errorMessage);
+	}
 };
 
-export const actions = {
-	updateContacts: async ({ request, params }) => {
+export const actions: Actions = {
+	updateContacts: async (event: RequestEvent) => {
+		const { request, params } = event
 		const formData = await request.formData();
 
 		const contactData = formData.get('formData') as string;
@@ -49,7 +63,18 @@ export const actions = {
 			eventContacts: validContacts
 		};
 
-		const response = await apiClient.patch(`events/${params.eventId}`, formDataSantized);
-		console.log('response: ', response);
+		try {
+			const apiClient = createApiClient(event);
+			const response = await apiClient.patch(`events/${params.eventId}`, formDataSantized);
+			console.log('response: ', response);
+		} catch (err: unknown) {
+			const { statusCode, errorMessage } = handleSvelteError(
+				err,
+				'Updating Event Contact',
+				'Failed to Update Event Contacts'
+			);
+
+			throw error(statusCode, errorMessage);
+		}
 	}
 };

@@ -26,6 +26,9 @@ import Transactions from './collections/Transactions'
 import Users from './collections/Users'
 import Venues from './collections/Venues'
 import Forms from './collections/Forms'
+import UserEventRoles from './collections/UserEventRoles'
+
+import { clerkWebhookHandler } from './webhooks/clerk-webhook'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -81,6 +84,7 @@ export default buildConfig({
     Users,
     Venues,
     Forms,
+    UserEventRoles,
   ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
@@ -96,4 +100,12 @@ export default buildConfig({
   sharp,
   plugins: [payloadCloudPlugin(), ...activePlugins],
   cors: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:1344'],
+  endpoints: [
+    {
+      path: '/webhooks/clerk',
+      method: 'post',
+      handler: clerkWebhookHandler,
+    },
+    // ... other endpoints
+  ],
 })

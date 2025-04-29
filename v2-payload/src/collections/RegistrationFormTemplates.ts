@@ -1,18 +1,19 @@
-// src/collections/RegistrationFormTemplates.ts
-import type { CollectionConfig } from 'payload';
-// import { isAdmin } from '../access/isAdmin'; // Assume only admins manage these templates
-import type { User } from '../payload-types';
+import type { CollectionConfig } from 'payload'
+import { isAdminOrEventRole } from '@/access/isAdminOrEventRole'
+import { EVENT_ROLES } from '@/types/eventRoles'
+
+const { MANAGER, EDITOR, VIEWER } = EVENT_ROLES
 
 // Define a TypeScript interface for your expected form field structure (optional but helpful)
 // This helps ensure consistency in the JSON data and can be shared with the frontend.
 interface FormFieldDef {
-  name: string; // e.g., 'tShirtSize', 'dietaryNeeds'
-  label: string; // e.g., 'T-Shirt Size', 'Dietary Needs'
-  fieldType: 'text' | 'textarea' | 'select' | 'checkbox' | 'email' | 'number'; // Allowed field types
-  required?: boolean;
-  options?: Array<{ label: string; value: string }>; // For select fields
-  placeholder?: string;
-  helpText?: string;
+  name: string // e.g., 'tShirtSize', 'dietaryNeeds'
+  label: string // e.g., 'T-Shirt Size', 'Dietary Needs'
+  fieldType: 'text' | 'textarea' | 'select' | 'checkbox' | 'email' | 'number' // Allowed field types
+  required?: boolean
+  options?: Array<{ label: string; value: string }> // For select fields
+  placeholder?: string
+  helpText?: string
 }
 
 const RegistrationFormTemplates: CollectionConfig = {
@@ -32,10 +33,10 @@ const RegistrationFormTemplates: CollectionConfig = {
     // create: isAdmin,
     // update: isAdmin,
     // delete: isAdmin,
-    read: () => true,
-    create: () => true,
-    update: () => true,
-    delete: () => true,
+    read: isAdminOrEventRole([MANAGER, EDITOR, VIEWER]),
+    create: isAdminOrEventRole([MANAGER, EDITOR]),
+    update: isAdminOrEventRole([MANAGER, EDITOR]),
+    delete: isAdminOrEventRole([MANAGER, EDITOR]),
   },
   fields: [
     {
@@ -45,7 +46,8 @@ const RegistrationFormTemplates: CollectionConfig = {
       required: true,
       unique: true,
       admin: {
-        description: 'Internal name for this form template (e.g., "Standard Attendee Info", "Workshop Detailed Info").',
+        description:
+          'Internal name for this form template (e.g., "Standard Attendee Info", "Workshop Detailed Info").',
       },
     },
     {
@@ -71,13 +73,17 @@ const RegistrationFormTemplates: CollectionConfig = {
       // Optional: Add validation to ensure the JSON adheres to your specific structure
       validate: async (value /* : FormFieldDef[] | any */, { operation }) => {
         if (operation === 'create' || operation === 'update') {
-          if (!Array.isArray(value)) return 'Form Definition must be a JSON array.';
+          if (!Array.isArray(value)) return 'Form Definition must be a JSON array.'
 
           for (const field of value) {
-            if (!field || typeof field !== 'object') return 'Each item in the array must be an object.';
-            if (!field.name || typeof field.name !== 'string') return 'Each field object must have a non-empty string "name".';
-            if (!field.label || typeof field.label !== 'string') return `Field "${field.name || '?'}" must have a non-empty string "label".`;
-            if (!field.fieldType || typeof field.fieldType !== 'string') return `Field "${field.name}" must have a non-empty string "fieldType".`;
+            if (!field || typeof field !== 'object')
+              return 'Each item in the array must be an object.'
+            if (!field.name || typeof field.name !== 'string')
+              return 'Each field object must have a non-empty string "name".'
+            if (!field.label || typeof field.label !== 'string')
+              return `Field "${field.name || '?'}" must have a non-empty string "label".`
+            if (!field.fieldType || typeof field.fieldType !== 'string')
+              return `Field "${field.name}" must have a non-empty string "fieldType".`
             // Add more checks: valid field types, options structure for selects, etc.
             // Consider using a validation library like Zod here for robust checking:
             // try {
@@ -88,11 +94,11 @@ const RegistrationFormTemplates: CollectionConfig = {
             // }
           }
         }
-        return true; // Passes validation
+        return true // Passes validation
       },
     },
   ],
   timestamps: true,
-};
+}
 
-export default RegistrationFormTemplates;
+export default RegistrationFormTemplates

@@ -1,102 +1,46 @@
 import type { RequestEvent } from '@sveltejs/kit';
 import type { FormData, FieldType } from './types';
-import type { PageServerLoad } from './$types';
-import { apiClient } from '$lib/services/payload.server.js';
-import type { PayloadResponse } from '$lib/types/formTypes';
+import type { PageServerLoad, Actions } from './$types';
+import { createApiClient } from '$lib/services/payload.server.js';
+import type { PayloadFormResponse } from '$lib/types/formTypes';
+import { handleSvelteError } from '$lib/utils/errorHandler';
+import { error } from '@sveltejs/kit';
 
-async function getForm(eventId: string) {
+export const load: PageServerLoad = async (event: RequestEvent) => {
 	try {
-		console.log('Attempting to fetch form for event:', eventId);
-		const params = new URLSearchParams({
-			'where[eventId][equals]': eventId
-		});
-		console.log('Request URL params:', params.toString());
+		const {
+			params: { eventId }
+		} = event;
 
-		const response = (await apiClient.get('forms', params)) as PayloadResponse;
+		console.log('Fetching form data for event:', eventId);
+
+		const params = new URLSearchParams({
+			'where[eventId][equals]': eventId as string
+		});
+
+		console.log('Request URL params:', params);
+
+		const apiClient = createApiClient(event);
+		const response = await apiClient.get<PayloadFormResponse>('forms', params);
+
 		console.log('Raw API Response:', JSON.stringify(response, null, 2));
 
-		if (response?.docs && Array.isArray(response.docs) && response.docs.length > 0) {
-			console.log('Found form:', response.docs[0]);
-			return response.docs[0];
-		}
-		console.log('No form found for event:', eventId);
-		return null;
-	} catch (error) {
-		console.error('Error details in getForm:', error);
-		if (error instanceof Error) {
-			console.error('Error message:', error.message);
-			console.error('Error stack:', error.stack);
-		}
-		throw error;
-	}
-}
-
-async function updateForm(id: number, data: any) {
-	try {
-		console.log(`Attempting to update form ${id} with data:`, data);
-		const response = await apiClient.patch(`forms/${id}`, data);
-		console.log('Update response:', response);
-		return response;
-	} catch (error) {
-		console.error('Error updating form:', error);
-		throw error;
-	}
-}
-
-async function deleteForm(id: number) {
-	try {
-		console.log(`Attempting to delete form ${id}`);
-		const response = await apiClient.del(`forms/${id}`);
-		console.log('Delete response:', response);
-		return response;
-	} catch (error) {
-		console.error('Error deleting form:', error);
-		throw error;
-	}
-}
-
-export const load: PageServerLoad = async ({ params }) => {
-	try {
-		if (!params.eventId) {
-			return {
-				formData: null,
-				error: 'Event ID is required'
-			};
-		}
-
-		console.log('Fetching form data for event:', params.eventId);
-		const response = await getForm(params.eventId);
-		console.log('Raw response from Payload:', response);
-
-		if (!response) {
-			return {
-				formData: null,
-				error: `Form not found for event: ${params.eventId}`
-			};
-		}
-
-		if (!response.formBuilder || !Array.isArray(response.formBuilder)) {
-			return {
-				formData: null,
-				error: 'Invalid form structure: formBuilder is missing or invalid'
-			};
-		}
-
 		const formData: FormData = {
-			id: response.id,
-			title: response.title || 'Untitled Form',
-			description: response.description || '',
-			buttonText: response.buttonText || '',
-			formBuilder: response.formBuilder.map((field) => ({
+			id: response.docs[0].id,
+			title: response.docs[0].title || 'Untitled Form',
+			description: response.docs[0].description || '',
+			buttonText: response.docs[0].buttonText || '',
+			formBuilder: response.docs[0].formBuilder.map((field) => ({
 				id: field.id || crypto.randomUUID(),
 				name: field.name || '',
 				fieldType: field.fieldType as FieldType,
 				label: field.label || 'Untitled Field',
 				required: !!field.required,
 				description: field.description || undefined,
-				options: field.options?.map((option: string | { value: string }) =>
-					typeof option === 'string' ? { value: option } : option
-				) || []
+				options:
+					field.options?.map((option: string | { value: string }) =>
+						typeof option === 'string' ? { value: option } : option
+					) || []
 			}))
 		};
 
@@ -106,35 +50,21 @@ export const load: PageServerLoad = async ({ params }) => {
 			formData,
 			error: null
 		};
-	} catch (error) {
-		console.error('Error details in load function:', error);
-		
-		// Handle specific API errors
-		if (error instanceof Error) {
-			if (error.message.includes('Network')) {
-				return {
-					formData: null,
-					error: 'Network error: Please check your connection'
-				};
-			}
-			if (error.message.includes('401')) {
-				return {
-					formData: null,
-					error: 'Authentication error: Please log in again'
-				};
-			}
-		}
+	} catch (err: unknown) {
+		const { statusCode, errorMessage } = handleSvelteError(
+			err,
+			'Loading Form Template',
+			'Failed to Load Form Template'
+		);
 
-		return {
-			formData: null,
-			error: error instanceof Error ? error.message : 'Failed to load form data'
-		};
+		throw error(statusCode, errorMessage);
 	}
 };
 
-export const actions = {
-	saveForm: async ({ request }: RequestEvent) => {
+export const actions: Actions = {
+	saveForm: async (event: RequestEvent) => {
 		try {
+			const { request } = event;
 			const formData = await request.formData();
 			const formDataJson = formData.get('formData');
 
@@ -146,67 +76,77 @@ export const actions = {
 			console.log('Saving form data:', parsedFormData);
 
 			// Update the form in Payload CMS
-			const response = await updateForm(parsedFormData.id, parsedFormData);
+			const apiClient = createApiClient(event);
+			const response = await apiClient.patch(`forms/${parsedFormData.id}`, parsedFormData);
 			console.log('Update response:', response);
 
 			return {
 				success: true,
-				message: 'Form saved successfully'
+				message: 'Form Saved Successfully'
 			};
-		} catch (error) {
-			console.error('Error saving form:', error);
-			return {
-				success: false,
-				error: error instanceof Error ? error.message : 'Failed to save form'
-			};
+		} catch (err: unknown) {
+			const { statusCode, errorMessage } = handleSvelteError(
+				err,
+				'Saving Form Template',
+				'Failed to Save Form Template'
+			);
+
+			throw error(statusCode, errorMessage);
 		}
 	},
 
-	deleteField: async ({ request, params }: RequestEvent) => {
+	deleteField: async (event: RequestEvent) => {
 		try {
-			if (!params.eventId) {
+			const { request, params } = event;
+			const eventId = params.eventId;
+			if (!eventId) {
 				return { success: false, error: 'Event ID is required' };
 			}
 
 			const formData = await request.formData();
-			const formId = formData.get('formId');
-			const fieldId = formData.get('fieldId');
+			// const formId = formData.get('formId'); // We'll get the ID from the fetched form
+			const fieldIdToDelete = formData.get('fieldId');
 
-			if (!formId || !fieldId || typeof fieldId !== 'string') {
-				return { success: false, error: 'Invalid form or field ID' };
+			if (!fieldIdToDelete || typeof fieldIdToDelete !== 'string') {
+				return { success: false, error: 'Invalid field ID' };
 			}
 
-			// Convert formId to number
-			const formIdNumber = parseInt(formId.toString(), 10);
-			if (isNaN(formIdNumber)) {
-				return { success: false, error: 'Invalid form ID format' };
+			const apiClient = createApiClient(event);
+
+			// Fetch the specific form using the eventId
+			const queryParams = new URLSearchParams({
+				'where[eventId][equals]': eventId
+			});
+			const response = await apiClient.get<PayloadForm>('forms', queryParams);
+
+			if (!response) {
+				return { success: false, error: 'Form not found for this event' };
 			}
 
-			// Get current form data
-			const currentForm = await getForm(params.eventId);
-			if (!currentForm) {
-				return { success: false, error: 'Form not found' };
-			}
+			const formDocument = response; // Assuming one form per event
+			const currentFormId = formDocument.id;
+			const currentFormBuilder = formDocument.formBuilder || [];
 
 			// Remove the field from formBuilder
-			const updatedFormBuilder = currentForm.formBuilder.filter((field) => field.id !== fieldId);
+			const updatedFormBuilder = currentFormBuilder.filter(
+				(field: any) => field.id !== fieldIdToDelete
+			);
 
-			// Update the form with the new formBuilder
-			const response = await updateForm(formIdNumber, {
-				...currentForm,
+			// Patch only the formBuilder field
+			await apiClient.patch(`forms/${currentFormId}`, {
 				formBuilder: updatedFormBuilder
 			});
 
-			return {
-				success: true,
-				message: 'Field deleted successfully'
-			};
-		} catch (error) {
-			console.error('Error deleting field:', error);
-			return {
-				success: false,
-				error: error instanceof Error ? error.message : 'Failed to delete field'
-			};
+			console.log(`Field ${fieldIdToDelete} deleted successfully from form ${currentFormId}`);
+			return { success: true, message: 'Field deleted successfully' };
+		} catch (err: unknown) {
+			const { statusCode, errorMessage } = handleSvelteError(
+				err,
+				'Deleting Form Field',
+				'Failed to Delete Form Field'
+			);
+
+			throw error(statusCode, errorMessage);
 		}
 	}
 };

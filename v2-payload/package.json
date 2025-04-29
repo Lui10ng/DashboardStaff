@@ -20,6 +20,7 @@
     "seed": "ts-node src/scripts/seed.ts"
   },
   "dependencies": {
+    "@clerk/backend": "^1.28.0",
     "@payloadcms/db-postgres": "3.31.0",
     "@payloadcms/next": "3.31.0",
     "@payloadcms/payload-cloud": "3.31.0",
@@ -32,6 +33,7 @@
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "sharp": "0.32.6",
+    "svix": "^1.64.0",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
@@ -50,7 +52,8 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "sharp"
+      "sharp",
+      "@clerk/shared"
     ]
   },
   "packageManager": "pnpm@9.15.9+sha512.68046141893c66fad01c079231128e9afb89ef87e2691d69e4d40eee228988295fd4682181bae55b58418c3a253bde65a505ec7c5f9403ece5cc3cd37dcf2531"

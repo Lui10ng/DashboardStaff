@@ -1,10 +1,10 @@
-// src/collections/Tickets.ts
-import type { CollectionConfig } from 'payload';
-import { v4 as uuidv4 } from 'uuid'; // For unique ticket codes
-// import { isAdmin } from '../access/isAdmin';
-// Needs complex access control: Owner (user or via Order guest email), Organizer, Check-in Staff, Admin
-// import { isTicketHolderOrAdmin } from '../access/isTicketHolderOrAdmin'; // Example custom access
-import type { User } from '../payload-types';
+import type { CollectionConfig } from 'payload'
+import { v4 as uuidv4 } from 'uuid' // For unique ticket codes
+
+import { isAdminOrEventRole } from '@/access/isAdminOrEventRole'
+import { EVENT_ROLES } from '@/types/eventRoles'
+
+const { MANAGER, EDITOR } = EVENT_ROLES
 
 const Tickets: CollectionConfig = {
   slug: 'tickets',
@@ -12,12 +12,19 @@ const Tickets: CollectionConfig = {
     useAsTitle: 'ticketCode',
     description: 'Individual tickets issued per order, used for check-in.',
     // Add fields to columns to show guest info if no user linked? Requires some hook/virtual field logic.
-    defaultColumns: ['ticketCode', 'attendee', 'event', 'ticketType', 'checkInStatus', 'assignedSeat.seatNumber'],
+    defaultColumns: [
+      'ticketCode',
+      'attendee',
+      'event',
+      'ticketType',
+      'checkInStatus',
+      'assignedSeat.seatNumber',
+    ],
     listSearchableFields: ['ticketCode'], // Maybe search associated Order's guestEmail?
     // disableCreation: true, // Tickets generated programmatically from paid Orders
     group: 'Orders & Tickets',
   },
-  // Access Control Notes:
+  // FUTURE Access Control Notes:
   // - Logged-in User (`attendee`) should see their own tickets.
   // - Guests need a secure way (e.g., unique link via email using order details) to view their ticket/QR code.
   // - Organizer for the `event` should see all tickets for that event.
@@ -29,9 +36,9 @@ const Tickets: CollectionConfig = {
     // update: ({ req: { user } }) => user?.roles?.includes('admin') || user?.roles?.includes('check-in-staff'), // Example for check-in
     // delete: isAdmin,
     read: () => true,
-    create: () => true,
-    update: () => true,
-    delete: () => true,
+    create: isAdminOrEventRole([MANAGER, EDITOR]),
+    update: isAdminOrEventRole([MANAGER, EDITOR]),
+    delete: isAdminOrEventRole([MANAGER, EDITOR]),
   },
   hooks: {
     // Generate unique ticket code
@@ -45,23 +52,57 @@ const Tickets: CollectionConfig = {
     // Handle check-in timestamp/user updates
     beforeChange: [
       async ({ data, req, operation, originalDoc }) => {
-        if (operation === 'update' && data.checkInStatus === 'checked_in' && originalDoc?.checkInStatus !== 'checked_in') {
-          data.checkedInAt = new Date().toISOString();
-          if (req.user) { data.checkedInBy = req.user.id; }
+        if (
+          operation === 'update' &&
+          data.checkInStatus === 'checked_in' &&
+          originalDoc?.checkInStatus !== 'checked_in'
+        ) {
+          data.checkedInAt = new Date().toISOString()
+          if (req.user) {
+            data.checkedInBy = req.user.id
+          }
         }
-        if (operation === 'update' && data.checkInStatus !== 'checked_in' && originalDoc?.checkInStatus === 'checked_in') {
-           data.checkedInAt = null;
-           data.checkedInBy = null;
+        if (
+          operation === 'update' &&
+          data.checkInStatus !== 'checked_in' &&
+          originalDoc?.checkInStatus === 'checked_in'
+        ) {
+          data.checkedInAt = null
+          data.checkedInBy = null
         }
-        return data;
-      }
-    ]
+        return data
+      },
+    ],
   },
   fields: [
     // --- Core Relationships (Set on Creation) ---
-    { name: 'order', label: 'Originating Order', type: 'relationship', relationTo: 'orders', required: true, index: true, admin: { readOnly: true, position: 'sidebar' } },
-    { name: 'event', label: 'Event', type: 'relationship', relationTo: 'events', required: true, index: true, admin: { readOnly: true, position: 'sidebar' } },
-    { name: 'ticketType', label: 'Ticket Type', type: 'relationship', relationTo: 'ticket-types', required: true, index: true, admin: { readOnly: true, position: 'sidebar' } },
+    {
+      name: 'order',
+      label: 'Originating Order',
+      type: 'relationship',
+      relationTo: 'orders',
+      required: true,
+      index: true,
+      admin: { readOnly: true, position: 'sidebar' },
+    },
+    {
+      name: 'event',
+      label: 'Event',
+      type: 'relationship',
+      relationTo: 'events',
+      required: true,
+      index: true,
+      admin: { readOnly: true, position: 'sidebar' },
+    },
+    {
+      name: 'ticketType',
+      label: 'Ticket Type',
+      type: 'relationship',
+      relationTo: 'ticket-types',
+      required: true,
+      index: true,
+      admin: { readOnly: true, position: 'sidebar' },
+    },
 
     // --- Ticket Holder Identification ---
     {
@@ -73,8 +114,9 @@ const Tickets: CollectionConfig = {
       index: true,
       admin: {
         readOnly: true,
-        description: 'Link to the user account, if the ticket holder has one and was logged in during purchase/registration.',
-        condition: (data) => Boolean(data.attendee) // Only show if linked
+        description:
+          'Link to the user account, if the ticket holder has one and was logged in during purchase/registration.',
+        condition: (data) => Boolean(data.attendee), // Only show if linked
       },
     },
     // Note: For guest tickets (where 'attendee' is null), identity (name/email) is primarily tracked
@@ -83,17 +125,41 @@ const Tickets: CollectionConfig = {
 
     // --- Unique ID & Check-in ---
     {
-      name: 'ticketCode', label: 'Ticket Code (QR)', type: 'text',
-      required: true, unique: true, index: true,
+      name: 'ticketCode',
+      label: 'Ticket Code (QR)',
+      type: 'text',
+      required: true,
+      unique: true,
+      index: true,
       admin: { readOnly: true, description: 'Unique identifier for check-in/QR code.' },
     },
     {
-      name: 'checkInStatus', label: 'Check-In Status', type: 'select', enumName: 'CheckInStatus',
-      options: [ { label: 'Pending Check-In', value: 'pending' }, { label: 'Checked In', value: 'checked_in' }, { label: 'Invalid / Denied', value: 'invalid' }],
-      defaultValue: 'pending', required: true, index: true,
+      name: 'checkInStatus',
+      label: 'Check-In Status',
+      type: 'select',
+      enumName: 'CheckInStatus',
+      options: [
+        { label: 'Pending Check-In', value: 'pending' },
+        { label: 'Checked In', value: 'checked_in' },
+        { label: 'Invalid / Denied', value: 'invalid' },
+      ],
+      defaultValue: 'pending',
+      required: true,
+      index: true,
     },
-    { name: 'checkedInAt', label: 'Checked-In At', type: 'date', admin: { readOnly: true, date: { pickerAppearance: 'dayAndTime' } } },
-    { name: 'checkedInBy', label: 'Checked-In By Staff', type: 'relationship', relationTo: 'users', admin: { readOnly: true } },
+    {
+      name: 'checkedInAt',
+      label: 'Checked-In At',
+      type: 'date',
+      admin: { readOnly: true, date: { pickerAppearance: 'dayAndTime' } },
+    },
+    {
+      name: 'checkedInBy',
+      label: 'Checked-In By Staff',
+      type: 'relationship',
+      relationTo: 'users',
+      admin: { readOnly: true },
+    },
 
     // --- Reserved Seating Info ---
     {
@@ -101,7 +167,8 @@ const Tickets: CollectionConfig = {
       label: 'Assigned Seat (Reserved Seating Only)',
       type: 'group',
       admin: {
-        description: 'Specific seat assignment; only relevant if the linked event uses reserved seating.',
+        description:
+          'Specific seat assignment; only relevant if the linked event uses reserved seating.',
         // Displaying this conditionally based on related Event.seatingType requires
         // more advanced Admin UI customization or is handled by frontend logic.
       },
@@ -115,6 +182,6 @@ const Tickets: CollectionConfig = {
     },
   ],
   timestamps: true,
-};
+}
 
-export default Tickets;
+export default Tickets

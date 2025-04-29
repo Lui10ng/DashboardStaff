@@ -1,17 +1,11 @@
 import type { CollectionConfig } from 'payload'
-// import { isAdmin } from '../access/isAdmin';
-// import { isAdminOrPublished } from '../access/isAdminOrPublished'; // Requires refinement for non-admin draft visibility
-import { formatSlug } from '../utils/slugify'
-import type { User } from '../payload-types'
+import { formatSlug } from '@/utils/slugify'
 import crypto from 'crypto'
+import { isAdmin } from '@/access/isAdmin'
+import { isAdminOrEventRole } from '@/access/isAdminOrEventRole'
+import { EVENT_ROLES } from '@/types/eventRoles'
 
-interface EventData {
-  title?: string
-  slug?: string
-  id?: string
-  formId?: string | number
-  [key: string]: any
-}
+const { MANAGER, EDITOR, VIEWER } = EVENT_ROLES
 
 const Events: CollectionConfig = {
   slug: 'events',
@@ -32,8 +26,8 @@ const Events: CollectionConfig = {
     // delete: ({ req: { user } }) => Boolean(user?.roles?.includes('admin')), // Needs refinement
     read: () => true,
     create: () => true,
-    update: () => true,
-    delete: () => true,
+    update: isAdminOrEventRole([MANAGER, EDITOR]),
+    delete: isAdmin,
   },
   hooks: {
     beforeChange: [
@@ -271,7 +265,7 @@ const Events: CollectionConfig = {
       label: 'Venue',
       type: 'relationship',
       relationTo: 'venues',
-      required: true,
+      required: false,
       hasMany: false,
       index: true,
       admin: {
@@ -302,7 +296,7 @@ const Events: CollectionConfig = {
       name: 'seatingType',
       label: 'Seating Type',
       type: 'select',
-      required: true,
+      required: false,
       options: ['general_admission', 'reserved_seating'],
       defaultValue: 'general_admission',
       enumName: 'SeatingType',

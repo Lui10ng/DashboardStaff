@@ -1,5 +1,8 @@
-import type { CollectionConfig } from 'payload';
-import type { User } from '../payload-types'; // Assuming User type is needed for access control
+import type { CollectionConfig } from 'payload'
+import { isAdminOrEventRole } from '@/access/isAdminOrEventRole'
+import { EVENT_ROLES } from '@/types/eventRoles'
+
+const { MANAGER, EDITOR, VIEWER } = EVENT_ROLES
 
 const EventCategories: CollectionConfig = {
   // Collection slug (API path: /api/event-categories)
@@ -16,13 +19,10 @@ const EventCategories: CollectionConfig = {
   // Define who can manage these categories. Often restricted to admins.
   // Public read access is usually appropriate for filtering/display.
   access: {
-    read: () => true, // Public can view categories
-    create: () => true,
-    update: () => true,
-    delete: () => true,
-    // create: ({ req: { user } }) => user?.roles?.includes('admin'), // Example: Only admins create
-    // update: ({ req: { user } }) => user?.roles?.includes('admin'), // Example: Only admins update
-    // delete: ({ req: { user } }) => user?.roles?.includes('admin'), // Example: Only admins delete
+    read: isAdminOrEventRole([MANAGER, EDITOR, VIEWER]),
+    create: isAdminOrEventRole([MANAGER, EDITOR]),
+    update: isAdminOrEventRole([MANAGER, EDITOR]),
+    delete: isAdminOrEventRole([MANAGER, EDITOR]),
   },
   // Fields definition
   fields: [
@@ -32,9 +32,10 @@ const EventCategories: CollectionConfig = {
       type: 'text',
       required: true,
       unique: true, // Ensure category names are unique
-      index: true,  // Add a database index for faster lookups
+      index: true, // Add a database index for faster lookups
       admin: {
-        description: 'The name of the category (e.g., Technology, Music Festival, Charity). Must be unique.',
+        description:
+          'The name of the category (e.g., Technology, Music Festival, Charity). Must be unique.',
       },
     },
     {
@@ -53,6 +54,6 @@ const EventCategories: CollectionConfig = {
     // }
   ],
   timestamps: true, // Automatically add createdAt and updatedAt
-};
+}
 
-export default EventCategories;
+export default EventCategories

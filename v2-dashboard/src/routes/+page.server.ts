@@ -1,14 +1,24 @@
+import { error, fail, redirect } from '@sveltejs/kit';
+import type { ServerLoadEvent, RequestEvent } from '@sveltejs/kit';
 import { message, superValidate } from 'sveltekit-superforms/server';
 import { zod } from 'sveltekit-superforms/adapters';
 import { eventSchema } from '$lib/schema/event';
-import { fail } from 'sveltekit-superforms';
-import { apiClient } from '$lib/services/payload.server.js';
-import { error } from '@sveltejs/kit';
+import { createApiClient } from '$lib/services/payload.server';
 import { handleSvelteError } from '$lib/utils/errorHandler';
+import type { PayloadPaginatedResponse } from '$lib/types/payloadResponse';
+import type { Event } from '$lib/types/eventData';
 
-export async function load({ url, fetch: svelteKitFetch }) {
+export async function load(event: ServerLoadEvent) {
+	const authObject = await event.locals.auth();
+
+	if (!authObject || !authObject.sessionId) {
+		return redirect(307, '/sign-in');
+	}
+
+	const apiClient = createApiClient(event);
+
 	const form = await superValidate(zod(eventSchema));
-	const page = Number(url.searchParams.get('page') || '1');
+	const page = Number(event.url.searchParams.get('page') || '1');
 	const limit = 1000000;
 	const organizerID = '1';
 
@@ -21,7 +31,7 @@ export async function load({ url, fetch: svelteKitFetch }) {
 	});
 
 	try {
-		const eventsData = await apiClient.get('/events', params, { fetchInstance: svelteKitFetch });
+		const eventsData = await apiClient.get<PayloadPaginatedResponse<Event>>('/events', params);
 
 		return {
 			events: eventsData.docs,
@@ -30,8 +40,8 @@ export async function load({ url, fetch: svelteKitFetch }) {
 	} catch (err: unknown) {
 		const { statusCode, errorMessage } = handleSvelteError(
 			err,
-			'loading events',
-			'Failed to load events'
+			'Loading Events List',
+			'Failed to Load Events List'
 		);
 
 		throw error(statusCode, errorMessage);
@@ -44,7 +54,8 @@ export const actions = {
 		console.log(data);
 	},
 
-	createEvent: async ({ request }) => {
+	createEvent: async (event: RequestEvent) => {
+		const { request } = event;
 		const data = await request.formData();
 
 		const form = await superValidate(data, zod(eventSchema));
@@ -67,6 +78,7 @@ export const actions = {
 		};
 
 		try {
+			const apiClient = createApiClient(event);
 			const response = await apiClient.post('/events', formData);
 			console.log('response: ', response);
 
@@ -74,8 +86,8 @@ export const actions = {
 		} catch (err: unknown) {
 			const { statusCode, errorMessage } = handleSvelteError(
 				err,
-				'creating event',
-				'Failed to create event'
+				'Creating Event',
+				'Failed to Create Event'
 			);
 			console.log('errorMessage: ', errorMessage);
 			console.log('statusCode: ', statusCode);

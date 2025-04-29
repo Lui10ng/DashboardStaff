@@ -1,12 +1,13 @@
 import type { CollectionConfig } from 'payload'
+import { isAdminOrSelf } from '@/access/isAdminOrSelf'
 
 const Media: CollectionConfig = {
   slug: 'media',
   access: {
     read: () => true,
-    create: () => true,
-    update: () => true,
-    delete: () => true,
+    create: isAdminOrSelf,
+    update: isAdminOrSelf,
+    delete: isAdminOrSelf,
   },
   fields: [
     {
@@ -17,4 +18,4 @@ const Media: CollectionConfig = {
   upload: true,
 }
 
-export default Media;
+export default Media

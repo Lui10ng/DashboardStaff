@@ -1,8 +1,8 @@
-import type { CollectionConfig } from 'payload';
-// import { isAdmin } from '../access/isAdmin';
-// import { isAdminOrPublished } from '../access/isAdminOrPublished'; // Or a similar check for published content
-import type { User } from '../payload-types';
-// May need access check based on linked Event's organizer
+import type { CollectionConfig } from 'payload'
+import { isAdminOrEventRole } from '@/access/isAdminOrEventRole'
+import { EVENT_ROLES } from '@/types/eventRoles'
+
+const { MANAGER, EDITOR, VIEWER } = EVENT_ROLES
 
 const EventAnnouncements: CollectionConfig = {
   slug: 'event-announcements',
@@ -13,18 +13,14 @@ const EventAnnouncements: CollectionConfig = {
     listSearchableFields: ['title', 'content'], // Assuming 'content' is richText searchable
     group: 'Organizers & Events',
   },
-  // Access Control Notes:
+  // FUTURE Access Control Notes:
   // - Public might read 'published' announcements.
   // - Admins and the organizer of the linked event should be able to create/update/delete.
   access: {
-    // read: isAdminOrPublished, // Example: Public reads published, admin reads all (needs refinement for event context)
-    // create: ({ req: { user } }) => Boolean(user), // Placeholder - restrict to event organizer/admin
-    // update: ({ req: { user } }) => Boolean(user), // Placeholder - restrict to event organizer/admin
-    // delete: isAdmin, // Placeholder - restrict to event organizer/admin
-    read: () => true,
-    create: () => true,
-    update: () => true,
-    delete: () => true,
+    read: isAdminOrEventRole([MANAGER, EDITOR, VIEWER]),
+    create: isAdminOrEventRole([MANAGER, EDITOR]),
+    update: isAdminOrEventRole([MANAGER, EDITOR]),
+    delete: isAdminOrEventRole([MANAGER, EDITOR]),
   },
   fields: [
     {
@@ -75,14 +71,15 @@ const EventAnnouncements: CollectionConfig = {
         date: {
           pickerAppearance: 'dayAndTime',
         },
-        description: 'Optional: Set a specific time for when this announcement is considered published (can be used for sorting/filtering). Defaults to creation time if published immediately.',
+        description:
+          'Optional: Set a specific time for when this announcement is considered published (can be used for sorting/filtering). Defaults to creation time if published immediately.',
         position: 'sidebar',
       },
-       // Optionally set default value using hooks if status is published
-       // hooks: { beforeChange: [...] }
+      // Optionally set default value using hooks if status is published
+      // hooks: { beforeChange: [...] }
     },
   ],
   timestamps: true, // Adds createdAt, updatedAt
-};
+}
 
-export default EventAnnouncements;
+export default EventAnnouncements

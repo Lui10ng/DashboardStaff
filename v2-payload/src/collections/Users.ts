@@ -1,31 +1,14 @@
-// src/collections/Users.ts (Illustrative Customizations)
-import type { CollectionConfig } from 'payload';
-// import { isAdmin, isAdminOrSelf } from '../access/isAdminOrSelf'; // Assuming these access helpers exist
-
-// Define Roles - use const for consistency
-const USER_ROLES = {
-  ADMIN: 'admin',
-  ORGANIZER: 'organizer',
-  ATTENDEE: 'attendee',
-  CHECK_IN_STAFF: 'check-in-staff',
-} as const;
-
-type UserRole = typeof USER_ROLES[keyof typeof USER_ROLES];
+import type { CollectionConfig } from 'payload'
+import clerkOrPayloadAdminStrategy from '@/auth/clerk-strategy'
+import { PLATFORM_ROLES } from '@/types/users'
+import { isAdminOrSelf } from '@/access/isAdminOrSelf'
+import { isAdmin } from '@/access/isAdmin'
 
 const Users: CollectionConfig = {
   slug: 'users',
-  // --- Payload Auth Configuration ---
   auth: {
-    // If using JWT (Payload's default)
-    tokenExpiration: 7200, // seconds - e.g., 2 hours
-    // verify: true, // Enable email verification if needed
-    // maxLoginAttempts: 5,
-    // lockTime: 600 * 1000, // 10 minutes
-    useAPIKey: false, // Set to true if you want users to generate API Keys
-    // If using Clerk (or other external provider) primarily, you might:
-    // 1. Disable password auth: setting 'auth: false' is too drastic usually.
-    // 2. Rely on your custom Clerk auth strategy to handle login/verification.
-    // 3. Keep password enabled as a fallback or for specific admin users.
+    // disableLocalStrategy: true,
+    strategies: [clerkOrPayloadAdminStrategy],
   },
   admin: {
     useAsTitle: 'email', // Use email as the main identifier in lists
@@ -43,11 +26,11 @@ const Users: CollectionConfig = {
     // delete: isAdmin, // Only admins delete users
     // --- Role-based access ---
     // Example: Only Admins can change the 'roles' field
-    // admin: ({ req: { user } }) => user?.roles?.includes(USER_ROLES.ADMIN),
-    read: () => true,
-    create: () => true,
-    update: () => true,
-    delete: () => true,
+    // admin: ({ req: { user } }) => user?.roles?.includes(PLATFORM_ROLES.ADMIN),
+    read: isAdminOrSelf,
+    create: () => true, // or only allow it programmatically (via webhook)
+    update: isAdminOrSelf,
+    delete: isAdmin,
   },
   fields: [
     // Default fields Payload adds: email, password (hashed), etc.
@@ -61,25 +44,7 @@ const Users: CollectionConfig = {
       // Make required if using Payload's local auth primarily.
       // required: true,
     },
-    {
-      name: 'roles',
-      label: 'Roles',
-      type: 'select',
-      enumName: 'UserRole',
-      hasMany: true, // Allow multiple roles per user
-      required: true,
-      defaultValue: [USER_ROLES.ATTENDEE], // Default new signups to 'attendee'
-      options: Object.entries(USER_ROLES).map(([key, value]) => ({ label: key.replace('_', ' '), value })),
-      // Access control on the field itself: only Admins can modify roles
-      access: {
-        read: ({ req: { user } }) => true, // Everyone can see their own roles (and admins see all)
-        // create: isAdmin,
-        // update: isAdmin,
-      },
-      admin: {
-        description: 'Assign roles that grant specific permissions throughout the application.',
-      }
-    },
+
     {
       name: 'clerkId', // Example field if using Clerk Auth
       label: 'Clerk User ID',
@@ -91,11 +56,31 @@ const Users: CollectionConfig = {
         position: 'sidebar',
         description: 'Internal ID linking to the Clerk authentication provider.',
       },
-      // Access should be highly restricted, likely admin only read/update
+    },
+    // {
+    //   name: 'organizer', // Or 'associatedOrganizer', etc.
+    //   label: 'Associated Organizer',
+    //   type: 'relationship',
+    //   relationTo: 'organizers',
+    //   hasMany: false, // A user typically belongs to/manages one primary organizer
+    //   required: false, // Or true if every user MUST be linked
+    //   index: true,
+    // },
+    {
+      name: 'clerkRoles',
+      label: 'Clerk Roles',
+      type: 'select',
+      hasMany: true,
+      options: Object.values(PLATFORM_ROLES).map((role) => ({ label: role, value: role })),
+      admin: {
+        position: 'sidebar',
+        description:
+          'Roles synced from Clerk. This field is read-only and managed by the authentication system.',
+      },
       access: {
-        // read: isAdmin,
-        // update: isAdmin,
-      }
+        read: () => true, // Everyone can read their own roles
+        update: () => false, // This field is managed by Clerk and should not be manually edited
+      },
     },
     // Consider adding other fields if needed:
     // - Phone number
@@ -103,6 +88,6 @@ const Users: CollectionConfig = {
     // - Link to Organizer profile(s) they manage (though the link is primarily on Organizer collection)
   ],
   timestamps: true,
-};
+}
 
-export default Users;
+export default Users
