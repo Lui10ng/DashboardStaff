@@ -1,4 +1,4 @@
-import { PayloadPaginatedResponse } from "./payload";
+import type { PayloadPaginatedResponse } from "./payloadResponse";
 
 /**
  * Represents the structure for a single field's answer.

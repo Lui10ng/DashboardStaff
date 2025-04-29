@@ -46,7 +46,6 @@ async function requestInternal<T = unknown>(
 	}
 
 	const token = await authObject.getToken(); // Get token for the current user
-	console.log('token', token)
 	if (!token) {
 		throw error(401, 'Could not retrieve authentication token');
 	}

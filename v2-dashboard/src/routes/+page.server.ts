@@ -5,7 +5,8 @@ import { zod } from 'sveltekit-superforms/adapters';
 import { eventSchema } from '$lib/schema/event';
 import { createApiClient } from '$lib/services/payload.server';
 import { handleSvelteError } from '$lib/utils/errorHandler';
-import type { Event, PayloadPaginatedResponse } from '$lib/types/eventData';
+import type { PayloadPaginatedResponse } from '$lib/types/payloadResponse';
+import type { Event } from '$lib/types/eventData';
 
 export async function load(event: ServerLoadEvent) {
 	const authObject = await event.locals.auth();

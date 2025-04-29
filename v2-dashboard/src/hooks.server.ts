@@ -37,7 +37,7 @@ const handlePayloadUser: Handle = async ({ event, resolve }) => {
         try {
             const apiClient = createApiClient(event); // Use your API client
 
-            console.log('Clerk User:', JSON.stringify(clerkAuth, null, 2));
+            // console.log('Clerk User:', JSON.stringify(clerkAuth, null, 2));
 
             // Construct query parameters for the REST API call
             const params = new URLSearchParams({
@@ -50,7 +50,7 @@ const handlePayloadUser: Handle = async ({ event, resolve }) => {
                 depth: '2', // Send depth as a string query param
             });
 
-            console.log('Params:', params.toString());
+            // console.log('Params:', params.toString());
 
             // Make the API call using your client's GET method
             // Adjust the expected response type based on your User type definition

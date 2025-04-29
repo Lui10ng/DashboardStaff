@@ -137,7 +137,7 @@ export const clerkWebhookHandler = async (req: PayloadRequest): Promise<Response
             name: `${clerkUser.first_name || ''} ${clerkUser.last_name || ''}`.trim(),
             clerkId: clerkUser.id, // Store the Clerk User ID for linking.
             password: randomPassword,
-            clerkRoles: [PLATFORM_ROLES.ORGANIZER],
+            clerkRoles: [PLATFORM_ROLES.ORGANIZER], // Default Role
           }
 
           console.log('Creating user in Payload:', payloadUserData)

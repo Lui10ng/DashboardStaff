@@ -9,7 +9,7 @@ import type { RequestEvent } from './$types';
 import { handleSvelteError } from '$lib/utils/errorHandler';
 import { error } from '@sveltejs/kit';
 import type { TicketType, Promotion } from '$lib/types/payload-types';
-import type { PayloadPaginatedResponse } from '$lib/types/payload';
+import type { PayloadPaginatedResponse } from '$lib/types/payloadResponse';
 
 export const load: PageServerLoad = async (event: RequestEvent) => {
 	const { params } = event;

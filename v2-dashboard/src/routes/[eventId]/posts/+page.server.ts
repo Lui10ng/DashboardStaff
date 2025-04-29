@@ -3,7 +3,7 @@ import { handleSvelteError } from '$lib/utils/errorHandler';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import type { RequestEvent } from '@sveltejs/kit';
-import type { PayloadPaginatedResponse } from '$lib/types/eventData';
+import type { PayloadPaginatedResponse } from '$lib/types/payloadResponse';
 import type { EventAnnouncement } from '$lib/types/payload-types';
 
 export const load: PageServerLoad = async (event: RequestEvent) => {

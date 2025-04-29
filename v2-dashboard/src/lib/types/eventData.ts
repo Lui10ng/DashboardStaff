@@ -1,4 +1,4 @@
-import type { PayloadPaginatedResponse } from "./payload";
+import type { PayloadPaginatedResponse } from "./payloadResponse";
 
 export const event = {
   title: 'Tech Talks 2024',

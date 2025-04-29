@@ -603,68 +603,6 @@ export interface Form {
   createdAt: string;
 }
 /**
- * Records of ticket purchases (by users or guests) and their status.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "orders".
- */
-export interface Order {
-  id: number;
-  /**
-   * Link to the user account if the purchase was made while logged in.
-   */
-  orderedBy?: (number | null) | User;
-  guestEmail?: string | null;
-  event: number | Event;
-  items: {
-    ticketType: number | TicketType;
-    quantity: number;
-    pricePerTicket: number;
-    currency: string;
-    subtotal: number;
-    id?: string | null;
-  }[];
-  subtotalAmount?: number | null;
-  promotion?: (number | null) | Promotion;
-  discountAmount?: number | null;
-  /**
-   * Amount donated during checkout (if applicable).
-   */
-  donationAmount?: number | null;
-  finalAmount: number;
-  currency: string;
-  paymentIntentId?: string | null;
-  notes?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users".
- */
-export interface User {
-  id: number;
-  name?: string | null;
-  /**
-   * Internal ID linking to the Clerk authentication provider.
-   */
-  clerkId?: string | null;
-  /**
-   * Roles synced from Clerk. This field is read-only and managed by the authentication system.
-   */
-  clerkRoles?: ('admin' | 'organizer' | 'attendee' | 'check-in-staff')[] | null;
-  updatedAt: string;
-  createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  password?: string | null;
-}
-/**
  * Define specific ticket tiers for events (e.g., GA, VIP) and their available quantity.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -772,6 +710,32 @@ export interface Order {
   notes?: string | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users".
+ */
+export interface User {
+  id: number;
+  name?: string | null;
+  /**
+   * Internal ID linking to the Clerk authentication provider.
+   */
+  clerkId?: string | null;
+  /**
+   * Roles synced from Clerk. This field is read-only and managed by the authentication system.
+   */
+  clerkRoles?: ('admin' | 'organizer' | 'attendee' | 'check-in-staff')[] | null;
+  updatedAt: string;
+  createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  password?: string | null;
 }
 /**
  * Stores submitted answers from mandatory registration forms per ticket.
