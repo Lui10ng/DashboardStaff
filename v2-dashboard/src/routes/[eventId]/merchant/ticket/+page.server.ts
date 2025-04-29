@@ -102,14 +102,52 @@ export const actions = {
 
 	updateTicket: async ({ request }) => {
 		const data = await request.formData();
+		const ticketId = data.get('id');
+
+		console.log('Updating ticket with ID:', ticketId); // Add this log
 
 		const form = await superValidate(data, zod(ticketSchema));
 
 		if (!form.valid) {
+			console.log('Form validation failed:', form.errors); // Add this log
 			return fail(400, { form });
 		}
 
-		console.log(form.data);
+		try {
+			const formData = {
+				name: form.data.ticketName,
+				price: form.data.price,
+				quantityAvailable: form.data.quantity,
+				minOrderQuantity: form.data.minOrderQuantity,
+				maxOrderQuantity: form.data.maxOrderQuantity,
+				salesStart: new Date(`${form.data.validfrom}T00:00:00Z`).toISOString(),
+				salesEnd: new Date(`${form.data.validto}T23:59:00Z`).toISOString(),
+				color: form.data.color
+			};
+
+			console.log('Sending update with data:', formData); // Add this log
+
+			const response = await apiClient.patch(`/ticket-types/${ticketId}`, formData);
+			console.log('Update response:', response); // Add this log
+
+			return message(form, {
+				success: true,
+				message: 'Ticket updated successfully'
+			});
+		} catch (err) {
+			console.error('Error updating ticket:', err);
+			// Add more detailed error logging
+			if (err instanceof Error) {
+				console.error('Error details:', {
+					message: err.message,
+					stack: err.stack
+				});
+			}
+			return message(form, {
+				success: false,
+				message: 'Error updating ticket'
+			});
+		}
 	},
 
 	createVoucher: async ({ request, params }) => {
