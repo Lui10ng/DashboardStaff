@@ -1,48 +1,46 @@
-// src/scripts/seed.ts
-import 'dotenv/config'; // Load .env variables from project root
-import { getPayloadClient } from '../payload/payloadClient'; // Adjust path if needed
-import type { Payload } from 'payload';
-import { formatSlug } from '@/utils/slugify';
-import type { User } from '../payload-types'; // Import generated types
+import { getPayloadClient } from '@/payload/payloadClient'
+import type { Payload } from 'payload'
+// import { formatSlug } from '@/utils/slugify'
+import type { User } from '../payload-types'
+import { users } from './users.json'
+import { venues } from './venues.json'
 
-// Function to create data, ensuring dependencies are handled
+/**
+ * when runninng this script, it will create the following:
+ * 1. Admin users, organizers, attendees, and checkin staff
+ * 2. Organizers
+ * 3. Venues
+ *
+ * Note: This script is intended to be run in a development environment only. Please run migrate:fresh before running this script.
+ *
+ */
+
 const seedData = async (): Promise<void> => {
-  console.log('Starting database seed process...');
-  let payload: Payload;
+  console.log('Starting database seed process...')
+  let payload: Payload
 
   try {
-    payload = await getPayloadClient();
-    console.log('Payload client initialized.');
+    payload = await getPayloadClient()
+    console.log('Payload client initialized.')
   } catch (error) {
-    console.error('Error initializing Payload client:', error);
-    process.exit(1);
+    console.error('Error initializing Payload client:', error)
+    process.exit(1)
   }
 
   try {
-    // --- Optional: Clear existing data (Use with caution!) ---
-    // Consider only clearing specific collections or adding where clauses
-    console.log('Clearing existing data (excluding admin user)...');
-    await Promise.all([
-      payload.delete({ collection: 'events', where: {}, overrideAccess: true }),
-      payload.delete({ collection: 'venues', where: {}, overrideAccess: true }),
-      payload.delete({ collection: 'event-categories', where: {}, overrideAccess: true }),
-      payload.delete({ collection: 'organizers', where: {}, overrideAccess: true }),
-      payload.delete({ collection: 'registration-form-templates', where: {}, overrideAccess: true }),
-      payload.delete({ collection: 'orders', where: {}, overrideAccess: true }), // Clear dependent data too
-      payload.delete({ collection: 'tickets', where: {}, overrideAccess: true }),
-      payload.delete({ collection: 'registrants', where: {}, overrideAccess: true }),
-      payload.delete({ collection: 'users', where: { email: { not_equals: 'admin@example.com' } }, overrideAccess: true }), // Keep your main admin
-    ]);
-    console.log('Existing data cleared.');
+    // Create Seed Data
+    console.log('\nCreating seed data...')
 
-    // --- Create Seed Data ---
-    console.log('\nCreating seed data...');
-
-    // --- 1. Users ---
-    console.log(' Seeding Users...');
-    let adminUser: User | undefined;
-    const adminFind = await payload.find({ collection: 'users', where: { email: { equals: 'admin@example.com'}}, limit: 1, overrideAccess: true });
+    // 1. Users
+    console.log('Seeding Users...')
+    const adminFind = await payload.find({
+      collection: 'users',
+      where: { email: { equals: 'admin@veent.co' } },
+      limit: 1,
+      overrideAccess: true,
+    })
     if (adminFind.docs.length === 0) {
+<<<<<<< Updated upstream
       // adminUser = await payload.create({
       //   collection: 'users', overrideAccess: true,
       //   data: {
@@ -54,11 +52,22 @@ const seedData = async (): Promise<void> => {
       //   }
       // });
       console.log('  - Admin user created.');
+=======
+      for (const user of users) {
+        await payload.create({
+          collection: 'users',
+          overrideAccess: true,
+          data: user,
+        })
+      }
+
+      console.log('  - Admin user created.')
+>>>>>>> Stashed changes
     } else {
-      adminUser = adminFind.docs[0];
-      console.log('  - Admin user already exists.');
+      console.log('  - Admin user already exists.')
     }
 
+<<<<<<< Updated upstream
     // const organizerUser = await payload.create({
     //   collection: 'users', overrideAccess: true,
     //   data: {
@@ -206,20 +215,48 @@ const seedData = async (): Promise<void> => {
     // rather than general seeding, but could be added here if needed.
 
     console.log('\nDatabase seed process completed successfully!');
+=======
+    // Add Venue Seeding
+    console.log('Seeding Venues...')
+    const venueFind = await payload.find({
+      collection: 'venues',
+      limit: 1,
+      overrideAccess: true,
+    })
 
+    if (venueFind.docs.length === 0) {
+      for (const venue of venues) {
+        try {
+          await payload.create({
+            collection: 'venues',
+            data: venue,
+            overrideAccess: true,
+          })
+          console.log(`  - Created venue: ${venue.name}`)
+        } catch (error) {
+          console.error(`  - Failed to create venue ${venue.name}:`, error)
+        }
+      }
+      console.log(`  - ${venues.length} venues created successfully`)
+    } else {
+      console.log('  - Venues already exist, skipping...')
+    }
+>>>>>>> Stashed changes
+
+    console.log('\nDatabase seed process completed successfully!')
   } catch (error: unknown) {
-    console.error('Error during database seed:', error);
-    process.exit(1); // Exit with error code
+    console.error('Error during database seed:', error)
+    process.exit(1)
   }
-};
+}
 
 // --- Run the Seed Function ---
 seedData()
   .then(() => {
-    console.log("Seed script finished.");
-    process.exit(0); // Exit successfully
+    console.log('Seed script finished.')
+    process.exit(0)
   })
   .catch((error) => {
-    console.error("Seeding script failed:", error);
-    process.exit(1); // Exit with error code if seedData itself throws unhandled
-  });
+    console.error('Seeding script failed:', error)
+    process.exit(1)
+  })

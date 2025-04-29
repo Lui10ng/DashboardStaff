@@ -17,7 +17,7 @@
     "plcreate": "payload migrate:create",
     "plstatus": "payload migrate:status",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
-    "seed": "ts-node src/scripts/seed.ts"
+    "seed": "payload run src/scripts/seed.ts"
   },
   "dependencies": {
     "@clerk/backend": "^1.28.0",
@@ -27,6 +27,7 @@
     "@payloadcms/richtext-lexical": "3.31.0",
     "@payloadcms/storage-s3": "3.31.0",
     "cross-env": "^7.0.3",
+    "dotenv": "^16.5.0",
     "graphql": "^16.8.1",
     "next": "15.2.3",
     "payload": "3.31.0",

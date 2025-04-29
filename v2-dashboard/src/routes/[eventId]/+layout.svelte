@@ -2,7 +2,6 @@
 	import { goto } from '$app/navigation';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { navEditEvents, navItems } from '$lib/stores/data';
-
 	import { stateEditEvent } from '$lib/stores/state.svelte.ts';
 
 	let { children, data } = $props();
@@ -12,8 +11,8 @@
 	const activeEditHeader = $derived(stateEditEvent.open);
 
 	const handleActiveNav = (path: string) => {
-		return data.pathname.includes(path) ? 'bg-primary text-white' : '';
-	};
+    return data.pathname.includes(path) ? 'bg-primary text-white' : '';
+};
 
 	const handleActiveEditEventNav = (path: string) => {
 		return data.pathname.includes(path) ? 'bg-primary text-white' : '';
@@ -63,17 +62,19 @@
 					</div>
 
 					<div class="mt-2 flex items-center gap-2">
+						<div class="mt-2 flex items-center  text-gray-600 gap-2">
+							<i class="fa-solid fa-link"></i>
+						</div>
 						<a
 							href={event.url}
 							target="_blank"
 							rel="noopener noreferrer"
-							class="text-blue break-all text-sm transition-colors sm:text-base"
+							class="text-primary break-all text-sm transition-colors sm:text-base"
+
 						>
 							{event.url}
 						</a>
-						<div class="flex items-center gap-2 text-gray-500">
-							<i class="fa-solid fa-link"></i>
-						</div>
+					
 					</div>
 				</div>
 			{:else}

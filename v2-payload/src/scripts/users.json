@@ -1,0 +1,124 @@
+{
+  "users": [
+    {
+      "email": "admin@veent.co",
+      "password": "123",
+      "name": "Veent Admin",
+      "roles": ["admin"]
+    },
+    {
+      "email": "organizer1@veent.co",
+      "password": "123",
+      "name": "Organizer One",
+      "roles": ["organizer"]
+    },
+    {
+      "email": "organizer2@veent.co",
+      "password": "123",
+      "name": "Organizer Two",
+      "roles": ["organizer", "check-in-staff"]
+    },
+    {
+      "email": "organizer3@veent.co",
+      "password": "123",
+      "name": "Organizer Three",
+      "roles": ["organizer"]
+    },
+    {
+      "email": "organizer4@veent.co",
+      "password": "123",
+      "name": "Organizer Four",
+      "roles": ["organizer"]
+    },
+    {
+      "email": "organizer5@veent.co",
+      "password": "123",
+      "name": "Organizer Five",
+      "roles": ["organizer", "attendee"]
+    },
+    {
+      "email": "attendee1@veent.co",
+      "password": "123",
+      "name": "Attendee One",
+      "roles": ["attendee"]
+    },
+    {
+      "email": "attendee2@veent.co",
+      "password": "123",
+      "name": "Attendee Two",
+      "roles": ["attendee"]
+    },
+    {
+      "email": "attendee3@veent.co",
+      "password": "123",
+      "name": "Attendee Three",
+      "roles": ["attendee"]
+    },
+    {
+      "email": "attendee4@veent.co",
+      "password": "123",
+      "name": "Attendee Four",
+      "roles": ["attendee"]
+    },
+    {
+      "email": "attendee5@veent.co",
+      "password": "123",
+      "name": "Attendee Five",
+      "roles": ["attendee"]
+    },
+    {
+      "email": "attendee6@veent.co",
+      "password": "123",
+      "name": "Attendee Six",
+      "roles": ["attendee"]
+    },
+    {
+      "email": "attendee7@veent.co",
+      "password": "123",
+      "name": "Attendee Seven",
+      "roles": ["attendee", "check-in-staff"]
+    },
+    {
+      "email": "attendee8@veent.co",
+      "password": "123",
+      "name": "Attendee Eight",
+      "roles": ["attendee"]
+    },
+    {
+      "email": "attendee9@veent.co",
+      "password": "123",
+      "name": "Attendee Nine",
+      "roles": ["attendee"]
+    },
+    {
+      "email": "checkin1@veent.co",
+      "password": "123",
+      "name": "Check-in Staff One",
+      "roles": ["check-in-staff"]
+    },
+    {
+      "email": "checkin2@veent.co",
+      "password": "123",
+      "name": "Check-in Staff Two",
+      "roles": ["check-in-staff"]
+    },
+    {
+      "email": "checkin3@veent.co",
+      "password": "123",
+      "name": "Check-in Staff Three",
+      "roles": ["check-in-staff", "organizer"]
+    },
+    {
+      "email": "checkin4@veent.co",
+      "password": "123",
+      "name": "Check-in Staff Four",
+      "roles": ["check-in-staff"]
+    },
+    {
+      "email": "checkin5@veent.co",
+      "password": "123",
+      "name": "Check-in Staff Five",
+      "roles": ["check-in-staff", "attendee"]
+    }
+  ]
+}

@@ -19,7 +19,7 @@
 	// Get the data from props
 	let { data } = $props();
 
-	const registrantList = $derived(data.registrantList);
+	let registrants = $derived(data.registrantList);
 
 	// Handler functions
 	const handleResendQR = (guestId: string) => {
@@ -121,7 +121,7 @@
 		</div>
 
 		<div class="space-y-4">
-			{#each registrantList as registrant}
+			{#each registrants as registrant}
 				{#each registrant.submittedAnswers as guest}
 					<div>
 						<Modal dialogClass="w-full">
