@@ -3,7 +3,8 @@ import { handleSvelteError } from '$lib/utils/errorHandler';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import type { RequestEvent } from '@sveltejs/kit';
-import type { EventAnnouncementResponse } from '$lib/types/eventAnnouncements';
+import type { PayloadPaginatedResponse } from '$lib/types/eventData';
+import type { EventAnnouncement } from '$lib/types/payload-types';
 
 export const load: PageServerLoad = async (event: RequestEvent) => {
 	const { url } = event;
@@ -21,7 +22,7 @@ export const load: PageServerLoad = async (event: RequestEvent) => {
 
 	try {
 		const apiClient = createApiClient(event);
-		const posts = await apiClient.get<EventAnnouncementResponse>('/event-announcements', params);
+		const posts = await apiClient.get<PayloadPaginatedResponse<EventAnnouncement>>('/event-announcements', params);
 
 		return {
 			posts

@@ -1,3 +1,5 @@
+import type { PayloadPaginatedResponse } from "./payload";
+
 export const event = {
   title: 'Tech Talks 2024',
   date: 'April 16-18, 2024 | 8:00 AM - 6:00 PM',
@@ -31,18 +33,7 @@ export interface EventType {
   };
 }
 
-export interface PayloadPaginatedResponse<T> {
-  docs: T[];
-  totalDocs: number;
-  limit: number;
-  totalPages: number;
-  page: number;
-  pagingCounter: number;
-  hasPrevPage: boolean;
-  hasNextPage: boolean;
-  prevPage: number | null;
-  nextPage: number | null;
-}
+export type EventResponse = PayloadPaginatedResponse<EventType>;
 
 export const currentEvent: Event = {
   id: '1',

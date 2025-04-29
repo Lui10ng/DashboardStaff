@@ -1,3 +1,5 @@
+import { PayloadPaginatedResponse } from "./payload";
+
 /**
  * Represents the structure for a single field's answer.
  */
@@ -29,22 +31,6 @@ export interface Registrant {
 }
 
 /**
- * Generic interface for Payload CMS paginated responses.
- */
-export interface PaginatedResponse<T> {
-	docs: T[];
-	totalDocs: number;
-	limit: number;
-	totalPages: number;
-	page: number;
-	pagingCounter: number;
-	hasPrevPage: boolean;
-	hasNextPage: boolean;
-	prevPage: number | null;
-	nextPage: number | null;
-}
-
-/**
  * Specific type for the paginated response from the /registrants endpoint.
  */
-export type RegistrantsResponse = PaginatedResponse<Registrant>;
+export type RegistrantsResponse = PayloadPaginatedResponse<Registrant>;

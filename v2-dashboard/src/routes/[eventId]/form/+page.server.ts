@@ -2,7 +2,7 @@ import type { RequestEvent } from '@sveltejs/kit';
 import type { FormData, FieldType } from './types';
 import type { PageServerLoad, Actions } from './$types';
 import { createApiClient } from '$lib/services/payload.server.js';
-import type { PayloadForm } from '$lib/types/formTypes';
+import type { PayloadFormResponse } from '$lib/types/formTypes';
 import { handleSvelteError } from '$lib/utils/errorHandler';
 import { error } from '@sveltejs/kit';
 
@@ -21,16 +21,16 @@ export const load: PageServerLoad = async (event: RequestEvent) => {
 		console.log('Request URL params:', params);
 
 		const apiClient = createApiClient(event);
-		const response = await apiClient.get<PayloadForm>('forms', params);
+		const response = await apiClient.get<PayloadFormResponse>('forms', params);
 
 		console.log('Raw API Response:', JSON.stringify(response, null, 2));
 
 		const formData: FormData = {
-			id: response.id,
-			title: response.title || 'Untitled Form',
-			description: response.description || '',
-			buttonText: response.buttonText || '',
-			formBuilder: response.formBuilder.map((field) => ({
+			id: response.docs[0].id,
+			title: response.docs[0].title || 'Untitled Form',
+			description: response.docs[0].description || '',
+			buttonText: response.docs[0].buttonText || '',
+			formBuilder: response.docs[0].formBuilder.map((field) => ({
 				id: field.id || crypto.randomUUID(),
 				name: field.name || '',
 				fieldType: field.fieldType as FieldType,

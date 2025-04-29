@@ -8,8 +8,8 @@ import { createApiClient } from '$lib/services/payload.server';
 import type { RequestEvent } from './$types';
 import { handleSvelteError } from '$lib/utils/errorHandler';
 import { error } from '@sveltejs/kit';
-import type { TicketTypesResponse } from '$lib/types/tickets';
-import type { PromotionsResponse } from '$lib/types/merchant';
+import type { TicketType, Promotion } from '$lib/types/payload-types';
+import type { PayloadPaginatedResponse } from '$lib/types/payload';
 
 export const load: PageServerLoad = async (event: RequestEvent) => {
 	const { params } = event;
@@ -45,10 +45,10 @@ export const load: PageServerLoad = async (event: RequestEvent) => {
 
 	try {
 		const apiClient = createApiClient(event);
-		const response = await apiClient.get<TicketTypesResponse>('/ticket-types', paramsTicket);
+		const response = await apiClient.get<PayloadPaginatedResponse<TicketType>>('/ticket-types', paramsTicket);
 		const ticketData = response.docs;
 
-		const responseVoucher = await apiClient.get<PromotionsResponse>('/promotions', paramsVoucher);
+		const responseVoucher = await apiClient.get<PayloadPaginatedResponse<Promotion>>('/promotions', paramsVoucher);
 		const voucherData = responseVoucher.docs;
 
 		return {
