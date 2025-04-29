@@ -46,10 +46,6 @@
 	ticketMessage.subscribe(async (msg) => {
 		if (msg && msg.success) {
 			ticketDrawer.open = false;
-		}
-	});
-	ticketMessage.subscribe(async (msg) => {
-		if (msg && msg.success) {
 			editTicketDrawer.open = false;
 		}
 	});
@@ -65,6 +61,8 @@
 
 	// Update the selectedTickets state declaration
 	let selectedTickets: string[] = $state([]);
+
+	$inspect('selectedTickets: , ', selectedTickets);
 
 	// Add the arrays here
 	const ticketFilterItems = ['active', 'disabled'] as const;
@@ -224,168 +222,171 @@
 
 						<Tabs.Content value="ticket">
 							<form action="?/createTicket" method="POST" use:ticketEnhance>
-								
-								<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 mt-5">
-										<div class="space-y-6">
-											<div>
-												<label for="ticket" class="mb-2 block text-sm">Ticket Name</label>
-												<input
-													type="text"
-													name="ticketName"
-													placeholder="Enter ticket name"
-													class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
-												/>
-												{#if $ticketErrors.ticketName}
-													<p class="text-primary text-sm">
-														{$ticketErrors.ticketName}
-													</p>
-												{/if}
-											</div>
-											<div>
-												<label for="price" class="mb-2 block text-sm">Price</label>
-												<input
-													type="number"
-													name="price"
-													placeholder="Enter ticket price"
-													class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
-												/>
-												{#if $ticketErrors.price}
-													<p class="text-primary text-sm">
-														{$ticketErrors.price}
-													</p>
-												{/if}
-											</div>
-											<div>
-												<label for="validfrom" class="mb-2 block text-sm"
-													>Valid from (DD/MM/YYYY)</label
-												>
-												<DatePicker name="validfrom" className="h-input rounded-input  flex w-full select-none items-center border px-2 py-4 text-gray-500" />
-												{#if $ticketErrors.validfrom}
-													<p class="text-primary text-sm">
-														{$ticketErrors.validfrom}
-													</p>
-												{/if}
-											</div>
-											<div>
-												<label for="valid-in" class="mb-2 block text-sm"
-													>Valid to (DD/MM/YYYY)</label
-												>
-												<DatePicker name="validto" className="h-input rounded-input  flex w-full select-none items-center border px-2 py-4 text-gray-500" />
-												{#if $ticketErrors.validto}
-													<p class="text-primary text-sm">
-														{$ticketErrors.validto}
-													</p>
-												{/if}
-											</div>
+								<div class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+									<div class="space-y-6">
+										<div>
+											<label for="ticket" class="mb-2 block text-sm">Ticket Name</label>
+											<input
+												type="text"
+												name="ticketName"
+												placeholder="Enter ticket name"
+												class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
+											/>
+											{#if $ticketErrors.ticketName}
+												<p class="text-primary text-sm">
+													{$ticketErrors.ticketName}
+												</p>
+											{/if}
 										</div>
-										<div class="space-y-6">
-											<div>
-												<label for="quantity" class="mb-2 block text-sm"> Available For Sale</label>
-												<input
-													type="number"
-													name="quantity"
-													placeholder="Enter quantity"
-													class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
-												/>
-												{#if $ticketErrors.quantity}
-													<p class="text-primary text-sm">
-														{$ticketErrors.quantity}
-													</p>
-												{/if}
-											</div>
-											<div>
-												<label for="quantity" class="mb-2 block text-sm">Min Order Quantity</label>
-												<input
-													type="number"
-													name="minOrderQuantity"
-													placeholder="Enter min quantity"
-													class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
-												/>
-												{#if $ticketErrors.minOrderQuantity}
-													<p class="text-primary text-sm">
-														{$ticketErrors.minOrderQuantity}
-													</p>
-												{/if}
-											</div>
-											<div>
-												<label for="quantity" class="mb-2 block text-sm">Max Order Quantity</label>
-												<input
-													type="number"
-													name="maxOrderQuantity"
-													placeholder="Enter max quantity"
-													class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
-												/>
-												{#if $ticketErrors.maxOrderQuantity}
-													<p class="text-primary text-sm">
-														{$ticketErrors.maxOrderQuantity}
-													</p>
-												{/if}
-											</div>
-
-											<div>
-												<label for="activePayment" class="mb-2 block text-sm">Active payment</label>
-												<PaymentToggle value={isActivePayment} OnChange={handleTogglePayment} />
-											</div>
+										<div>
+											<label for="price" class="mb-2 block text-sm">Price</label>
+											<input
+												type="number"
+												name="price"
+												placeholder="Enter ticket price"
+												class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
+											/>
+											{#if $ticketErrors.price}
+												<p class="text-primary text-sm">
+													{$ticketErrors.price}
+												</p>
+											{/if}
 										</div>
-									</div>
-
-									<div>
-										<label for="Label-color" class="my-4 block text-sm">Label Color</label>
-										<div
-											class="mb-3 rounded-md p-3 text-center text-white"
-											style="background-color: {selectedColor}"
-										>
-											{selectedColor}
-										</div>
-										<div class="flex gap-2">
-											{#each colors as color}
-												<button
-													type="button"
-													class="h-8 w-8 rounded-full border-2 transition-all"
-													style="background-color: {color}; border-color: {selectedColor === color
-														? 'black'
-														: 'transparent'}"
-													onclick={() => (selectedColor = color)}
-													aria-label="Select color {color}"
-												></button>
-											{/each}
-
-											<label
-												class="relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-2 border-gray-500"
+										<div>
+											<label for="validfrom" class="mb-2 block text-sm"
+												>Valid from (DD/MM/YYYY)</label
 											>
-												<input
-													class="absolute right-0 top-0 hidden"
-													type="color"
-													name="color"
-													bind:value={selectedColor}
-												/>
-												+
-											</label>
+											<DatePicker
+												name="validfrom"
+												className="h-input rounded-input  flex w-full select-none items-center border px-2 py-4 text-gray-500"
+											/>
+											{#if $ticketErrors.validfrom}
+												<p class="text-primary text-sm">
+													{$ticketErrors.validfrom}
+												</p>
+											{/if}
+										</div>
+										<div>
+											<label for="valid-in" class="mb-2 block text-sm">Valid to (DD/MM/YYYY)</label>
+											<DatePicker
+												name="validto"
+												className="h-input rounded-input  flex w-full select-none items-center border px-2 py-4 text-gray-500"
+											/>
+											{#if $ticketErrors.validto}
+												<p class="text-primary text-sm">
+													{$ticketErrors.validto}
+												</p>
+											{/if}
+										</div>
+									</div>
+									<div class="space-y-6">
+										<div>
+											<label for="quantity" class="mb-2 block text-sm"> Available For Sale</label>
+											<input
+												type="number"
+												name="quantity"
+												placeholder="Enter quantity"
+												class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
+											/>
+											{#if $ticketErrors.quantity}
+												<p class="text-primary text-sm">
+													{$ticketErrors.quantity}
+												</p>
+											{/if}
+										</div>
+										<div>
+											<label for="quantity" class="mb-2 block text-sm">Min Order Quantity</label>
+											<input
+												type="number"
+												name="minOrderQuantity"
+												placeholder="Enter min quantity"
+												class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
+											/>
+											{#if $ticketErrors.minOrderQuantity}
+												<p class="text-primary text-sm">
+													{$ticketErrors.minOrderQuantity}
+												</p>
+											{/if}
+										</div>
+										<div>
+											<label for="quantity" class="mb-2 block text-sm">Max Order Quantity</label>
+											<input
+												type="number"
+												name="maxOrderQuantity"
+												placeholder="Enter max quantity"
+												class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
+											/>
+											{#if $ticketErrors.maxOrderQuantity}
+												<p class="text-primary text-sm">
+													{$ticketErrors.maxOrderQuantity}
+												</p>
+											{/if}
 										</div>
 
-										{#if $ticketErrors.color}
-											<p class="text-primary text-sm">
-												{$ticketErrors.color}
-											</p>
-										{/if}
+										<div>
+											<label for="activePayment" class="mb-2 block text-sm">Active payment</label>
+											<PaymentToggle value={isActivePayment} OnChange={handleTogglePayment} />
+										</div>
+									</div>
+								</div>
+
+								<div>
+									<label for="Label-color" class="my-4 block text-sm">Label Color</label>
+									<div
+										class="mb-3 rounded-md p-3 text-center text-white"
+										style="background-color: {selectedColor}"
+									>
+										{selectedColor}
+									</div>
+									<div class="flex gap-2">
+										{#each colors as color}
+											<button
+												type="button"
+												class="h-8 w-8 rounded-full border-2 transition-all"
+												style="background-color: {color}; border-color: {selectedColor === color
+													? 'black'
+													: 'transparent'}"
+												onclick={() => (selectedColor = color)}
+												aria-label="Select color {color}"
+											></button>
+										{/each}
+
+										<label
+											class="relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-2 border-gray-500"
+										>
+											<input
+												class="absolute right-0 top-0 hidden"
+												type="color"
+												name="color"
+												bind:value={selectedColor}
+											/>
+											+
+										</label>
 									</div>
 
-									<div class="mt-8 grid grid-cols-2 gap-4">
-										<Button
-											onClick={() => {}}
-											type="submit"
-											label="Save Ticket"
-											className="bg-[#DF4D60] text-white p-2 rounded-md"
-										/>
-										<Button
-											onClick={() => {
-												ticketDrawer.open = false;
-											}}
-											label="Cancel"
-											className="border border-gray-300 text-gray-700 p-2 rounded-md"
-										/>
-									</div>
-								</form>
+									{#if $ticketErrors.color}
+										<p class="text-primary text-sm">
+											{$ticketErrors.color}
+										</p>
+									{/if}
+								</div>
+
+								<div class="mt-8 grid grid-cols-2 gap-4">
+									<Button
+										onClick={() => {}}
+										type="submit"
+										label="Save Ticket"
+										className="bg-[#DF4D60] text-white p-2 rounded-md"
+									/>
+									<Button
+										onClick={() => {
+											ticketDrawer.open = false;
+										}}
+										label="Cancel"
+										className="border border-gray-300 text-gray-700 p-2 rounded-md"
+									/>
+								</div>
+							</form>
 						</Tabs.Content>
 
 						<Tabs.Content value="reserve-seating">
@@ -505,7 +506,10 @@
 													<label for="validfrom" class="mb-2 block text-sm"
 														>Valid from (DD/MM/YYYY)</label
 													>
-													<DatePicker name="validfrom" className="h-input rounded-input  flex w-full select-none items-center border px-2 py-4 text-gray-500" />
+													<DatePicker
+														name="validfrom"
+														className="h-input rounded-input  flex w-full select-none items-center border px-2 py-4 text-gray-500"
+													/>
 													{#if $ticketErrors.validfrom}
 														<p class="text-primary text-sm">
 															{$ticketErrors.validfrom}
@@ -516,7 +520,10 @@
 													<label for="valid-in" class="mb-2 block text-sm"
 														>Valid to (DD/MM/YYYY)</label
 													>
-													<DatePicker name="validto" className="h-input rounded-input  flex w-full select-none items-center border px-2 py-4 text-gray-500" />
+													<DatePicker
+														name="validto"
+														className="h-input rounded-input  flex w-full select-none items-center border px-2 py-4 text-gray-500"
+													/>
 													{#if $ticketErrors.validto}
 														<p class="text-primary text-sm">
 															{$ticketErrors.validto}
@@ -604,7 +611,7 @@
 														aria-label="Select color {color}"
 													></button>
 												{/each}
-	
+
 												<label
 													class="relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-2 border-gray-500"
 												>
@@ -912,11 +919,13 @@
 						<DropdownMenu
 							buttonText={getTicketSelectionText(selectedTickets)}
 							className="w-full justify-between rounded-md border border-gray-200 bg-white px-4 py-2 text-sm hover:border-[#DF4D60]"
-							items={['all', ...ticketList.map((ticket) => ticket.name)]}
+							items={['all', ...ticketList.map((ticket) => ({ id: ticket.id, name: ticket.name }))]}
 							multiple={true}
 							alignContent="start"
 							on:select={(event) => {
 								const selected = event.detail;
+								console.log('selected', selected);
+
 								if (selected.includes('all')) {
 									selectedTickets = ['all'];
 								} else {
@@ -925,10 +934,10 @@
 							}}
 						/>
 					</div>
-    				<div class="sm:hidden">
+					<div class="sm:hidden">
 						<h3 class="text-lg font-medium">Preview</h3>
 						<div class="flex gap-4 overflow-x-auto pb-4">
-								{#if selectedTickets.includes('all')}
+							{#if selectedTickets.includes('all')}
 								{#each ticketList as ticket, index}
 									<div
 										class="border-l-10 min-w-[298px] flex-shrink-0 rounded-lg border border-gray-400"
@@ -1115,102 +1124,100 @@
 			<!-- Replace the preview section with this updated code -->
 
 			<div class="space-y-6">
-				<div class=" lg:block hidden">
-				<h3 class="text-lg font-medium">Preview</h3>
-				<div class="flex-wrap sm:grid sm:grid-cols-2 gap-4">
-
-					{#if selectedTickets.includes('all')}
-						{#each ticketList as ticket, index}
-							<div
-								class="border-l-10 min-w-[298px] flex-shrink-0 rounded-lg border border-gray-400"
-								style="border-left-color: {ticket.color};"
-							>
-								<div class="p-4">
-									<div class="mb-1 text-xs text-gray-500">
-										Valid from {formatDate(ticket.salesStart)} to {formatDate(ticket.salesEnd)}
-									</div>
-									<div class="flex justify-between">
-										<div class="font-medium">{ticket.name}</div>
-										<div class="flex gap-1">
-											<span
-												class="inline-flex items-center rounded-full px-2 py-1 text-xs {getStatusTextColor(
-													ticket.status
-												)}"
-											>
-												{ticket.status}
-											</span>
+				<div class=" hidden lg:block">
+					<h3 class="text-lg font-medium">Preview</h3>
+					<div class="flex-wrap gap-4 sm:grid sm:grid-cols-2">
+						{#if selectedTickets.includes('all')}
+							{#each ticketList as ticket, index}
+								<div
+									class="border-l-10 min-w-[298px] flex-shrink-0 rounded-lg border border-gray-400"
+									style="border-left-color: {ticket.color};"
+								>
+									<div class="p-4">
+										<div class="mb-1 text-xs text-gray-500">
+											Valid from {formatDate(ticket.salesStart)} to {formatDate(ticket.salesEnd)}
 										</div>
-									</div>
-									<div class="mb-4 mt-2 text-lg font-bold">₱{ticket.price}</div>
-									<div class="space-y-1">
-										<div class="flex justify-between text-xs">
-											<p>0/{ticket.quantityAvailable} Sold</p>
+										<div class="flex justify-between">
+											<div class="font-medium">{ticket.name}</div>
+											<div class="flex gap-1">
+												<span
+													class="inline-flex items-center rounded-full px-2 py-1 text-xs {getStatusTextColor(
+														ticket.status
+													)}"
+												>
+													{ticket.status}
+												</span>
+											</div>
 										</div>
-										<div class="h-1.5 w-full rounded-full bg-gray-200">
-											<div
-												class="h-1.5 rounded-full"
-												style="width: 0%; background-color: {ticket.color};"
-											></div>
-										</div>
-									</div>
-								</div>
-							</div>
-						{/each}
-					{:else}
-						<!-- Show only the selected ticket -->
-						{#each ticketList.filter( (ticket) => selectedTickets.includes(ticket.name) ) as ticket, index}
-							<div
-								class="border-l-10 min-w-[298px] flex-shrink-0 rounded-lg border border-gray-400"
-								style="border-left-color: {ticket.color};"
-							>
-								<div class="p-4">
-									<div class="mb-1 text-xs text-gray-500">
-										Valid from {formatDate(ticket.salesStart)} to {formatDate(ticket.salesEnd)}
-									</div>
-									<div class="flex justify-between">
-										<div class="font-medium">{ticket.name}</div>
-										<div class="flex gap-1">
-											<span
-												class="inline-flex items-center rounded-full px-2 py-1 text-xs {getStatusTextColor(
-													ticket.status
-												)}"
-											>
-												{ticket.status}
-											</span>
-											<Button
-												onClick={() => handleEditTicket(ticket)}
-												icon="fa-solid fa-pen-to-square"
-												className="text-xs text-gray-400 hover:text-primary p-1"
-											/>
-											<Button
-												onClick={() => {}}
-												icon="fa-regular fa-trash-can"
-												className="text-xs text-gray-400 hover:text-primary p-1"
-											/>
-										</div>
-									</div>
-									<div class="mb-4 mt-2 text-lg font-bold">₱{ticket.price}</div>
-									<div class="space-y-1">
-										<div class="flex justify-between text-xs">
-											<p>0/{ticket.quantityAvailable} Sold</p>
-										</div>
-										<div class="h-1.5 w-full rounded-full bg-gray-200">
-											<div
-												class="h-1.5 rounded-full"
-												style="width: 0%; background-color: {ticket.color};"
-											></div>
+										<div class="mb-4 mt-2 text-lg font-bold">₱{ticket.price}</div>
+										<div class="space-y-1">
+											<div class="flex justify-between text-xs">
+												<p>0/{ticket.quantityAvailable} Sold</p>
+											</div>
+											<div class="h-1.5 w-full rounded-full bg-gray-200">
+												<div
+													class="h-1.5 rounded-full"
+													style="width: 0%; background-color: {ticket.color};"
+												></div>
+											</div>
 										</div>
 									</div>
 								</div>
-							</div>
-						{/each}
-					{/if}
+							{/each}
+						{:else}
+							<!-- Show only the selected ticket -->
+							{#each ticketList.filter( (ticket) => selectedTickets.includes(ticket.name) ) as ticket, index}
+								<div
+									class="border-l-10 min-w-[298px] flex-shrink-0 rounded-lg border border-gray-400"
+									style="border-left-color: {ticket.color};"
+								>
+									<div class="p-4">
+										<div class="mb-1 text-xs text-gray-500">
+											Valid from {formatDate(ticket.salesStart)} to {formatDate(ticket.salesEnd)}
+										</div>
+										<div class="flex justify-between">
+											<div class="font-medium">{ticket.name}</div>
+											<div class="flex gap-1">
+												<span
+													class="inline-flex items-center rounded-full px-2 py-1 text-xs {getStatusTextColor(
+														ticket.status
+													)}"
+												>
+													{ticket.status}
+												</span>
+												<Button
+													onClick={() => handleEditTicket(ticket)}
+													icon="fa-solid fa-pen-to-square"
+													className="text-xs text-gray-400 hover:text-primary p-1"
+												/>
+												<Button
+													onClick={() => {}}
+													icon="fa-regular fa-trash-can"
+													className="text-xs text-gray-400 hover:text-primary p-1"
+												/>
+											</div>
+										</div>
+										<div class="mb-4 mt-2 text-lg font-bold">₱{ticket.price}</div>
+										<div class="space-y-1">
+											<div class="flex justify-between text-xs">
+												<p>0/{ticket.quantityAvailable} Sold</p>
+											</div>
+											<div class="h-1.5 w-full rounded-full bg-gray-200">
+												<div
+													class="h-1.5 rounded-full"
+													style="width: 0%; background-color: {ticket.color};"
+												></div>
+											</div>
+										</div>
+									</div>
+								</div>
+							{/each}
+						{/if}
+					</div>
 				</div>
 			</div>
 		</div>
-	</div>
-	</Drawer
-	>
+	</Drawer>
 	{#if voucherEnabled}
 		<div class="block">
 			<div class="flex gap-4 overflow-x-auto pb-4">

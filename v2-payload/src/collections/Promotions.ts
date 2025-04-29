@@ -76,6 +76,13 @@ const Promotions: CollectionConfig = {
       // NOTE: Your checkout logic needs to fetch the promotion and check these rules
       // against the event(s) in the user's cart/order before applying the discount.
     },
+    {
+      name: 'applicableTicketTypes',
+      label: 'Applicable Ticket Types',
+      type: 'relationship',
+      relationTo: 'ticket-types',
+      hasMany: true,
+    },
   ],
   timestamps: true,
 };
