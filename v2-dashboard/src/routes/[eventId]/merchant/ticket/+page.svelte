@@ -166,7 +166,7 @@
 <div>
 	<div class="mb-4 flex items-center justify-between">
 		<h2 class="text-xl font-semibold">Tickets</h2>
-		<div class="flex gap-2">
+		<div class="flex">
 			<DropdownMenu
 				icon="fa-solid fa-filter"
 				className={selectedTicketStatus ? ' p-2' : 'p-2 rounded'}
@@ -735,7 +735,7 @@
 			<VoucherToggle enabled={voucherEnabled} onChange={toggleVouchers} />
 		</div>
 		{#if voucherEnabled}
-			<div class="flex gap-2">
+			<div class="flex">
 				<DropdownMenu
 					icon="fa-solid fa-filter"
 					className={selectedVoucherStatus ? 'p-2' : 'p-2 rounded'}
