@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export const ticketSchema = z.object({
+	id: z.string().optional(),
 	ticketName: z.string().min(1, 'Ticket name is required'),
 	price: z.number().min(1, 'Price is required'),
 	quantity: z.number().min(1, 'Quantity is required'),

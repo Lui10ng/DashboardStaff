@@ -48,6 +48,11 @@
 			ticketDrawer.open = false;
 		}
 	});
+	ticketMessage.subscribe(async (msg) => {
+		if (msg && msg.success) {
+			editTicketDrawer.open = false;
+		}
+	});
 
 	voucherMessage.subscribe(async (msg) => {
 		if (msg && msg.success) {
@@ -161,7 +166,7 @@
 <div>
 	<div class="mb-4 flex items-center justify-between">
 		<h2 class="text-xl font-semibold">Tickets</h2>
-		<div class="flex gap-2">
+		<div class="flex">
 			<DropdownMenu
 				icon="fa-solid fa-filter"
 				className={selectedTicketStatus ? ' p-2' : 'p-2 rounded'}
@@ -218,9 +223,9 @@
 						</Tabs.List>
 
 						<Tabs.Content value="ticket">
-							<div class="mx-auto max-w-xl p-8">
-								<form action="?/createTicket" method="POST" use:ticketEnhance>
-									<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+							<form action="?/createTicket" method="POST" use:ticketEnhance>
+								
+								<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 mt-5">
 										<div class="space-y-6">
 											<div>
 												<label for="ticket" class="mb-2 block text-sm">Ticket Name</label>
@@ -254,7 +259,7 @@
 												<label for="validfrom" class="mb-2 block text-sm"
 													>Valid from (DD/MM/YYYY)</label
 												>
-												<DatePicker name="validfrom" className="" />
+												<DatePicker name="validfrom" className="h-input rounded-input  flex w-full select-none items-center border px-2 py-4 text-gray-500" />
 												{#if $ticketErrors.validfrom}
 													<p class="text-primary text-sm">
 														{$ticketErrors.validfrom}
@@ -265,7 +270,7 @@
 												<label for="valid-in" class="mb-2 block text-sm"
 													>Valid to (DD/MM/YYYY)</label
 												>
-												<DatePicker name="validto" className="" />
+												<DatePicker name="validto" className="h-input rounded-input  flex w-full select-none items-center border px-2 py-4 text-gray-500" />
 												{#if $ticketErrors.validto}
 													<p class="text-primary text-sm">
 														{$ticketErrors.validto}
@@ -381,7 +386,6 @@
 										/>
 									</div>
 								</form>
-							</div>
 						</Tabs.Content>
 
 						<Tabs.Content value="reserve-seating">
@@ -463,7 +467,8 @@
 								</Tabs.List>
 
 								<Tabs.Content value="ticket">
-									<form action="?/updateTicket" method="POST" use:enhance>
+									<form action="?/updateTicket" method="POST" use:ticketEnhance>
+										<input type="hidden" name="id" value={selectedTicket.id} />
 										<div class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
 											<div class="space-y-6">
 												<div>
@@ -500,7 +505,7 @@
 													<label for="validfrom" class="mb-2 block text-sm"
 														>Valid from (DD/MM/YYYY)</label
 													>
-													<DatePicker name="validfrom" className="" />
+													<DatePicker name="validfrom" className="h-input rounded-input  flex w-full select-none items-center border px-2 py-4 text-gray-500" />
 													{#if $ticketErrors.validfrom}
 														<p class="text-primary text-sm">
 															{$ticketErrors.validfrom}
@@ -511,7 +516,7 @@
 													<label for="valid-in" class="mb-2 block text-sm"
 														>Valid to (DD/MM/YYYY)</label
 													>
-													<DatePicker name="validto" className="" />
+													<DatePicker name="validto" className="h-input rounded-input  flex w-full select-none items-center border px-2 py-4 text-gray-500" />
 													{#if $ticketErrors.validto}
 														<p class="text-primary text-sm">
 															{$ticketErrors.validto}
@@ -583,9 +588,9 @@
 											<label for="Label-color" class="my-4 block text-sm">Label Color</label>
 											<div
 												class="mb-3 rounded-md p-3 text-center text-white"
-												style="background-color: {selectedTicket.color}"
+												style="background-color: {selectedColor}"
 											>
-												{selectedTicket.color}
+												{selectedColor}
 											</div>
 											<div class="flex gap-2">
 												{#each colors as color}
@@ -599,7 +604,7 @@
 														aria-label="Select color {color}"
 													></button>
 												{/each}
-
+	
 												<label
 													class="relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-2 border-gray-500"
 												>
@@ -607,7 +612,7 @@
 														class="absolute right-0 top-0 hidden"
 														type="color"
 														name="color"
-														bind:value={selectedTicket.color}
+														bind:value={selectedColor}
 													/>
 													+
 												</label>
@@ -730,7 +735,7 @@
 			<VoucherToggle enabled={voucherEnabled} onChange={toggleVouchers} />
 		</div>
 		{#if voucherEnabled}
-			<div class="flex gap-2">
+			<div class="flex">
 				<DropdownMenu
 					icon="fa-solid fa-filter"
 					className={selectedVoucherStatus ? 'p-2' : 'p-2 rounded'}
@@ -850,7 +855,7 @@
 							<label for="validFrom" class="mb-2 block text-sm">Valid From</label>
 							<DatePicker
 								name="validFrom"
-								className="h-input rounded-input  flex w-full select-none items-center border px-2 py-4 bg-gray-100"
+								className="h-input rounded-input  flex w-full select-none items-center border px-2 py-4 text-gray-500"
 							/>
 							{#if $voucherErrors.validFrom}
 								<p class="text-primary text-sm">
@@ -862,7 +867,7 @@
 							<label for="validUntil" class="mb-2 block text-sm">Valid Until</label>
 							<DatePicker
 								name="validUntil"
-								className="h-input rounded-input  flex w-full select-none items-center border px-2 py-4 bg-gray-100"
+								className="h-input rounded-input  flex w-full select-none items-center border px-2 py-4 text-gray-500"
 							/>
 							{#if $voucherErrors.validUntil}
 								<p class="text-primary text-sm">
@@ -919,6 +924,107 @@
 								}
 							}}
 						/>
+					</div>
+    				<div class="sm:hidden">
+						<h3 class="text-lg font-medium">Preview</h3>
+						<div class="flex gap-4 overflow-x-auto pb-4">
+								{#if selectedTickets.includes('all')}
+								{#each ticketList as ticket, index}
+									<div
+										class="border-l-10 min-w-[298px] flex-shrink-0 rounded-lg border border-gray-400"
+										style="border-left-color: {ticket.color};"
+									>
+										<div class="p-4">
+											<div class="mb-1 text-xs text-gray-500">
+												Valid from {formatDate(ticket.salesStart)} to {formatDate(ticket.salesEnd)}
+											</div>
+											<div class="flex justify-between">
+												<div class="font-medium">{ticket.name}</div>
+												<div class="flex gap-1">
+													<span
+														class="inline-flex items-center rounded-full px-2 py-1 text-xs {getStatusTextColor(
+															ticket.status
+														)}"
+													>
+														{ticket.status}
+													</span>
+													<Button
+														onClick={() => handleEditTicket(ticket)}
+														icon="fa-solid fa-pen-to-square"
+														className="text-xs text-gray-400 hover:text-primary p-1"
+													/>
+													<Button
+														onClick={() => {}}
+														icon="fa-regular fa-trash-can"
+														className="text-xs text-gray-400 hover:text-primary p-1"
+													/>
+												</div>
+											</div>
+											<div class="mb-4 mt-2 text-lg font-bold">₱{ticket.price}</div>
+											<div class="space-y-1">
+												<div class="flex justify-between text-xs">
+													<p>0/{ticket.quantityAvailable} Sold</p>
+												</div>
+												<div class="h-1.5 w-full rounded-full bg-gray-200">
+													<div
+														class="h-1.5 rounded-full"
+														style="width: 0%; background-color: {ticket.color};"
+													></div>
+												</div>
+											</div>
+										</div>
+									</div>
+								{/each}
+							{:else}
+								<!-- Show only the selected ticket -->
+								{#each ticketList.filter( (ticket) => selectedTickets.includes(ticket.name) ) as ticket, index}
+									<div
+										class="border-l-10 min-w-[298px] flex-shrink-0 rounded-lg border border-gray-400"
+										style="border-left-color: {ticket.color};"
+									>
+										<div class="p-4">
+											<div class="mb-1 text-xs text-gray-500">
+												Valid from {formatDate(ticket.salesStart)} to {formatDate(ticket.salesEnd)}
+											</div>
+											<div class="flex justify-between">
+												<div class="font-medium">{ticket.name}</div>
+												<div class="flex gap-1">
+													<span
+														class="inline-flex items-center rounded-full px-2 py-1 text-xs {getStatusTextColor(
+															ticket.status
+														)}"
+													>
+														{ticket.status}
+													</span>
+													<Button
+														onClick={() => handleEditTicket(ticket)}
+														icon="fa-solid fa-pen-to-square"
+														className="text-xs text-gray-400 hover:text-primary p-1"
+													/>
+													<Button
+														onClick={() => {}}
+														icon="fa-regular fa-trash-can"
+														className="text-xs text-gray-400 hover:text-primary p-1"
+													/>
+												</div>
+											</div>
+											<div class="mb-4 mt-2 text-lg font-bold">₱{ticket.price}</div>
+											<div class="space-y-1">
+												<div class="flex justify-between text-xs">
+													<p>0/{ticket.quantityAvailable} Sold</p>
+												</div>
+												<div class="h-1.5 w-full rounded-full bg-gray-200">
+													<div
+														class="h-1.5 rounded-full"
+														style="width: 0%; background-color: {ticket.color};"
+													></div>
+												</div>
+											</div>
+										</div>
+									</div>
+								{/each}
+							{/if}
+						</div>
 					</div>
 
 					<!-- Toggles and Helper Text -->
@@ -1009,8 +1115,10 @@
 			<!-- Replace the preview section with this updated code -->
 
 			<div class="space-y-6">
+				<div class=" lg:block hidden">
 				<h3 class="text-lg font-medium">Preview</h3>
-				<div class="grid grid-cols-2 gap-4">
+				<div class="flex-wrap sm:grid sm:grid-cols-2 gap-4">
+
 					{#if selectedTickets.includes('all')}
 						{#each ticketList as ticket, index}
 							<div
@@ -1031,16 +1139,6 @@
 											>
 												{ticket.status}
 											</span>
-											<Button
-												onClick={() => handleEditTicket(ticket)}
-												icon="fa-solid fa-pen-to-square"
-												className="text-xs text-gray-400 hover:text-primary p-1"
-											/>
-											<Button
-												onClick={() => {}}
-												icon="fa-regular fa-trash-can"
-												className="text-xs text-gray-400 hover:text-primary p-1"
-											/>
 										</div>
 									</div>
 									<div class="mb-4 mt-2 text-lg font-bold">₱{ticket.price}</div>
@@ -1109,7 +1207,9 @@
 					{/if}
 				</div>
 			</div>
-		</div></Drawer
+		</div>
+	</div>
+	</Drawer
 	>
 	{#if voucherEnabled}
 		<div class="block">
