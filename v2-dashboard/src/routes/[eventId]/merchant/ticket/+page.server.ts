@@ -117,7 +117,8 @@ export const actions: Actions = {
 		console.log(data);
 	},
 
-	updateTicket: async ({ request }) => {
+	updateTicket: async (event: RequestEvent) => {
+		const { request } = event;
 		const data = await request.formData();
 		const ticketId = data.get('id');
 
@@ -144,6 +145,7 @@ export const actions: Actions = {
 
 			console.log('Sending update with data:', formData); // Add this log
 
+			const apiClient = createApiClient(event);
 			const response = await apiClient.patch(`/ticket-types/${ticketId}`, formData);
 			console.log('Update response:', response); // Add this log
 

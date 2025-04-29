@@ -1,13 +1,18 @@
 import { registration } from '$lib/schema/registration';
-import { apiClient } from '$lib/services/payload.server.js';
 import { fail } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { message, superValidate } from 'sveltekit-superforms/server';
+import type { RequestEvent, PageServerLoad } from './$types';
+import { createApiClient } from '$lib/services/payload.server';
+import type { Actions } from './$types';
+import { handleSvelteError } from '$lib/utils/errorHandler';
+import { error } from '@sveltejs/kit';
 
 let schema: any = null;
 let eventId = '';
 
-export const load = async ({ url, fetch: svelteKitFetch }) => {
+export const load: PageServerLoad = async (event: RequestEvent) => {
+	const { url } = event;
 	const hostName = url.hostname;
 	const subdomain = hostName.split('.')[0];
 
@@ -16,7 +21,8 @@ export const load = async ({ url, fetch: svelteKitFetch }) => {
 	});
 
 	try {
-		const formData = await apiClient.get('/events', params, { fetchInstance: svelteKitFetch });
+		const apiClient = createApiClient(event);
+		const formData = await apiClient.get('/events', params);
 
 		if (formData && formData.docs[0].formId.formBuilder) {
 			const formBuilder = formData.docs[0].formId.formBuilder;
@@ -38,20 +44,38 @@ export const load = async ({ url, fetch: svelteKitFetch }) => {
 				formBuilder
 			};
 		}
-	} catch (err) {}
+	} catch (err: unknown) {
+		const { statusCode, errorMessage } = handleSvelteError(
+			err,
+			'Loading Event Details for Registration',
+			'Failed to Load Event Details for Registration'
+		);
+
+		throw error(statusCode, errorMessage);
+	}
 };
 
-export const actions = {
-	register: async ({ request }) => {
+export const actions: Actions = {
+	register: async (event: RequestEvent) => {
+		const { url, request } = event;
+		const hostName = url.hostname;
+		const subdomain = hostName.split('.')[0];
 		const formData = await request.formData();
-
 		const form = await superValidate(formData, zod(schema));
 
 		if (!form.valid) {
 			return fail(400, { form });
 		}
 
+		const params = new URLSearchParams({
+			'where[slug][equals]': subdomain,
+			select: 'id'
+		});
+
 		try {
+			const apiClient = createApiClient(event);
+			const eventId = await apiClient.get('/events', params);
+
 			const registrantData = {
 				event: eventId,
 				submittedAnswers: form.data.tabs
@@ -61,8 +85,14 @@ export const actions = {
 			console.log('response: ', response);
 
 			return message(form, { success: true, message: 'Registration successful!' });
-		} catch (error: any) {
-			return message(form, { success: false, message: error.message });
+		}  catch (err: unknown) {
+			const { statusCode, errorMessage } = handleSvelteError(
+				err,
+				'Registering for Event',
+				'Failed to Register for Event'
+			);
+	
+			throw error(statusCode, errorMessage);
 		}
 	}
 };
