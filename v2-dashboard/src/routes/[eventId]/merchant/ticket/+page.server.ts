@@ -45,10 +45,16 @@ export const load: PageServerLoad = async (event: RequestEvent) => {
 
 	try {
 		const apiClient = createApiClient(event);
-		const response = await apiClient.get<PayloadPaginatedResponse<TicketType>>('/ticket-types', paramsTicket);
+		const response = await apiClient.get<PayloadPaginatedResponse<TicketType>>(
+			'/ticket-types',
+			paramsTicket
+		);
 		const ticketData = response.docs;
 
-		const responseVoucher = await apiClient.get<PayloadPaginatedResponse<Promotion>>('/promotions', paramsVoucher);
+		const responseVoucher = await apiClient.get<PayloadPaginatedResponse<Promotion>>(
+			'/promotions',
+			paramsVoucher
+		);
 		const voucherData = responseVoucher.docs;
 
 		return {

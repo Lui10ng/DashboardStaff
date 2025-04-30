@@ -2,7 +2,7 @@ import { error, fail, redirect } from '@sveltejs/kit';
 import type { ServerLoadEvent, RequestEvent } from '@sveltejs/kit';
 import { message, superValidate } from 'sveltekit-superforms/server';
 import { zod } from 'sveltekit-superforms/adapters';
-import { eventSchema } from '$lib/schema/event';
+import { eventSchema } from '$lib/schema';
 import { createApiClient } from '$lib/services/payload.server';
 import { handleSvelteError } from '$lib/utils/errorHandler';
 import type { PayloadPaginatedResponse } from '$lib/types/payloadResponse';

@@ -6,12 +6,11 @@ import { error } from '@sveltejs/kit';
 import type { RequestEvent } from '@sveltejs/kit';
 import { handleSvelteError } from '$lib/utils/errorHandler';
 
-export const load: LayoutServerLoad = async (event: RequestEvent) => { 
-	
+export const load: LayoutServerLoad = async (event: RequestEvent) => {
 	try {
 		const { url: eventUrl, params } = event;
 		const eventId = params.eventId;
-		const pathname = url.pathname;
+		const pathname = eventUrl.pathname;
 
 		const paramsEvent = new URLSearchParams({
 			'where[event][equals]': eventId!.toString(),
@@ -26,30 +25,21 @@ export const load: LayoutServerLoad = async (event: RequestEvent) => {
 		const apiClient = createApiClient(event);
 		const response = await apiClient.get<EventType>(`events/${eventId}`, paramsEvent);
 
-		const {
-			eventContacts,
-			poster,
-			slug,
-			title,
-			location,
-			startTime,
-			endTime,
-			id,
-		} = response;
+		const { eventContacts, poster, slug, title, location, startTime, endTime, id } = response;
 
 		const contactDetails = eventContacts;
 
 		// Determine siteUrl based on environment (local vs production)
 		const isLocal = eventUrl.origin.includes('localhost');
-		const siteUrl = isLocal ? `http://${slug}.localhost:${PORT}`:`https://${slug}.veent.co/`;
+		const siteUrl = isLocal ? `http://${slug}.localhost:${PORT}` : `https://${slug}.veent.co/`;
 
 		const dateFormatter = new Intl.DateTimeFormat('en-US', {
+			weekday: 'short',
 			month: 'long',
 			day: 'numeric',
 			year: 'numeric'
 		});
 		const date = dateFormatter.format(new Date(startTime));
-		
 		const timeFormatter = new Intl.DateTimeFormat('en-US', {
 			hour: 'numeric',
 			minute: '2-digit'
@@ -59,8 +49,32 @@ export const load: LayoutServerLoad = async (event: RequestEvent) => {
 		const time = `${formattedStartTime} - ${formattedEndTime}`;
 
 		const url = `https://${slug}.veent.co`;
-		const imageUrl = poster?.url ||
-			'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=2940&ixlib=rb-4.0.3'
+		const imageUrl =
+			poster?.url ||
+			'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=2940&ixlib=rb-4.0.3';
+
+		/**
+		 * 
+		 * id: response.id,
+				slug: response.slug,
+				title: response.title,
+				startTime: response.startTime,
+				endTime: response.endTime,
+				date: new Date(response.startTime).toLocaleDateString('en-US', {
+					weekday: 'short',
+					month: 'long',
+					day: 'numeric',
+					year: 'numeric'
+				}),
+				time: `${new Date(response.startTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })} - ${new Date(response.endTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`,
+				location: response.location,
+				url: siteUrl,
+				imageUrl:
+					response.poster?.url ||
+					'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=2940&ixlib=rb-4.0.3'
+			}
+		 * 
+		 */
 
 		return {
 			eventId,

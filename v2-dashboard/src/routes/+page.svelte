@@ -23,6 +23,8 @@
 	// Pagination state
 	let currentPage = $state(1);
 	let eventsPerPage = $state(5);
+	let subdomainError = $state('');
+	let subdomainDebounceTimer: NodeJS.Timeout;
 	let events = $derived(eventListStore.events);
 
 	let paginatedEvents = $derived(
@@ -39,7 +41,6 @@
 
 	$effect(() => {
 		eventListStore.setEvents(data.events);
-		console.log('all events', events)
 	});
 
 	const formatStatus = (status: string) => {
@@ -53,6 +54,48 @@
 			return 'bg-yellow-100 text-yellow-800';
 		}
 	};
+
+	async function validateSubdomain(subdomain: string) {
+        try {
+            const response = await fetch('/api/checkSubdomain', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ subdomain })
+            });
+
+            const data = await response.json();
+            
+            if (!response.ok) {
+                subdomainError =  data.error;
+                return false;
+            }
+
+            subdomainError = '';
+            return true;
+        } catch (error) {
+            subdomainError = 'Error checking subdomain';
+            return false;
+        }
+    }
+
+	function handleSubdomainInput(event: Event) {
+        const input = event.target as HTMLInputElement;
+        const value = input.value.replace(/\s/g, '').toLowerCase();
+    // Update input value to immediately remove spaces
+    input.value = value;
+    $form.subdomain = value;
+
+        // Clear previous timer
+        clearTimeout(subdomainDebounceTimer);
+
+        // Set new timer
+        subdomainDebounceTimer = setTimeout(() => {
+            validateSubdomain(value);
+        }, 500); // Wait 500ms after user stops typing
+    }
+
 
 	const extractLocation = (location: string): string => {
     if (!location) return '';
@@ -185,14 +228,18 @@
 							type="text"
 							name="subdomain"
 							bind:value={$form.subdomain}
+							oninput={handleSubdomainInput}
 							placeholder="your-event"
 							class="flex-1 px-2 py-4 text-[16px] text-gray-500 outline-none transition-colors"
 						/>
 						<span class="p-4 text-gray-500">.veent.co</span>
 					</div>
-					{#if $errors.subdomain}
-						<p class="text-primary text-sm">{$errors.subdomain}</p>
-					{/if}
+		<!-- para ma prevent ang pag display sa duha ka error -->
+		{#if subdomainError}
+			<p class="text-primary text-sm">{subdomainError}</p>
+		{:else if $errors.subdomain}
+			<p class="text-primary text-sm">{$errors.subdomain}</p>
+		{/if}
 				</div>
 
 				<!-- Date/Time Section -->

@@ -1,0 +1,144 @@
+{
+  "venues": [
+    {
+      "name": "Sunshine Convention Center",
+      "address": {
+        "street": "123 Sunshine Blvd",
+        "city": "Manila",
+        "stateProvince": "Metro Manila",
+        "postalCode": "1000",
+        "country": "Philippines"
+      },
+      "capacity": 1500,
+      "contactEmail": "info@sunshinecenter.com",
+      "contactPhone": "09171234567",
+      "website": "sunshinecenter.com"
+    },
+    {
+      "name": "Cebu Grand Hall",
+      "address": {
+        "street": "45 Grand Ave",
+        "city": "Cebu City",
+        "stateProvince": "Cebu",
+        "postalCode": "6000",
+        "country": "Philippines"
+      },
+      "capacity": 2000,
+      "contactEmail": "events@cebugrandhall.com",
+      "contactPhone": "09281234567",
+      "website": "cebugrandhall.com"
+    },
+    {
+      "name": "Davao City Arena",
+      "address": {
+        "street": "678 Freedom St",
+        "city": "Davao City",
+        "stateProvince": "Davao del Sur",
+        "postalCode": "8000",
+        "country": "Philippines"
+      },
+      "capacity": 3500,
+      "contactEmail": "contact@davaoarena.com",
+      "contactPhone": "09451234567",
+      "website": "davaoarena.com"
+    },
+    {
+      "name": "Iloilo Event Pavilion",
+      "address": {
+        "street": "22 Heritage Road",
+        "city": "Iloilo City",
+        "stateProvince": "Iloilo",
+        "postalCode": "5000",
+        "country": "Philippines"
+      },
+      "capacity": 1200,
+      "contactEmail": "hello@iloilopavilion.com",
+      "contactPhone": "09561234567",
+      "website": "iloilopavilion.com"
+    },
+    {
+      "name": "Baguio Highlands Venue",
+      "address": {
+        "street": "88 Pine Drive",
+        "city": "Baguio City",
+        "stateProvince": "Benguet",
+        "postalCode": "2600",
+        "country": "Philippines"
+      },
+      "capacity": 800,
+      "contactEmail": "events@baguiohighlands.com",
+      "contactPhone": "09391234567",
+      "website": "baguiohighlands.com"
+    },
+    {
+      "name": "Pampanga Expo Center",
+      "address": {
+        "street": "789 Trade St",
+        "city": "San Fernando",
+        "stateProvince": "Pampanga",
+        "postalCode": "2000",
+        "country": "Philippines"
+      },
+      "capacity": 2500,
+      "contactEmail": "booking@pampangacenter.com",
+      "contactPhone": "09181234567",
+      "website": "pampangacenter.com"
+    },
+    {
+      "name": "Tagaytay Gardens Venue",
+      "address": {
+        "street": "56 Lakeview Drive",
+        "city": "Tagaytay City",
+        "stateProvince": "Cavite",
+        "postalCode": "4120",
+        "country": "Philippines"
+      },
+      "capacity": 600,
+      "contactEmail": "info@tagaytaygardens.com",
+      "contactPhone": "09192234567",
+      "website": "tagaytaygardens.com"
+    },
+    {
+      "name": "Pasig Riverfront Hall",
+      "address": {
+        "street": "34 Riverside Blvd",
+        "city": "Pasig City",
+        "stateProvince": "Metro Manila",
+        "postalCode": "1600",
+        "country": "Philippines"
+      },
+      "capacity": 1800,
+      "contactEmail": "contact@riverfronthall.com",
+      "contactPhone": "09202234567",
+      "website": "riverfronthall.com"
+    },
+    {
+      "name": "Quezon City Event Dome",
+      "address": {
+        "street": "77 Unity St",
+        "city": "Quezon City",
+        "stateProvince": "Metro Manila",
+        "postalCode": "1100",
+        "country": "Philippines"
+      },
+      "capacity": 4000,
+      "contactEmail": "qc@eventdome.com",
+      "contactPhone": "09173234567",
+      "website": "eventdomeqc.com"
+    },
+    {
+      "name": "Bacolod Pavilion Center",
+      "address": {
+        "street": "55 Sugarland Drive",
+        "city": "Bacolod City",
+        "stateProvince": "Negros Occidental",
+        "postalCode": "6100",
+        "country": "Philippines"
+      },
+      "capacity": 1300,
+      "contactEmail": "events@bacolodpavilion.com",
+      "contactPhone": "09223234567",
+      "website": "bacolodpavilion.com"
+    }
+  ]
+}
