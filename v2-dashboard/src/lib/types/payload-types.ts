@@ -214,7 +214,7 @@ export interface Event {
     };
     [k: string]: unknown;
   } | null;
-  organizer: number | Organizer;
+  user: number | User;
   venue?: (number | null) | Venue;
   category?: (number | null) | EventCategory;
   eventImages?: (number | Media)[] | null;
@@ -277,93 +277,30 @@ export interface Event {
   createdAt: string;
 }
 /**
- * Individuals or organizations hosting events.
- *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "organizers".
+ * via the `definition` "users".
  */
-export interface Organizer {
+export interface User {
   id: number;
-  name: string;
-  description?: {
-    root: {
-      type: string;
-      children: {
-        type: string;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  contactEmail?: string | null;
-  website?: string | null;
-  logo?: (number | null) | OrganizerPhoto;
+  name?: string | null;
   /**
-   * Optional banner for profile pages.
+   * Internal ID linking to the Clerk authentication provider.
    */
-  bannerImage?: (number | null) | OrganizerPhoto;
+  clerkId?: string | null;
   /**
-   * Select additional photos associated with this organizer.
+   * Roles synced from Clerk. This field is read-only and managed by the authentication system.
    */
-  photoGallery?: (number | OrganizerPhoto)[] | null;
+  clerkRoles?: ('admin' | 'organizer' | 'attendee' | 'check-in-staff')[] | null;
   updatedAt: string;
   createdAt: string;
-}
-/**
- * Dedicated image library for organizer logos, banners, etc.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "organizer-photos".
- */
-export interface OrganizerPhoto {
-  id: number;
-  /**
-   * Describe the image for screen readers and SEO. Crucial for accessibility.
-   */
-  alt: string;
-  caption?: string | null;
-  updatedAt: string;
-  createdAt: string;
-  url?: string | null;
-  thumbnailURL?: string | null;
-  filename?: string | null;
-  mimeType?: string | null;
-  filesize?: number | null;
-  width?: number | null;
-  height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
-  sizes?: {
-    thumbnail?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-    logo?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-    banner?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-  };
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  password?: string | null;
 }
 /**
  * Physical locations where events can be held.
@@ -712,30 +649,93 @@ export interface Order {
   createdAt: string;
 }
 /**
+ * Dedicated image library for organizer logos, banners, etc.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users".
+ * via the `definition` "organizer-photos".
  */
-export interface User {
+export interface OrganizerPhoto {
   id: number;
-  name?: string | null;
   /**
-   * Internal ID linking to the Clerk authentication provider.
+   * Describe the image for screen readers and SEO. Crucial for accessibility.
    */
-  clerkId?: string | null;
-  /**
-   * Roles synced from Clerk. This field is read-only and managed by the authentication system.
-   */
-  clerkRoles?: ('admin' | 'organizer' | 'attendee' | 'check-in-staff')[] | null;
+  alt: string;
+  caption?: string | null;
   updatedAt: string;
   createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  password?: string | null;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+  sizes?: {
+    thumbnail?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    logo?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    banner?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
+}
+/**
+ * Individuals or organizations hosting events.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "organizers".
+ */
+export interface Organizer {
+  id: number;
+  name: string;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  contactEmail?: string | null;
+  website?: string | null;
+  logo?: (number | null) | OrganizerPhoto;
+  /**
+   * Optional banner for profile pages.
+   */
+  bannerImage?: (number | null) | OrganizerPhoto;
+  /**
+   * Select additional photos associated with this organizer.
+   */
+  photoGallery?: (number | OrganizerPhoto)[] | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * Stores submitted answers from mandatory registration forms per ticket.
@@ -802,7 +802,6 @@ export interface Ticket {
  */
 export interface Transaction {
   id: number;
-  organizer: number | Organizer;
   transactionDate: string;
   type:
     | 'ticket_sale'
@@ -1009,7 +1008,7 @@ export interface EventsSelect<T extends boolean = true> {
   startTime?: T;
   endTime?: T;
   description?: T;
-  organizer?: T;
+  user?: T;
   venue?: T;
   category?: T;
   eventImages?: T;
@@ -1269,7 +1268,6 @@ export interface TicketTypesSelect<T extends boolean = true> {
  * via the `definition` "transactions_select".
  */
 export interface TransactionsSelect<T extends boolean = true> {
-  organizer?: T;
   transactionDate?: T;
   type?: T;
   amount?: T;

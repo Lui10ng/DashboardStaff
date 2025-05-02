@@ -10,7 +10,8 @@ import type { Event } from '$lib/types/eventData';
 
 export async function load(event: ServerLoadEvent) {
 	const authObject = await event.locals.auth();
-
+	const userId = event.locals?.payloadUser?.id;
+	
 	if (!authObject || !authObject.sessionId) {
 		return redirect(307, '/sign-in');
 	}
@@ -20,10 +21,9 @@ export async function load(event: ServerLoadEvent) {
 	const form = await superValidate(zod(eventSchema));
 	const page = Number(event.url.searchParams.get('page') || '1');
 	const limit = 1000000;
-	const organizerID = '1';
 
 	const params = new URLSearchParams({
-		'where[organizer.id][equals]': organizerID,
+		'where[user][equals]': `${userId}`,
 		sort: 'date',
 		limit: limit.toString(),
 		page: page.toString(),

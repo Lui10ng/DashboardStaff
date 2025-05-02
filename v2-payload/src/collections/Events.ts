@@ -165,6 +165,40 @@ const Events: CollectionConfig = {
         })
         return doc
       },
+      async ({ doc, req, operation }) => {
+        console.log('afterChange hook (Role Assign) - operation:', operation);
+
+        // Only run on 'create' and if a user is making the request
+        if (operation === 'create' && req.user) {
+          const userId = req.user.id
+          const eventId = doc.id
+
+          console.log('Assigning manager role:', { userId, eventId });
+          try {
+            const newUserEventRole = await req.payload.create({
+              collection: 'event-user-roles',
+              data: {
+                user: userId,
+                event: eventId,
+                role: MANAGER,
+              },
+              overrideAccess: true,
+            })
+
+            console.log('Manager role assigned successfully:', { newUserEventRoleId: newUserEventRole.id });
+          } catch (error) {
+            const err = error as Error
+            console.error(
+              `Error assigning manager role to user ${userId} for event ${eventId}:`,
+              {
+                message: err.message,
+              },
+            )
+          }
+        }
+
+        return doc
+      },
     ],
   },
   fields: [
@@ -249,10 +283,10 @@ const Events: CollectionConfig = {
 
     // --- Relationships ---
     {
-      name: 'organizer',
-      label: 'Organizer',
+      name: 'user',
+      label: 'User',
       type: 'relationship',
-      relationTo: 'organizers',
+      relationTo: 'users',
       required: true,
       hasMany: false,
       index: true,
