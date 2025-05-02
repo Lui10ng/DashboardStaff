@@ -47,15 +47,15 @@ const Transactions: CollectionConfig = {
   },
   fields: [
     // --- Core Transaction Details ---
-    {
-      name: 'organizer',
-      label: 'Organizer Account',
-      type: 'relationship',
-      relationTo: 'organizers',
-      required: true,
-      index: true, // Essential for filtering transactions per organizer
-      admin: { readOnly: true, position: 'sidebar' },
-    },
+    // {
+    //   name: 'organizer',
+    //   label: 'Organizer Account',
+    //   type: 'relationship',
+    //   relationTo: 'organizers',
+    //   required: true,
+    //   index: true, // Essential for filtering transactions per organizer
+    //   admin: { readOnly: true, position: 'sidebar' },
+    // },
     {
       name: 'transactionDate',
       label: 'Transaction Date',

@@ -26,12 +26,12 @@ export const isAdminOrSelf: Access<User> = async (args) => {
     return true
   }
 
-  // Condition 2: User is logged in and accessing their own document
-  if (user && id === user.id) {
-    return true
-  }
+  // // Condition 2: User is logged in and accessing their own specific document (id is provided)
+  // if (user && id && id === user.id) {
+  //   return true
+  // }
 
-  // If neither condition is met, deny access
+  // If none of the above, deny access
   return false
 }
 

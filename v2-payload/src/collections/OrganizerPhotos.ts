@@ -28,9 +28,9 @@ const OrganizerPhotos: CollectionConfig = {
   // Write access should be limited, perhaps to managing users of the organizer it's linked from, or admins.
   access: {
     read: () => true, // Public can view images
-    create: isAdminOrSelf,
-    update: isAdminOrSelf,
-    delete: isAdminOrSelf,
+    create: () => true,
+    update: () => true,
+    delete: () => true,
   },
   // --- Enable Uploads ---
   upload: {

@@ -214,8 +214,7 @@ export interface Event {
     };
     [k: string]: unknown;
   } | null;
-  organizer: number | Organizer;
-  venue?: (number | null) | Venue;
+  user: number | User;
   category?: (number | null) | EventCategory;
   eventImages?: (number | Media)[] | null;
   /**
@@ -277,141 +276,47 @@ export interface Event {
   createdAt: string;
 }
 /**
- * Individuals or organizations hosting events.
- *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "organizers".
+ * via the `definition` "users".
  */
-export interface Organizer {
+export interface User {
   id: number;
-  name: string;
-  description?: {
-    root: {
-      type: string;
-      children: {
-        type: string;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  contactEmail?: string | null;
-  website?: string | null;
-  logo?: (number | null) | OrganizerPhoto;
+  name?: string | null;
   /**
-   * Optional banner for profile pages.
+   * Internal ID linking to the Clerk authentication provider.
    */
-  bannerImage?: (number | null) | OrganizerPhoto;
+  clerkId?: string | null;
   /**
-   * Select additional photos associated with this organizer.
+   * Roles synced from Clerk. This field is read-only and managed by the authentication system.
    */
-  photoGallery?: (number | OrganizerPhoto)[] | null;
+  clerkRoles?: ('admin' | 'organizer' | 'attendee' | 'check-in-staff')[] | null;
   updatedAt: string;
   createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  password?: string | null;
 }
 /**
- * Dedicated image library for organizer logos, banners, etc.
+ * Broad categories for events (e.g., Music, Workshop, Conference, Community).
  *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "organizer-photos".
+ * via the `definition` "event-categories".
  */
-export interface OrganizerPhoto {
+export interface EventCategory {
   id: number;
   /**
-   * Describe the image for screen readers and SEO. Crucial for accessibility.
+   * The name of the category (e.g., Technology, Music Festival, Charity). Must be unique.
    */
-  alt: string;
-  caption?: string | null;
-  updatedAt: string;
-  createdAt: string;
-  url?: string | null;
-  thumbnailURL?: string | null;
-  filename?: string | null;
-  mimeType?: string | null;
-  filesize?: number | null;
-  width?: number | null;
-  height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
-  sizes?: {
-    thumbnail?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-    logo?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-    banner?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-  };
-}
-/**
- * Physical locations where events can be held.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "venues".
- */
-export interface Venue {
-  id: number;
   name: string;
-  address?: {
-    street?: string | null;
-    city?: string | null;
-    stateProvince?: string | null;
-    postalCode?: string | null;
-    country?: string | null;
-  };
   /**
-   * General maximum attendee capacity (may differ from event-specific limits).
+   * Optional internal or public-facing description for the category.
    */
-  capacity?: number | null;
-  contactEmail?: string | null;
-  contactPhone?: string | null;
-  website?: string | null;
-  description?: {
-    root: {
-      type: string;
-      children: {
-        type: string;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  images?: (number | Media)[] | null;
-  /**
-   * Internal notes about typical seating arrangements or venue specifics.
-   */
-  seatingChartNotes?: string | null;
-  /**
-   * Optional: Select a default seat map layout commonly used at this venue.
-   */
-  defaultSeatMap?: (number | null) | SeatMap;
+  description?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -494,21 +399,52 @@ export interface SeatMap {
   createdAt: string;
 }
 /**
- * Broad categories for events (e.g., Music, Workshop, Conference, Community).
+ * Physical locations where events can be held.
  *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "event-categories".
+ * via the `definition` "venues".
  */
-export interface EventCategory {
+export interface Venue {
   id: number;
-  /**
-   * The name of the category (e.g., Technology, Music Festival, Charity). Must be unique.
-   */
   name: string;
+  address?: {
+    street?: string | null;
+    city?: string | null;
+    stateProvince?: string | null;
+    postalCode?: string | null;
+    country?: string | null;
+  };
   /**
-   * Optional internal or public-facing description for the category.
+   * General maximum attendee capacity (may differ from event-specific limits).
    */
-  description?: string | null;
+  capacity?: number | null;
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+  website?: string | null;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  images?: (number | Media)[] | null;
+  /**
+   * Internal notes about typical seating arrangements or venue specifics.
+   */
+  seatingChartNotes?: string | null;
+  /**
+   * Optional: Select a default seat map layout commonly used at this venue.
+   */
+  defaultSeatMap?: (number | null) | SeatMap;
   updatedAt: string;
   createdAt: string;
 }
@@ -712,30 +648,93 @@ export interface Order {
   createdAt: string;
 }
 /**
+ * Dedicated image library for organizer logos, banners, etc.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users".
+ * via the `definition` "organizer-photos".
  */
-export interface User {
+export interface OrganizerPhoto {
   id: number;
-  name?: string | null;
   /**
-   * Internal ID linking to the Clerk authentication provider.
+   * Describe the image for screen readers and SEO. Crucial for accessibility.
    */
-  clerkId?: string | null;
-  /**
-   * Roles synced from Clerk. This field is read-only and managed by the authentication system.
-   */
-  clerkRoles?: ('admin' | 'organizer' | 'attendee' | 'check-in-staff')[] | null;
+  alt: string;
+  caption?: string | null;
   updatedAt: string;
   createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  password?: string | null;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+  sizes?: {
+    thumbnail?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    logo?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    banner?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
+}
+/**
+ * Individuals or organizations hosting events.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "organizers".
+ */
+export interface Organizer {
+  id: number;
+  name: string;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  contactEmail?: string | null;
+  website?: string | null;
+  logo?: (number | null) | OrganizerPhoto;
+  /**
+   * Optional banner for profile pages.
+   */
+  bannerImage?: (number | null) | OrganizerPhoto;
+  /**
+   * Select additional photos associated with this organizer.
+   */
+  photoGallery?: (number | OrganizerPhoto)[] | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * Stores submitted answers from mandatory registration forms per ticket.
@@ -802,7 +801,6 @@ export interface Ticket {
  */
 export interface Transaction {
   id: number;
-  organizer: number | Organizer;
   transactionDate: string;
   type:
     | 'ticket_sale'
@@ -1009,8 +1007,7 @@ export interface EventsSelect<T extends boolean = true> {
   startTime?: T;
   endTime?: T;
   description?: T;
-  organizer?: T;
-  venue?: T;
+  user?: T;
   category?: T;
   eventImages?: T;
   seatingType?: T;
@@ -1269,7 +1266,6 @@ export interface TicketTypesSelect<T extends boolean = true> {
  * via the `definition` "transactions_select".
  */
 export interface TransactionsSelect<T extends boolean = true> {
-  organizer?: T;
   transactionDate?: T;
   type?: T;
   amount?: T;

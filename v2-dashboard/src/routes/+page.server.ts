@@ -10,7 +10,8 @@ import type { Event } from '$lib/types/eventData';
 
 export async function load(event: ServerLoadEvent) {
 	const authObject = await event.locals.auth();
-
+	const userId = event.locals?.payloadUser?.id;
+	
 	if (!authObject || !authObject.sessionId) {
 		return redirect(307, '/sign-in');
 	}
@@ -20,10 +21,9 @@ export async function load(event: ServerLoadEvent) {
 	const form = await superValidate(zod(eventSchema));
 	const page = Number(event.url.searchParams.get('page') || '1');
 	const limit = 1000000;
-	const organizerID = '1';
 
 	const params = new URLSearchParams({
-		'where[organizer.id][equals]': organizerID,
+		'where[user][equals]': `${userId}`,
 		sort: 'date',
 		limit: limit.toString(),
 		page: page.toString(),
@@ -57,6 +57,7 @@ export const actions = {
 	createEvent: async (event: RequestEvent) => {
 		const { request } = event;
 		const data = await request.formData();
+		const userId = event.locals?.payloadUser?.id;
 
 		const form = await superValidate(data, zod(eventSchema));
 
@@ -65,6 +66,7 @@ export const actions = {
 		}
 
 		const formData = {
+			user: userId,
 			title: form.data.event,
 			slug: form.data.subdomain.toLowerCase(),
 			location: form.data.location,
@@ -72,7 +74,6 @@ export const actions = {
 			startTime: new Date(`${form.data.startDate}T${form.data.startTime}:00Z`).toISOString(),
 			endTime: new Date(`${form.data.endDate}T${form.data.endTime}:00Z`).toISOString(),
 			// description: form.data.richText, // use lexical richtext
-			organizer: { id: 1 },
 			venue: { id: 1 },
 			seatingType: 'general_admission'
 		};

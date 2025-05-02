@@ -3,6 +3,8 @@ import clerkOrPayloadAdminStrategy from '@/auth/clerk-strategy'
 import { PLATFORM_ROLES } from '@/types/users'
 import { isAdminOrSelf } from '@/access/isAdminOrSelf'
 import { isAdmin } from '@/access/isAdmin'
+import type { User } from '@/payload-types'
+import type { PayloadRequest } from 'payload'
 
 const Users: CollectionConfig = {
   slug: 'users',
@@ -27,11 +29,52 @@ const Users: CollectionConfig = {
     // --- Role-based access ---
     // Example: Only Admins can change the 'roles' field
     // admin: ({ req: { user } }) => user?.roles?.includes(PLATFORM_ROLES.ADMIN),
-    read: isAdminOrSelf,
+    read: isAdmin,
     create: () => true, // or only allow it programmatically (via webhook)
-    update: isAdminOrSelf,
+    update: () => true,
     delete: isAdmin,
   },
+  endpoints: [
+    {
+      path: '/user-clerk/:clerkId',
+      method: 'get',
+      handler: async (request: PayloadRequest): Promise<Response> => {
+        const { payload, routeParams, user } = request;
+        
+        // Destructure directly from the request object
+        const requestedClerkId = routeParams?.clerkId; // Access params directly
+        const requestingUser = user as User | undefined; // Access user directly
+
+        // Check if the requesting user is an admin or the user is trying to access their own data
+        const isAdminCheck = requestingUser?.clerkRoles?.includes('admin')
+        const isSelfCheck = requestingUser?.clerkId === requestedClerkId
+
+        if (isAdminCheck || isSelfCheck) {
+          try {
+            const { docs } = await payload.find({
+              collection: 'users',
+              where: {
+                clerkId: { equals: requestedClerkId },
+              },
+              limit: 1,
+            })
+
+            if (docs.length > 0) {
+              return Response.json(docs[0])
+            } else {
+              return new Response(JSON.stringify({ error: 'User not found' }), { status: 404 }) // Return standard Response
+            }
+          } catch (error) {
+            console.error('Error fetching user by clerkId:', error)
+            return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 }) // Return standard Response
+          }
+        }
+
+        // If neither self nor admin, deny access
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 403 }) // Return standard Response
+      },
+    },
+  ],
   fields: [
     // Default fields Payload adds: email, password (hashed), etc.
     // You typically don't need to redefine 'email' or 'password' unless customizing heavily.
