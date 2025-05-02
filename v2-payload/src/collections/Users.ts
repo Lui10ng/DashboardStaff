@@ -31,7 +31,7 @@ const Users: CollectionConfig = {
     // admin: ({ req: { user } }) => user?.roles?.includes(PLATFORM_ROLES.ADMIN),
     read: isAdmin,
     create: () => true, // or only allow it programmatically (via webhook)
-    update: isAdminOrSelf,
+    update: () => true,
     delete: isAdmin,
   },
   endpoints: [
@@ -39,7 +39,9 @@ const Users: CollectionConfig = {
       path: '/user-clerk/:clerkId',
       method: 'get',
       handler: async (request: PayloadRequest): Promise<Response> => {
-        const { payload, routeParams, user } = request; // Destructure directly from the request object
+        const { payload, routeParams, user } = request;
+        
+        // Destructure directly from the request object
         const requestedClerkId = routeParams?.clerkId; // Access params directly
         const requestingUser = user as User | undefined; // Access user directly
 

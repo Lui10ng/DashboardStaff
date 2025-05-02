@@ -294,18 +294,18 @@ const Events: CollectionConfig = {
         position: 'sidebar',
       },
     },
-    {
-      name: 'venue',
-      label: 'Venue',
-      type: 'relationship',
-      relationTo: 'venues',
-      required: false,
-      hasMany: false,
-      index: true,
-      admin: {
-        position: 'sidebar',
-      },
-    },
+    // {
+    //   name: 'venue',
+    //   label: 'Venue',
+    //   type: 'relationship',
+    //   relationTo: 'venues',
+    //   required: false,
+    //   hasMany: false,
+    //   index: true,
+    //   admin: {
+    //     position: 'sidebar',
+    //   },
+    // },
     {
       name: 'category',
       label: 'Category',

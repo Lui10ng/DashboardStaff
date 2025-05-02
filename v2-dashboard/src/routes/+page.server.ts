@@ -57,6 +57,7 @@ export const actions = {
 	createEvent: async (event: RequestEvent) => {
 		const { request } = event;
 		const data = await request.formData();
+		const userId = event.locals?.payloadUser?.id;
 
 		const form = await superValidate(data, zod(eventSchema));
 
@@ -65,6 +66,7 @@ export const actions = {
 		}
 
 		const formData = {
+			user: userId,
 			title: form.data.event,
 			slug: form.data.subdomain.toLowerCase(),
 			location: form.data.location,
@@ -72,7 +74,6 @@ export const actions = {
 			startTime: new Date(`${form.data.startDate}T${form.data.startTime}:00Z`).toISOString(),
 			endTime: new Date(`${form.data.endDate}T${form.data.endTime}:00Z`).toISOString(),
 			// description: form.data.richText, // use lexical richtext
-			organizer: { id: 1 },
 			venue: { id: 1 },
 			seatingType: 'general_admission'
 		};

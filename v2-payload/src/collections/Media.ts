@@ -5,9 +5,9 @@ const Media: CollectionConfig = {
   slug: 'media',
   access: {
     read: () => true,
-    create: isAdminOrSelf,
-    update: isAdminOrSelf,
-    delete: isAdminOrSelf,
+    create: () => true,
+    update: () => true,
+    delete: () => true,
   },
   fields: [
     {

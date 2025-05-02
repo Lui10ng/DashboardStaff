@@ -215,7 +215,6 @@ export interface Event {
     [k: string]: unknown;
   } | null;
   user: number | User;
-  venue?: (number | null) | Venue;
   category?: (number | null) | EventCategory;
   eventImages?: (number | Media)[] | null;
   /**
@@ -303,52 +302,21 @@ export interface User {
   password?: string | null;
 }
 /**
- * Physical locations where events can be held.
+ * Broad categories for events (e.g., Music, Workshop, Conference, Community).
  *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "venues".
+ * via the `definition` "event-categories".
  */
-export interface Venue {
+export interface EventCategory {
   id: number;
+  /**
+   * The name of the category (e.g., Technology, Music Festival, Charity). Must be unique.
+   */
   name: string;
-  address?: {
-    street?: string | null;
-    city?: string | null;
-    stateProvince?: string | null;
-    postalCode?: string | null;
-    country?: string | null;
-  };
   /**
-   * General maximum attendee capacity (may differ from event-specific limits).
+   * Optional internal or public-facing description for the category.
    */
-  capacity?: number | null;
-  contactEmail?: string | null;
-  contactPhone?: string | null;
-  website?: string | null;
-  description?: {
-    root: {
-      type: string;
-      children: {
-        type: string;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  images?: (number | Media)[] | null;
-  /**
-   * Internal notes about typical seating arrangements or venue specifics.
-   */
-  seatingChartNotes?: string | null;
-  /**
-   * Optional: Select a default seat map layout commonly used at this venue.
-   */
-  defaultSeatMap?: (number | null) | SeatMap;
+  description?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -431,21 +399,52 @@ export interface SeatMap {
   createdAt: string;
 }
 /**
- * Broad categories for events (e.g., Music, Workshop, Conference, Community).
+ * Physical locations where events can be held.
  *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "event-categories".
+ * via the `definition` "venues".
  */
-export interface EventCategory {
+export interface Venue {
   id: number;
-  /**
-   * The name of the category (e.g., Technology, Music Festival, Charity). Must be unique.
-   */
   name: string;
+  address?: {
+    street?: string | null;
+    city?: string | null;
+    stateProvince?: string | null;
+    postalCode?: string | null;
+    country?: string | null;
+  };
   /**
-   * Optional internal or public-facing description for the category.
+   * General maximum attendee capacity (may differ from event-specific limits).
    */
-  description?: string | null;
+  capacity?: number | null;
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+  website?: string | null;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  images?: (number | Media)[] | null;
+  /**
+   * Internal notes about typical seating arrangements or venue specifics.
+   */
+  seatingChartNotes?: string | null;
+  /**
+   * Optional: Select a default seat map layout commonly used at this venue.
+   */
+  defaultSeatMap?: (number | null) | SeatMap;
   updatedAt: string;
   createdAt: string;
 }
@@ -1009,7 +1008,6 @@ export interface EventsSelect<T extends boolean = true> {
   endTime?: T;
   description?: T;
   user?: T;
-  venue?: T;
   category?: T;
   eventImages?: T;
   seatingType?: T;

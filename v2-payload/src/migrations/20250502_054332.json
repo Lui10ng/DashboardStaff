@@ -1,5 +1,5 @@
 {
-  "id": "872896bf-1019-4ba6-ad15-bc0f83858842",
+  "id": "24180da6-04e9-4e7e-a5e5-ab7e1e638af0",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -396,12 +396,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "venue_id": {
-          "name": "venue_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
         "category_id": {
           "name": "category_id",
           "type": "integer",
@@ -522,21 +516,6 @@
           "method": "btree",
           "with": {}
         },
-        "events_venue_idx": {
-          "name": "events_venue_idx",
-          "columns": [
-            {
-              "expression": "venue_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
         "events_category_idx": {
           "name": "events_category_idx",
           "columns": [
@@ -635,19 +614,6 @@
           "tableTo": "users",
           "columnsFrom": [
             "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        },
-        "events_venue_id_venues_id_fk": {
-          "name": "events_venue_id_venues_id_fk",
-          "tableFrom": "events",
-          "tableTo": "venues",
-          "columnsFrom": [
-            "venue_id"
           ],
           "columnsTo": [
             "id"
