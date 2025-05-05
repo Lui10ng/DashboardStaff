@@ -1,6 +1,8 @@
 import type { Access } from 'payload'
 import type { EventRole } from '@/types/eventRoles'
 import { isAdmin } from './isAdmin'
+import chalk from 'chalk'
+import util from 'util';
 
 /**
  * Generates a Payload Access Control function that grants access based on user roles.
@@ -42,58 +44,74 @@ export const isAdminOrEventRole =
 
     // --- Condition 3: Check for Event-Specific Role ---
     try {
-      let eventId: number | string | undefined // Event ID can be number or string depending on DB/config
+      if (id !== undefined && id !== null) {
 
-      // Determine the Event ID to check permissions against.
-      // This logic currently only handles reading/updating/deleting EXISTING documents
-      // where an 'id' is provided. It does not handle the 'create' case using 'data'.
-      if (id) {
-        // Fetch the document being accessed (e.g., an EventUserRole document)
-        // using its ID to find the related event ID.
-        const doc = await payload.findByID({
-          collection: 'event-user-roles', // Assumes this access control is used on or relates heavily to event-user-roles
-          id: id,
-          depth: 0, // No need to populate relationships deeply.
-          user, // Pass the user for underlying access checks on findByID, if any.
-          overrideAccess: true, // Crucial: Temporarily bypass read access control on event-user-roles
-          // itself just to read the linked event ID for this permission check.
-          // Use with caution and ensure this doesn't expose sensitive data unintentionally.
+        // Query the 'event-user-roles' collection to see if the current user
+        // has an entry linking them to the determined eventId with one of the allowedRoles.
+        const userEventRoles = await payload.find({
+          collection: 'event-user-roles',
+          where: {
+            user: { equals: user.id }, // Match current user
+            event: { equals: id }, // Match the specific event
+            role: { in: allowedRoles }, // Match any of the roles required for this action
+          },
+          depth: 0, // No need for relationship data.
+          limit: 1, // We only need one match to confirm permission.
+          user: user, // Pass user for potential underlying access checks.
         })
 
-        // Extract the event ID from the fetched document.
-        // Handles both direct ID and populated relationship object.
-        // Note: Uses hardcoded 'event' field name based on current implementation.
-        eventId = typeof doc?.event === 'object' ? doc?.event?.id : doc?.event
+        // If the query returned one or more documents, the user has the required role. Grant access.
+        if (userEventRoles.totalDocs > 0) {
+          return true
+        }
       } else {
-        // If we are creating a new document, extract the event ID from the incoming data.
-        eventId = typeof data?.event === 'object' ? data?.event?.id : data?.event
-      }
+        // For Collection-level wide Acess (Not Event-specific)
+        // console.log(
+        //   chalk.cyan(`Collection Access Check: Finding events for User ID = ${user.id} with roles: [${allowedRoles.join(', ')}]`),
+        // )
 
-      // If we couldn't determine the event ID from the document, deny access.
-      if (!eventId) {
-        console.warn(
-          `isAdminOrEventRole: Could not determine event ID for document ${id}. Denying access.`,
-        )
-        return false
-      }
+        // Find all event roles for the current user where the role is one of the allowed ones
+        const userEventRoles = await payload.find({
+          collection: 'event-user-roles',
+          where: {
+            'user.id': { equals: user.id }, // Ensure you query by user *ID*
+            role: { in: allowedRoles }, // Filter by allowed roles directly
+          },
+          depth: 0, // Only need the event ID
+          limit: 1000, // Adjust limit as needed, maybe paginate if users can have thousands
+          pagination: false,
+        })
 
-      // Query the 'event-user-roles' collection to see if the current user
-      // has an entry linking them to the determined eventId with one of the allowedRoles.
-      const userEventRoles = await payload.find({
-        collection: 'event-user-roles',
-        where: {
-          user: { equals: user.id }, // Match current user
-          event: { equals: eventId }, // Match the specific event
-          role: { in: allowedRoles }, // Match any of the roles required for this action
-        },
-        depth: 0, // No need for relationship data.
-        limit: 1, // We only need one match to confirm permission.
-        user: user, // Pass user for potential underlying access checks.
-      })
+        // console.log(chalk.cyan('User Event Roles Found:'), userEventRoles)
 
-      // If the query returned one or more documents, the user has the required role. Grant access.
-      if (userEventRoles.totalDocs > 0) {
-        return true
+        // Extract the IDs of the events the user has access to
+        const accessibleEventIds = userEventRoles.docs
+          .map((userEventRole) => userEventRole.event) // Assuming 'event' field stores the ID directly or is populated shallowly
+          .filter((eventId): eventId is number => {
+            // console.log(chalk.cyan('Event ID:'), eventId)
+            return eventId !== null && eventId !== undefined;
+          });
+
+        // console.log(chalk.magenta('Accessible Event IDs for Collection Query:'), accessibleEventIds)
+
+        // If the user has access to no events via these roles, return a constraint that matches nothing
+        if (accessibleEventIds.length === 0) {
+          // console.log(chalk.cyan('Collection Access: User has no allowed roles for any event. Returning no results.'))
+          return {
+            id: {
+              equals: '__NEVER_MATCH__', // Payload constraint to match no documents
+            },
+          }
+        }
+
+        // Return a query constraint to filter the events collection
+        const constraint = {
+          id: {
+            in: accessibleEventIds, // Filter events where the ID is in the list the user can access
+          },
+        }
+        // console.log(chalk.cyan('Collection Access: Returning constraint:'), constraint)
+        return constraint
       }
     } catch (error) {
       // Log any errors during the access check process.
