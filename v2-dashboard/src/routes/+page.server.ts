@@ -11,7 +11,7 @@ import type { Event } from '$lib/types/eventData';
 export async function load(event: ServerLoadEvent) {
 	const authObject = await event.locals.auth();
 	const userId = event.locals?.payloadUser?.id;
-	
+
 	if (!authObject || !authObject.sessionId) {
 		return { requiresRedirect: true, redirectTo: '/sign-in' };
 	}
@@ -65,14 +65,20 @@ export const actions = {
 			return fail(400, { form });
 		}
 
+		// Get the date and time values
+		const startDate = form.data.startDate;
+		const startTime = form.data.startTime;
+		const endDate = form.data.endDate;
+		const endTime = form.data.endTime;
+
 		const formData = {
 			user: userId,
 			title: form.data.event,
 			slug: form.data.subdomain.toLowerCase(),
 			location: form.data.location,
 			status: 'Published',
-			startTime: new Date(`${form.data.startDate}T${form.data.startTime}:00Z`).toISOString(),
-			endTime: new Date(`${form.data.endDate}T${form.data.endTime}:00Z`).toISOString(),
+			startTime: new Date(`${startDate}T${startTime}:00+08:00`).toISOString(),
+			endTime: new Date(`${endDate}T${endTime}:00+08:00`).toISOString(),
 			// description: form.data.richText, // use lexical richtext
 			venue: { id: 1 },
 			seatingType: 'general_admission'
