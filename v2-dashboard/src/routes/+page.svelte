@@ -112,7 +112,7 @@
 	};
 
 	const handleEvent = (id: number) => {
-		goto(`${id}/registrants`);
+		goto(`${id}/analytics`);
 	};
 
 	const handlePageChange = (event: CustomEvent<{ page: number }>) => {
