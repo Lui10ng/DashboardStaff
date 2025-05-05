@@ -530,7 +530,6 @@
 		</Drawer>
 
 		<div class="overflow-hidden rounded-xl border border-gray-200 shadow-sm">
-			
 			<!-- Event List Items -->
 			<div>
 				{#each paginatedEvents as event (event.id)}
@@ -593,19 +592,23 @@
 										<i class="fa-regular fa-calendar text-gray-400"></i>
 										<span class="text-gray-600 text-sm">
 											{new Date(event.startTime).toLocaleDateString('en-US', { 
-												month: 'short', 
+												month: 'long', 
 												day: 'numeric', 
 												year: 'numeric' 
 											})}
 										</span>
 									</div>
 									<div class="flex items-center gap-2">
-										<i class="fa-regular fa-calendar text-gray-400"></i>
+										<i class="fa-regular fa-clock text-gray-400"></i>
 										<span class="text-gray-600 text-sm">
-											{new Date(event.endTime).toLocaleDateString('en-US', { 
-												month: 'short', 
-												day: 'numeric', 
-												year: 'numeric' 
+											{new Date(event.startTime).toLocaleTimeString('en-US', { 
+												hour: 'numeric',
+												minute: '2-digit',
+												hour12: true 
+											})} to {new Date(event.endTime).toLocaleTimeString('en-US', { 
+												hour: 'numeric',
+												minute: '2-digit',
+												hour12: true 
 											})}
 										</span>
 									</div>
