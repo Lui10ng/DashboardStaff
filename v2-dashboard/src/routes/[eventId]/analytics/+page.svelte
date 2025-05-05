@@ -229,42 +229,41 @@
 	};
 
 	const dateSeriesData = [
-    { date: new Date('2025-03-29T16:00:00.000Z'), value: 67 },
-    { date: new Date('2025-03-30T16:00:00.000Z'), value: 87 },
-    { date: new Date('2025-03-31T16:00:00.000Z'), value: 72 },
-    { date: new Date('2025-04-01T16:00:00.000Z'), value: 76 },
-    { date: new Date('2025-04-02T16:00:00.000Z'), value: 89 },
-    { date: new Date('2025-04-03T16:00:00.000Z'), value: 81 },
-    { date: new Date('2025-04-04T16:00:00.000Z'), value: 92 },
-    { date: new Date('2025-04-05T16:00:00.000Z'), value: 65 },
-    { date: new Date('2025-04-06T16:00:00.000Z'), value: 54 },
-    { date: new Date('2025-04-07T16:00:00.000Z'), value: 96 },
-    { date: new Date('2025-04-08T16:00:00.000Z'), value: 64 },
-    { date: new Date('2025-04-09T16:00:00.000Z'), value: 57 },
-
-];
-
-    const data = [
-	{ date: new Date('2025-03-28T16:00:00.000Z'), value: 56, percentage: '21.9%' },
-	{ date: new Date('2025-03-29T16:00:00.000Z'), value: 100, percentage: '39.1%' },
-	{ date: new Date('2025-03-30T16:00:00.000Z'), value: 100, percentage: '39.1%' },
+		{ date: new Date('2025-03-29T16:00:00.000Z'), value: 67 },
+		{ date: new Date('2025-03-30T16:00:00.000Z'), value: 87 },
+		{ date: new Date('2025-03-31T16:00:00.000Z'), value: 72 },
+		{ date: new Date('2025-04-01T16:00:00.000Z'), value: 76 },
+		{ date: new Date('2025-04-02T16:00:00.000Z'), value: 89 },
+		{ date: new Date('2025-04-03T16:00:00.000Z'), value: 81 },
+		{ date: new Date('2025-04-04T16:00:00.000Z'), value: 92 },
+		{ date: new Date('2025-04-05T16:00:00.000Z'), value: 65 },
+		{ date: new Date('2025-04-06T16:00:00.000Z'), value: 54 },
+		{ date: new Date('2025-04-07T16:00:00.000Z'), value: 96 },
+		{ date: new Date('2025-04-08T16:00:00.000Z'), value: 64 },
+		{ date: new Date('2025-04-09T16:00:00.000Z'), value: 57 }
 	];
-  
+
+	const data = [
+		{ date: new Date('2025-03-28T16:00:00.000Z'), value: 56, percentage: '21.9%' },
+		{ date: new Date('2025-03-29T16:00:00.000Z'), value: 100, percentage: '39.1%' },
+		{ date: new Date('2025-03-30T16:00:00.000Z'), value: 100, percentage: '39.1%' }
+	];
+
 	const keyColors = ['#4F46E5', '#818CF8', '#C7D2FE'];
 </script>
 
-<div class="relative mt-[64px] space-y-8 px-4 sm:px-6 lg:px-8" in:fly={{ y: -50, duration: 200 }}>
+<div class="relative space-y-8" in:fly={{ y: -50, duration: 200 }}>
 	<!-- Statistic Cards -->
-	<div class="grid grid-cols-1 gap-6 p-4 sm:grid-cols-2 lg:grid-cols-4">
+	<div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
 		{#each Object.entries(metricsData) as [key, config]}
 			{@const metricKey = key as MetricKey}
 			{@const stats = statistics[metricKey]}
 			<div
 				class="relative cursor-pointer rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md"
-				on:click={() => handleCardClick(metricKey)}
+				onclick={() => handleCardClick(metricKey)}
 				role="button"
 				tabindex="0"
-				on:keydown={(e) => e.key === 'Enter' && handleCardClick(metricKey)}
+				onkeydown={(e) => e.key === 'Enter' && handleCardClick(metricKey)}
 			>
 				<div
 					class="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full {config.iconBgColor}"
