@@ -1,5 +1,9 @@
 <script lang="ts">
 	import { fly } from 'svelte/transition';
+	import { Chart, Svg, Axis, Pie, Spline, Highlight, Tooltip } from 'layerchart';
+	import { scaleTime } from 'd3-scale';
+	import { formatDate, PeriodType } from '@layerstack/utils';
+	import { format } from 'date-fns';
 
 	type DataPoint = { date: Date; value: number };
 	type Stats = {
@@ -223,6 +227,30 @@
 		width: typeof window !== 'undefined' ? window.innerWidth * 0.8 : 800,
 		height: 400
 	};
+
+	const dateSeriesData = [
+    { date: new Date('2025-03-29T16:00:00.000Z'), value: 67 },
+    { date: new Date('2025-03-30T16:00:00.000Z'), value: 87 },
+    { date: new Date('2025-03-31T16:00:00.000Z'), value: 72 },
+    { date: new Date('2025-04-01T16:00:00.000Z'), value: 76 },
+    { date: new Date('2025-04-02T16:00:00.000Z'), value: 89 },
+    { date: new Date('2025-04-03T16:00:00.000Z'), value: 81 },
+    { date: new Date('2025-04-04T16:00:00.000Z'), value: 92 },
+    { date: new Date('2025-04-05T16:00:00.000Z'), value: 65 },
+    { date: new Date('2025-04-06T16:00:00.000Z'), value: 54 },
+    { date: new Date('2025-04-07T16:00:00.000Z'), value: 96 },
+    { date: new Date('2025-04-08T16:00:00.000Z'), value: 64 },
+    { date: new Date('2025-04-09T16:00:00.000Z'), value: 57 },
+
+];
+
+    const data = [
+	{ date: new Date('2025-03-28T16:00:00.000Z'), value: 56, percentage: '21.9%' },
+	{ date: new Date('2025-03-29T16:00:00.000Z'), value: 100, percentage: '39.1%' },
+	{ date: new Date('2025-03-30T16:00:00.000Z'), value: 100, percentage: '39.1%' },
+	];
+  
+	const keyColors = ['#4F46E5', '#818CF8', '#C7D2FE'];
 </script>
 
 <div class="relative mt-[64px] space-y-8 px-4 sm:px-6 lg:px-8" in:fly={{ y: -50, duration: 200 }}>
@@ -253,5 +281,97 @@
 				</div>
 			</div>
 		{/each}
+	</div>
+	<div class="grid grid-cols-1 gap-4 sm:grid-cols-1 lg:grid-cols-2">
+		<div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+			<h3 class="text-black-500 text-sm">Sales Trend</h3>
+			<div class="mt-4">
+				<!-- Placeholder for analytics content -->
+
+				<div class="round h-[300px] border p-6">
+					<Chart
+						data={dateSeriesData}
+						x="date"
+						xScale={scaleTime()}
+						y="value"
+						yDomain={[0, null]}
+						yNice
+						padding={{ left: 16, bottom: 24 }}
+						tooltip={{ mode: 'bisect-x' }}
+					>
+						<Svg>
+							<Axis
+								placement="left"
+								grid
+								rule
+								class="stroke-gray-400"
+								format={(/** @type {number} */ d) => d.toFixed(0)}
+							/>
+							<Axis
+								placement="bottom"
+								rule
+								class="text-xs text-gray-400"
+								format={(/** @type {string | number | Date} */ d) =>
+									formatDate(new Date(d), PeriodType.Day, { variant: 'short' })}
+							/>
+							<Spline class="stroke-[#4F46E5] stroke-2" fill="none" />
+							<Highlight
+								points={{ class: 'stroke-[#FFFFFF] stroke-2 fill-[#4F46E5] shadow-lg' }}
+								lines={{ class: 'stroke-gray-400' }}
+							/>
+						</Svg>
+
+						<Tooltip.Root let:data>
+							<div class="rounded-md border border-gray-200 bg-white p-3 shadow-lg">
+								<Tooltip.Header class="text-sm font-semibold text-gray-700">
+									{format(data.date, 'eee, MMMM do')}
+								</Tooltip.Header>
+								<div class="flex items-center gap-1 text-sm text-gray-600">
+									<span>Value:</span>
+									<span class="font-semibold">{data.value}</span>
+								</div>
+							</div>
+						</Tooltip.Root>
+					</Chart>
+				</div>
+			</div>
+		</div>
+		<div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+			<h3 class="text-black-500 text-sm">Ticket Distribution</h3>
+			<div class="mt-1">
+				<!-- Placeholder for analytics content -->
+
+				<div class="p-15 h-[300px]">
+					<Chart {data} x="value" c="date" cRange={keyColors}>
+						<Svg center>
+							<Pie innerRadius={41} />
+						</Svg>
+					</Chart>
+					<div class="mt-5 flex justify-center space-x-20">
+						<div class="flex flex-col items-center space-y-2">
+							<span class="text-black-700 text-xs font-semibold"
+								>{data[0].value} ({data[0].percentage})</span
+							>
+							<span class="h-3 w-3 rounded-full" style="background-color: #4F46E5;"></span>
+							<span class="text-xs">VIP</span>
+						</div>
+						<div class="flex flex-col items-center space-y-2">
+							<span class="text-black-700 text-xs font-semibold"
+								>{data[1].value} ({data[1].percentage})</span
+							>
+							<span class="h-3 w-3 rounded-full" style="background-color: #818CF8;"></span>
+							<span class="text-xs">Regular</span>
+						</div>
+						<div class="flex flex-col items-center space-y-2">
+							<span class="text-black-700 text-xs font-semibold"
+								>{data[2].value} ({data[2].percentage})</span
+							>
+							<span class="h-3 w-3 rounded-full" style="background-color: #C7D2FE;"></span>
+							<span class="text-xs">Student</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
 </div>
