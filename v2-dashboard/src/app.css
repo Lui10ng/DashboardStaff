@@ -1,6 +1,12 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/typography';
 
+@import '@skeletonlabs/skeleton';
+@import '@skeletonlabs/skeleton/optional/presets';
+@import '@skeletonlabs/skeleton/themes/nosh';
+
+@source '../node_modules/@skeletonlabs/skeleton-svelte/dist';
+
 body {
 	font-family: 'Poppins', sans-serif;
 }

@@ -17,7 +17,7 @@ export const load: PageServerLoad = async (event: RequestEvent) => {
 			page: page.toString()
 		});
 
-		console.log('paramRegistrant', paramRegistrant);
+		// console.log('paramRegistrant', paramRegistrant);
 
 		const apiClient = createApiClient(event);
 		const response = await apiClient.get<RegistrantsResponse>('/registrants', paramRegistrant);
