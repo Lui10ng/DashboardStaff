@@ -30,68 +30,160 @@ const Events: CollectionConfig = {
     delete: isAdmin,
   },
   hooks: {
+    beforeChange: [
+      async ({ data, req, operation }) => {
+        // Auto-generate slug from title
+        if (data.title && (data.slug == null || data.slug === '')) {
+          data.slug = formatSlug(data.title)
+        }
+
+        console.log('beforeChange hook - operation:', operation)
+
+        if (operation === 'create' && !data.formId) {
+          try {
+            console.log('Creating form for new event with title:', data.title)
+            console.log('crypto.randomUUID exists:', typeof crypto.randomUUID === 'function')
+
+            const formBuilderFields = [
+              {
+                name: 'firstName',
+                label: 'First Name',
+                required: true,
+                fieldType: 'text' as const,
+                id: crypto.randomUUID(),
+              },
+              {
+                name: 'lastName',
+                label: 'Last Name',
+                required: true,
+                fieldType: 'text' as const,
+                id: crypto.randomUUID(),
+              },
+              {
+                name: 'contactNumber',
+                label: 'Contact Number',
+                required: true,
+                fieldType: 'text' as const,
+                id: crypto.randomUUID(),
+              },
+              {
+                name: 'email',
+                label: 'Email',
+                required: true,
+                fieldType: 'email' as const,
+                id: crypto.randomUUID(),
+              },
+            ]
+
+            console.log('Form fields prepared:', formBuilderFields.length)
+
+            console.log('Attempting to create form...')
+            const form = await req.payload.create({
+              collection: 'forms',
+              data: {
+                title: `${data.title || 'Event'} Registration Form`,
+                description: 'Please fill out this registration form',
+                formBuilder: formBuilderFields,
+              },
+              overrideAccess: true,
+            })
+
+            console.log('Form created successfully:', Boolean(form))
+
+            if (form?.id) {
+              data.formId = form.id
+              console.log('Form ID stored in event data:', data.formId)
+            }
+
+            return data
+          } catch (error) {
+            const err = error as Error
+            console.error('Error in beforeChange hook:', {
+              message: err.message,
+              stack: err.stack,
+            })
+            return data
+          }
+        }
+
+        return data
+      },
+    ],
     afterChange: [
-      // async ({ doc, req, operation }) => {
-      //   console.log('afterChange hook - operation:', operation)
-      //   console.log('afterChange doc received:', {
-      //     id: doc.id,
-      //     title: doc.title,
-      //     formId: typeof doc.formId === 'object' ? doc.formId.id : doc.formId,
-      //   })
+      async ({ doc, operation, req }) => {
+        console.log('afterChange hook - operation:', operation)
 
-      //   if (operation === 'create' && doc.formId) {
-      //     try {
-      //       const formId = typeof doc.formId === 'object' ? doc.formId.id : doc.formId
-      //       const eventId = doc.id
+        if (operation === 'create' && doc.formId) {
+          const formId = typeof doc.formId === 'object' ? doc.formId.id : doc.formId
+          const eventId = doc.id
 
-      //       console.log('Starting form update process:', {
-      //         formId,
-      //         eventId,
-      //         operation,
-      //       })
+          console.log('Updating form with event ID:', {
+            formId,
+            eventId,
+            formIdType: typeof formId,
+            eventIdType: typeof eventId,
+          })
 
-      //       // Delay the form update slightly to ensure event is fully committed
-      //       // This helps avoid potential circular reference issues
-      //       setTimeout(async () => {
-      //         try {
-      //           console.log('Delayed form update starting now for:', formId)
+          setTimeout(async () => {
+            try {
+              const updatedForm = await req.payload.update({
+                collection: 'forms',
+                id: formId,
+                data: {
+                  eventId: eventId,
+                },
+                overrideAccess: true,
+              })
 
-      //           const updatedForm = await req.payload.update({
-      //             collection: 'forms',
-      //             id: formId,
-      //             data: {
-      //               eventId,
-      //             },
-      //           })
+              console.log('Delayed form update completed:', Boolean(updatedForm))
+            } catch (delayedError) {
+              console.error('Delayed form update failed:', delayedError)
+            }
+          }, 500)
+        }
 
-      //           console.log('Delayed form update completed:', Boolean(updatedForm))
-      //         } catch (delayedError) {
-      //           console.error('Delayed form update failed:', delayedError)
-      //         }
-      //       }, 500)
+        if (operation === 'create' && req?.user && doc?.id) {
+          console.log('Assigning manager role via afterChange:', {
+            userId: req.user.id,
+            eventId: doc.id,
+          })
+          const userId = req.user.id
+          const eventId = doc.id
 
-      //       // Return immediately while the delayed update happens in background
-      //       return doc
-      //     } catch (error) {
-      //       const err = error as Error
-      //       console.error('Error in afterChange hook:', {
-      //         message: err.message,
-      //         stack: err.stack,
-      //       })
-      //       return doc
-      //     }
-      //   }
-      //   console.log('Form update skipped - conditions not met:', {
-      //     operation,
-      //     hasFormId: Boolean(doc.formId),
-      //   })
-      //   return doc
-      // },
+          try {
+            const payload = req.payload
+            const newUserEventRole = await payload.create({
+              collection: 'event-user-roles',
+              data: {
+                user: userId,
+                event: eventId,
+                role: MANAGER,
+              },
+              overrideAccess: true,
+              req: req,
+            })
+
+            console.log('Manager role assigned successfully via afterChange:', {
+              newUserEventRoleId: newUserEventRole.id,
+            })
+          } catch (error) {
+            const err = error as Error
+            console.error(
+              `Error assigning manager role (afterChange) to user ${userId} for event ${eventId}:`,
+              {
+                message: err.message,
+              },
+            )
+          }
+        }
+
+        return doc
+      },
     ],
     afterOperation: [
       async ({ args, operation, result, req }) => {
-        const request = req || args?.req;
-        const doc = result;
+        const request = req || args?.req
+        const doc = result
 
         // console.log('--- Starting afterOperation Hook ---');
         // console.log('afterOperation - operation:', operation);
@@ -100,13 +192,16 @@ const Events: CollectionConfig = {
 
         // Assign manager role after a successful 'create' operation
         if (operation === 'create' && request?.user && doc?.id) {
-          console.log('Assigning manager role via afterOperation:', { userId: request.user.id, eventId: doc.id });
-          const userId = request.user.id;
-          const eventId = doc.id;
+          console.log('Assigning manager role via afterOperation:', {
+            userId: request.user.id,
+            eventId: doc.id,
+          })
+          const userId = request.user.id
+          const eventId = doc.id
 
           try {
             // Use the payload instance from the request
-            const payload = request.payload;
+            const payload = request.payload
             const newUserEventRole = await payload.create({
               collection: 'event-user-roles',
               data: {
@@ -116,11 +211,11 @@ const Events: CollectionConfig = {
               },
               overrideAccess: true, // Still needed if event-user-roles has restrictive access
               req: request, // Pass the request object down if needed by deeper hooks/access controls
-            });
+            })
 
             // console.log('Manager role assigned successfully via afterOperation:', { newUserEventRoleId: newUserEventRole.id });
           } catch (error) {
-            const err = error as Error;
+            const err = error as Error
             console.error(
               `Error assigning manager role (afterOperation) to user ${userId} for event ${eventId}:`,
               {
@@ -128,16 +223,26 @@ const Events: CollectionConfig = {
                 // Optionally log stack in dev:
                 // stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
               },
-            );
+            )
           }
         }
 
-        return result;
+        return result
       },
     ],
   },
   fields: [
     // --- Core Details ---
+    {
+      name: 'formId',
+      type: 'relationship',
+      relationTo: 'forms',
+      hasMany: false,
+      admin: {
+        position: 'sidebar',
+        description: 'The registration form linked to this event',
+      },
+    },
     {
       name: 'title',
       label: 'Event Title',
@@ -372,17 +477,6 @@ const Events: CollectionConfig = {
           ],
         },
       ],
-    },
-    {
-      name: 'formId',
-      type: 'relationship',
-      relationTo: 'forms',
-      hasMany: false,
-      admin: {
-        position: 'sidebar',
-        description: 'The registration form for this event',
-        readOnly: true,
-      },
     },
     {
       name: 'ticketType',
