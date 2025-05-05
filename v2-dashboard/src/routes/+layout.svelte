@@ -30,7 +30,7 @@
 	routerReplace={replace}
 >
 	<div
-		class="sticky left-0 top-0 flex items-center justify-between border border-gray-200 bg-white p-6 z-50"
+		class="sticky left-0 top-0 flex items-center justify-between border border-gray-200 bg-white p-6"
 	>
 		<div class="sm:gap-13 flex gap-5">
 			<Button onClick={home}>
@@ -54,16 +54,18 @@
 						className="flex items-center gap-2 hover:text-primary text-gray-600 font-semibold 
 						{$page.url.pathname.includes('wallet') ? 'text-primary' : ''}"
 					/>
-				</SignedIn>	
+				</SignedIn>
 			</div>
 		</div>
-		<header class="prose text-sm flex items-center justify-between bg-white">
+		<header class="prose flex items-center justify-between bg-white text-sm">
 			<div class="ml-auto">
 				<SignedOut>
 					<SignInButton>
-						<button class="w-full text-left px-4 py-2 bg-[#d12f2b] text-white rounded hover:bg-red-700 transition">
+						<button
+							class="w-full rounded bg-[#d12f2b] px-4 py-2 text-left text-white transition hover:bg-red-700"
+						>
 							Sign in
-						</button>	
+						</button>
 					</SignInButton>
 				</SignedOut>
 				<SignedIn>
@@ -86,9 +88,9 @@
 
 	<div class="bg-white">
 		<div class="mx-auto max-w-7xl px-5 pb-8 pt-6">
-				<Tooltip.Provider>
-					{@render children()}
-				</Tooltip.Provider>
+			<Tooltip.Provider>
+				{@render children()}
+			</Tooltip.Provider>
 		</div>
 	</div>
 </ClerkProvider>
