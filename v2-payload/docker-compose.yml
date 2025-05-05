@@ -28,6 +28,7 @@ services:
       - .env # Load variables from .env file
     environment:
       NODE_ENV: development
+      FORCE_COLOR: 1
       # Use Docker service names for database and redis hostnames
       # Reads from .env first, uses defaults 'postgres:password@postgres:5432/payload' if not set
       DATABASE_URI: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-payload}
