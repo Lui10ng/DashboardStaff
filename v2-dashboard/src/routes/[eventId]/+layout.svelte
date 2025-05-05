@@ -1,5 +1,8 @@
 <script lang="ts">
+	import { navigating } from '$app/stores';
+	import { ProgressRing } from '@skeletonlabs/skeleton-svelte';
 	import { goto } from '$app/navigation';
+	import { fade } from 'svelte/transition';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { navEditEvents, navItems } from '$lib/stores/data';
 	import { stateEditEvent } from '$lib/stores/state.svelte.ts';
@@ -120,4 +123,12 @@
 	{/if}
 </div>
 
-{@render children()}
+{#if $navigating}
+	<div class="flex justify-center items-center py-10"> 
+		<ProgressRing value={null} size="size-40" trackStroke="stroke-surface-200"/>
+	</div>
+{:else}
+	<div in:fade={{ duration: 200 }}>
+		{@render children()}
+	</div>
+{/if}

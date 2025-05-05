@@ -114,6 +114,7 @@ const Users: CollectionConfig = {
       label: 'Clerk Roles',
       type: 'select',
       hasMany: true,
+      required: true,
       options: Object.values(PLATFORM_ROLES).map((role) => ({ label: role, value: role })),
       admin: {
         position: 'sidebar',

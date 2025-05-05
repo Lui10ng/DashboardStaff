@@ -15,18 +15,18 @@ const handlePayloadUser: Handle = async ({ event, resolve }) => {
         try {
             const apiClient = createApiClient(event);
 
-            console.log('Clerk User:', JSON.stringify(clerkAuth, null, 2));
+            // console.log('Clerk User:', JSON.stringify(clerkAuth, null, 2));
 
             // Fetch user data from Payload API using a custom Endpoint
             const response = await apiClient.get<User>(
                 `/users/user-clerk/${clerkAuth.userId}`
             );
 
-            console.log('Payload User Response:', JSON.stringify(response, null, 2));
+            // console.log('Payload User Response:', JSON.stringify(response, null, 2));
 
             if (response) {
                 event.locals.payloadUser = response;
-                console.log('Payload User attached to locals via API Client:', event.locals.payloadUser);
+                // console.log('Payload User attached to locals via API Client:', event.locals.payloadUser);
             } else {
                 console.warn(`Payload user not found via API for Clerk ID: ${clerkAuth.userId}`);
                 event.locals.payloadUser = null;
