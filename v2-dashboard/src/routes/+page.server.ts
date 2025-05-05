@@ -13,7 +13,7 @@ export async function load(event: ServerLoadEvent) {
 	const userId = event.locals?.payloadUser?.id;
 	
 	if (!authObject || !authObject.sessionId) {
-		return redirect(307, '/sign-in');
+		return { requiresRedirect: true, redirectTo: '/sign-in' };
 	}
 
 	const apiClient = createApiClient(event);

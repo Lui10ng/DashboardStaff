@@ -106,11 +106,13 @@
 	</div>
 	{#if !activeEditHeader}
 		<div class="-mx-4 mb-6 overflow-x-auto rounded-lg px-4 py-3 sm:mx-0 sm:mb-8 sm:px-0">
-			<nav class="flex min-w-max space-x-4">
+			<nav class="grid grid-cols-2 gap-4 
+				sm:grid-cols-4 sm:gap-2
+				lg:flex lg:min-w-max lg:space-x-4 lg:gap-0">
 				{#each navItems(event.id) as item}
 					<Button
 						label={item.label}
-						className="rounded-lg border border-gray-200 py-2 shadow-sm transition-colors w-35 capitalize {handleActiveNav(
+						className="rounded-lg border border-gray-200 py-2 shadow-sm transition-colors w-full capitalize {handleActiveNav(
 							item.label
 						)}"
 						onClick={() => {

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { browser } from '$app/environment';
 	import 'leaflet/dist/leaflet.css';
 	import Pagination from '$lib/components/ui/Pagination.svelte';
 	import Tooltip from '$lib/components/ui/Tooltip.svelte';
@@ -15,8 +16,18 @@
 	import { PUBLIC_PAYLOAD_API_URL } from '$env/static/public';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { stateDrawer } from '$lib/stores/state.svelte.ts';
+	import { useClerkContext } from 'svelte-clerk/client';
 
+	const ctx = useClerkContext();
+	const fullName = $derived(ctx.user?.fullName);
+	
 	let { data } = $props();
+
+	$effect(() => {
+        if (browser && data.requiresRedirect && data.redirectTo) {
+            window.location.assign(data.redirectTo); // This forces a full page load
+        }
+    });
 
 	const drawerState = $derived(stateDrawer.open);
 
@@ -174,9 +185,10 @@
 	};
 </script>
 
+{#if !data.requiresRedirect}
 <div class="space-y-5" in:fly={{ y: -50, duration: 200 }}>
     <div class="space-y-2">
-        <h1 class="text-2xl font-semibold sm:text-3xl sm:font-bold">Welcome back, Aero Dev!</h1>
+        <h1 class="text-2xl font-semibold sm:text-3xl sm:font-bold">Welcome back, {fullName}</h1>
         <p class="text-gray-500">Manage your events and track their performance</p>
     </div>
 	<Button
@@ -619,3 +631,4 @@
 		</div>
 	</div>
 </div>
+{/if}
