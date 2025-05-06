@@ -109,7 +109,7 @@
 				{#if posts.length-1>0}
 					{#if index > 0 && index < posts.length - 1}
 						<button
-							class="absolute left-1 top-1 flex h-10 w-10 items-center justify-center rounded-sm bg-red-500 text-white transition-colors hover:bg-red-300 disabled:opacity-50"
+							class="absolute left-1 top-1 flex h-10 w-10 items-center justify-center rounded-sm bg-primary text-white transition-colors hover:bg-red-300 disabled:opacity-50"
 							onclick={() => moveImage(index, 'left')}
 							disabled={isMoving}
 						>
@@ -122,7 +122,7 @@
 							{/if}
 						</button>
 						<button
-							class="absolute right-1 top-1 flex h-10 w-10 items-center justify-center rounded-sm bg-red-500 text-white transition-colors hover:bg-red-300 disabled:opacity-50"
+							class="absolute right-1 top-1 flex h-10 w-10 items-center justify-center rounded-sm bg-primary text-white transition-colors hover:bg-red-300 disabled:opacity-50"
 							onclick={() => moveImage(index, 'right')}
 							disabled={isMoving}
 						>
@@ -137,7 +137,7 @@
 					{:else}
 						<button
 							class={`absolute top-1 ${index === posts.length - 1 ? 'left-1' : 'right-1'}
-							flex h-10 w-10 items-center justify-center rounded-sm bg-red-500 text-white transition-colors hover:bg-red-300 disabled:opacity-50`}
+							flex h-10 w-10 items-center justify-center rounded-sm bg-primary text-white transition-colors hover:bg-red-300 disabled:opacity-50`}
 							onclick={() => moveImage(index, index === posts.length - 1 ? 'left' : 'right')}
 							disabled={isMoving}
 						>

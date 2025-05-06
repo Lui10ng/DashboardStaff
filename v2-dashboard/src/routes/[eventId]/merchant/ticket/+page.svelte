@@ -112,7 +112,7 @@
 
 	const getStatusColor = (status: string) => {
 		if (status === 'active') return 'bg-green-500';
-		else if (status === 'expired') return 'bg-red-500';
+		else if (status === 'expired') return 'bg-primary';
 		else if (status === 'deactivated') return 'bg-gray-500';
 		else return 'bg-gray-400';
 	};

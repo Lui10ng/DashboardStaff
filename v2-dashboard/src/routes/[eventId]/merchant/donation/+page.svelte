@@ -109,7 +109,7 @@
 								</div>
 								<button
 									aria-labelledby="Remove Preset Amount"
-									class="rounded-r-md bg-red-100 p-2 text-red-600 hover:bg-red-200"
+									class="rounded-r-md bg-primary p-2 text-red-600 hover:bg-red-200"
 									Onclick={() => removePresetAmount(i)}
 								>
 									<i class="fa-solid fa-times"></i>
@@ -180,7 +180,7 @@
 				<!-- Action Buttons -->
 				<div class="mt-6 flex justify-end gap-2">
 					<button
-						class="rounded-md bg-red-600 px-4 py-2 text-white hover:bg-red-500"
+						class="rounded-md bg-primary px-4 py-2 text-white hover:bg-red-500"
 						Onclick={toggleDonationDrawer}
 					>
 						Save Changes

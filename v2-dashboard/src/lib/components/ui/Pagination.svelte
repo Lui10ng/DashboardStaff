@@ -39,7 +39,7 @@
 						{:else}
 							<Pagination.Page
 								{page}
-								class="data-[selected]:bg-red-600 data-[selected]:text-white inline-flex size-8 cursor-pointer select-none items-center justify-center rounded-lg font-medium hover:bg-gray-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 sm:size-10"
+								class="data-[selected]:bg-primary data-[selected]:text-white inline-flex size-8 cursor-pointer select-none items-center justify-center rounded-lg font-medium hover:bg-gray-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 sm:size-10"
 							>
 								{page.value}
 							</Pagination.Page>

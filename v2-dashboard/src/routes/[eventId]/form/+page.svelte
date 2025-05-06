@@ -369,7 +369,7 @@
 		<div class="text-sm text-gray-500">
 			<p>(Customize what data you need to collect from your attendees here.)</p>
 		</div>
-		<button class="mt-6 rounded-lg bg-[#d32f2f] px-6 py-2 text-white">Create Pre-filled Form</button
+		<button class="mt-6 rounded-lg bg-primary px-6 py-2 text-white">Create Pre-filled Form</button
 		>
 	</div>
 	<div class="mx-auto mt-10 max-w-xl p-4">
@@ -381,7 +381,7 @@
 						{formData.description}
 					</div>
 					<button
-						class="absolute right-0 top-0 flex items-center gap-2 rounded-lg border border-[#d32f2f] px-4 py-2 text-[#d32f2f]"
+						class="absolute right-0 top-0 flex items-center gap-2 rounded-lg border border-primary px-4 py-2 text-primary"
 						on:click={toggleEditMode}
 					>
 						<span>Edit Form</span>
@@ -393,12 +393,12 @@
 				<!-- Edit Mode Header -->
 				<div class="mb-6 flex justify-between">
 					<button
-						class="rounded-lg border border-[#d32f2f] px-6 py-2 text-[#d32f2f]"
+						class="rounded-lg border border-primary px-6 py-2 text-primary"
 						on:click={handleCancel}
 					>
 						Cancel
 					</button>
-					<button class="rounded-lg bg-[#d32f2f] px-6 py-2 text-white" on:click={handleSaveChanges}>
+					<button class="rounded-lg bg-primary px-6 py-2 text-white" on:click={handleSaveChanges}>
 						Save Changes
 					</button>
 				</div>

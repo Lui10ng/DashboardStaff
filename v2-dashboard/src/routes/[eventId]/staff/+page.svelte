@@ -453,7 +453,7 @@
 					>
 						Cancel
 					</button>
-					<button type="submit" class="rounded-md bg-red-500 px-4 py-2 text-sm text-white">
+					<button type="submit" class="rounded-md bg-primary px-4 py-2 text-sm text-white">
 						Invite
 					</button>
 				</div>

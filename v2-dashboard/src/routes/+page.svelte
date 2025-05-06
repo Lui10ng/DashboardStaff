@@ -282,7 +282,7 @@
 		<Button
 			label="Create Event"
 			icon="fa-solid fa-plus"
-			className="bg-primary text-white rounded-lg px-4 py-2"
+			className="bg-primary text-white rounded-lg mb-4 px-4 py-2"
 			onClick={() => handleOpenDrawer()}
 		/>
 		<Drawer

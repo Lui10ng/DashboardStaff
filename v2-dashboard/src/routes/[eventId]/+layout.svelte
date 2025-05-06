@@ -99,7 +99,7 @@
 			<Button
 				label={activeEditHeader ? 'Back' : 'Edit Event'}
 				icon="fa-solid {activeEditHeader ? 'fa-arrow-left' : 'fa-pen'}"
-				className=" text-primary rounded-lg px-4 py-2"
+				className="text-primary rounded-lg px-4 py-2"
 				onClick={() => (activeEditHeader ? handleBack() : handleEditEvent())}
 			/>
 		</div>
@@ -127,7 +127,12 @@
 
 {#if $navigating}
 	<div class="flex justify-center items-center py-10"> 
-		<ProgressRing value={null} size="size-40" trackStroke="stroke-surface-200"/>
+		<ProgressRing 
+			value={null} 
+			size="size-40" 
+			trackStroke="stroke-surface-200"
+			meterStroke="stroke-primary"
+		/>
 	</div>
 {:else}
 	<div in:fade={{ duration: 200 }}>

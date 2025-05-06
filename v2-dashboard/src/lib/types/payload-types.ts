@@ -289,7 +289,7 @@ export interface User {
   /**
    * Roles synced from Clerk. This field is read-only and managed by the authentication system.
    */
-  clerkRoles?: ('admin' | 'organizer' | 'attendee' | 'check-in-staff')[] | null;
+  clerkRoles: ('admin' | 'organizer' | 'attendee' | 'check-in-staff')[];
   updatedAt: string;
   createdAt: string;
   email: string;
