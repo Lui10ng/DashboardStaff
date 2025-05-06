@@ -12,8 +12,8 @@ services:
         deps # Optional: Target an earlier stage (like 'deps') from your multi-stage Dockerfile
         # This stage should have all node_modules including devDependencies
     ports:
-      - '3000:3000' # Map host port 3000 to container port 3000
-      #- '0.0.0.0:3000:3000' # Allow access from all IPs (useful for local network access)
+      # - '3000:3000' # Map host port 3000 to container port 3000
+      - '0.0.0.0:3000:3000' # Allow access from all IPs (useful for local network access)
     volumes:
       # Mount source code for hot-reloading (critical for dev)
       - .:/app
@@ -36,7 +36,7 @@ services:
       REDIS_URL: ${REDIS_URL:-redis://redis:6379}
       PAYLOAD_SECRET: ${PAYLOAD_SECRET:-DEFAULT_PAYLOAD_SECRET_CHANGE_ME}
       NEXT_PUBLIC_SERVER_URL: http://localhost:3000 # For client-side fetches back to Payload
-      #NEXT_PUBLIC_SHARE_SERVER_URL: http://192.168.0.124:3000 # For other developers to share with
+      NEXT_PUBLIC_SHARE_SERVER_URL: http://192.168.1.46:3000 # For other developers to share with
       # Add any other development-specific variables here
     depends_on:
       # Ensure DB and Redis are healthy before Payload starts
