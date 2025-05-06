@@ -28,5 +28,11 @@
 	});
 </script>
 
-<div id="editor" class="min-h-[20vh]"></div>
+<div id="editor" class="border border-gray-100 min-h-[20vh] rounded-b-lg"></div>
 <input type="hidden" name="richText" id="quillContent" />
+
+<style>
+	#editor {
+		border-color: var(--color-gray-200);
+	}
+</style>

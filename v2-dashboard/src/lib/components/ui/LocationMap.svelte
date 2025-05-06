@@ -169,7 +169,7 @@
 				name="location"
 				bind:value={selectedLocation}
 				on:input={handleLocationInput}
-				class={`w-full rounded-lg border border-gray-200 py-3 pr-10 pl-10 ${text}`}
+				class={`prose max-w-none w-full rounded-lg border border-gray-200 py-3 pr-10 pl-10 ${text}`}
 			/>
 			{#if selectedLocation}
 				<button
@@ -204,7 +204,7 @@
 			<div class="absolute right-0 left-0 z-[90] mt-1 rounded-lg border border-gray-200 shadow-lg bg-white">
 				{#each locationSuggestions as suggestion}
 					<button
-						class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+						class="prose w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
 						on:click={() => handleLocationSelect(suggestion)}
 					>
 						{suggestion.label}
