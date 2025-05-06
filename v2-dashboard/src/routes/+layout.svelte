@@ -8,7 +8,7 @@
 	import type { Snippet } from 'svelte';
 	import { ClerkProvider } from 'svelte-clerk/client';
 	import { PUBLIC_CLERK_PUBLISHABLE_KEY } from '$env/static/public';
-	import { SignedIn, SignedOut, SignInButton, SignOutButton } from 'svelte-clerk';
+	import { SignedIn, SignedOut, SignInButton, SignOutButton, UserButton } from 'svelte-clerk';
 
 	const { children }: { children: Snippet } = $props();
 
@@ -62,25 +62,14 @@
 				<SignedOut>
 					<SignInButton>
 						<button
-							class="w-full rounded bg-[#d12f2b] px-4 py-2 text-left text-white transition hover:bg-red-700"
+							class="w-full rounded bg-primary px-4 py-2 text-left text-white transition hover:bg-red-700"
 						>
 							Sign in
 						</button>
 					</SignInButton>
 				</SignedOut>
-				<SignedIn>
-					<DropdownMenu.Root>
-						<DropdownMenu.Trigger>
-							<button class="rounded-full border px-3 py-1 transition hover:bg-gray-100">
-								Account
-							</button>
-						</DropdownMenu.Trigger>
-						<DropdownMenu.Content>
-							<DropdownMenu.Item>
-								<SignOutButton redirectUrl="/sign-in">Sign out</SignOutButton>
-							</DropdownMenu.Item>
-						</DropdownMenu.Content>
-					</DropdownMenu.Root>
+				<SignedIn>					
+						<UserButton showName={true}  />					
 				</SignedIn>
 			</div>
 		</header>
