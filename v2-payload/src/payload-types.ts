@@ -91,6 +91,7 @@ export interface Config {
   };
   collectionsJoins: {
     events: {
+      form: 'forms';
       ticketType: 'ticket-types';
     };
     'ticket-types': {
@@ -263,10 +264,11 @@ export interface Event {
         id?: string | null;
       }[]
     | null;
-  /**
-   * The registration form for this event
-   */
-  formId?: (number | null) | Form;
+  form?: {
+    docs?: (number | Form)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   ticketType?: {
     docs?: (number | TicketType)[];
     hasNextPage?: boolean;
@@ -1024,7 +1026,7 @@ export interface EventsSelect<T extends boolean = true> {
         contactPhone?: T;
         id?: T;
       };
-  formId?: T;
+  form?: T;
   ticketType?: T;
   updatedAt?: T;
   createdAt?: T;
