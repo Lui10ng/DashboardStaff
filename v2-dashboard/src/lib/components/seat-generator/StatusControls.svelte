@@ -93,7 +93,7 @@
             Available
         </button>
         <button
-            class="rounded bg-red-500 px-4 py-2 text-white transition hover:bg-red-600"
+            class="rounded bg-primary px-4 py-2 text-white transition hover:bg-red-600"
             on:click={() => handleStatusChange('sold')}
             on:keydown={(e) => e.key === 'Enter' && handleStatusChange('sold')}
             disabled={(!seatGeneratorStore.multipleSeatSelection && !seatGeneratorStore.selectedSeat) ||

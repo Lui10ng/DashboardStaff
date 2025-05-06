@@ -22,7 +22,7 @@
 			<p class="mb-6 max-w-md text-center text-gray-500">
 				You haven't added any products to your store yet. Add some products to start selling!
 			</p>
-			<button class="flex items-center rounded-md bg-red-600 px-4 py-2 text-white hover:bg-red-500">
+			<button class="flex items-center rounded-md bg-primary px-4 py-2 text-white hover:bg-red-500">
 				<i class="fa-solid fa-plus mr-2"></i>
 				Add First Product
 			</button>

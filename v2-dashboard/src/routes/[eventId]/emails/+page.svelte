@@ -144,7 +144,7 @@
 					</div>
 					<div class="mt-5 flex gap-2">
 						<button
-							class="rounded-md bg-red-500 px-4 py-2 font-bold text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring focus:ring-red-200"
+							class="rounded-md bg-primary px-4 py-2 font-bold text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring focus:ring-red-200"
 							on:click={saveEmail}
 						>
 							Save Email

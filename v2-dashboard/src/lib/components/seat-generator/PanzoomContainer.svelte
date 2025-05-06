@@ -155,7 +155,7 @@
                 <span class="text-sm">Available</span>
             </div>
             <div class="flex items-center gap-2">
-                <div class="h-4 w-4 rounded-md bg-red-500"></div>
+                <div class="h-4 w-4 rounded-md bg-primary"></div>
                 <span class="text-sm">Sold</span>
             </div>
         </div>

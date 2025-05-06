@@ -37,7 +37,7 @@
 		</div>
 	</div>
 	<button
-		class="flex w-full items-center justify-center rounded-md bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-500 md:w-auto"
+		class="flex w-full items-center justify-center rounded-md bg-primary px-4 py-2 text-sm text-white hover:bg-red-500 md:w-auto"
 	>
 		<i class="fa-solid fa-phone mr-2"></i>
 		Contact Us Here

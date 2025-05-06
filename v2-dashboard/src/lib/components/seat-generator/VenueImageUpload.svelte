@@ -70,7 +70,7 @@
         <div class="relative ">
           <i class="fa-solid fa-image "></i>
             <button
-                class="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                class="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                 onclick={removeImage}
                 onkeydown={(e) => e.key === 'Enter' && removeImage()}
                 aria-label="Remove image"
