@@ -69,7 +69,7 @@
 			</Modal>
 		</Card>
 	</div>
-	<div class="rounded-xl border border-gray-200 shadow-sm sm:p-6">
+	<div class="proserounded-xl border border-gray-200 shadow-sm sm:p-6">
 		<div class="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
 			<h2 class="text-xl font-semibold text-gray-900">Guest List</h2>
 			<div class="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:gap-4">

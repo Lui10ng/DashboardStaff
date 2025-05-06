@@ -324,3 +324,18 @@ body {
 	background-color: #cbd5e1;
 	border-radius: 6px;
 }
+
+.prose {
+	max-width: initial;
+	:where(p):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
+		margin-top: auto;
+		margin-bottom: auto;
+	}
+}
+
+div.ql-toolbar.ql-snow {
+	border-color: var(--color-gray-200);
+	margin-bottom: 0px;
+	border-top-left-radius: 10px;
+	border-top-right-radius: 10px;
+}

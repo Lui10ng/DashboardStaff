@@ -42,7 +42,7 @@
 
 <div>
 	<div class="flex flex-col justify-between sm:flex-row">
-		<div class="flex flex-col items-start gap-4 sm:mb-8 sm:flex-row sm:items-center sm:gap-6">
+		<div class="prose flex flex-col items-start gap-4 sm:mb-8 sm:flex-row sm:items-center sm:gap-6">
 			{#if !activeEditHeader}
 				<img
 					src={event.imageUrl}
@@ -99,7 +99,7 @@
 			<Button
 				label={activeEditHeader ? 'Back' : 'Edit Event'}
 				icon="fa-solid {activeEditHeader ? 'fa-arrow-left' : 'fa-pen'}"
-				className="text-primary rounded-lg px-4 py-2"
+				className="prose text-primary rounded-lg pr-4 py-2"
 				onClick={() => (activeEditHeader ? handleBack() : handleEditEvent())}
 			/>
 		</div>
@@ -112,7 +112,7 @@
 				{#each navItems(event.id) as item}
 					<Button
 						label={item.label}
-						className="rounded-lg border border-gray-200 py-2 shadow-sm transition-colors w-full capitalize {handleActiveNav(
+						className="prose rounded-lg border border-gray-200 py-2 shadow-sm transition-colors w-full capitalize {handleActiveNav(
 							item.label
 						)}"
 						onClick={() => {

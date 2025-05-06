@@ -36,7 +36,7 @@
 			<Button onClick={home}>
 				<img src="/images/veent-logo.svg" alt="veent" width="64" height="50" />
 			</Button>
-			<div class="flex items-center gap-5 font-semibold">
+			<div class="prose flex items-center gap-5 font-semibold">
 				<Button
 					label="Home"
 					onClick={home}
@@ -68,8 +68,10 @@
 						</button>
 					</SignInButton>
 				</SignedOut>
-				<SignedIn>					
-						<UserButton showName={true}  />					
+				<SignedIn>
+					<div class="not-prose">
+						<UserButton showName={true} />	
+					</div>								
 				</SignedIn>
 			</div>
 		</header>
