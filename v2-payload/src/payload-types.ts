@@ -91,6 +91,7 @@ export interface Config {
   };
   collectionsJoins: {
     events: {
+      form: 'forms';
       ticketType: 'ticket-types';
     };
     'ticket-types': {
@@ -193,10 +194,6 @@ export interface EventAnnouncement {
  */
 export interface Event {
   id: number;
-  /**
-   * The registration form linked to this event
-   */
-  formId?: (number | null) | Form;
   title: string;
   slug: string;
   location: string;
@@ -267,70 +264,16 @@ export interface Event {
         id?: string | null;
       }[]
     | null;
+  form?: {
+    docs?: (number | Form)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   ticketType?: {
     docs?: (number | TicketType)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "forms".
- */
-export interface Form {
-  id: number;
-  /**
-   * The event this form belongs to
-   */
-  eventId?: (number | null) | Event;
-  /**
-   * Form title that will be displayed to users
-   */
-  title: string;
-  /**
-   * A brief description of what this form is for
-   */
-  description?: string | null;
-  formBuilder?:
-    | {
-        name: string;
-        label: string;
-        required?: boolean | null;
-        fieldType:
-          | 'text'
-          | 'email'
-          | 'phone'
-          | 'number'
-          | 'date'
-          | 'time'
-          | 'multipleChoice'
-          | 'checkbox'
-          | 'dropdown'
-          | 'file'
-          | 'shortText'
-          | 'longText'
-          | 'region'
-          | 'city';
-        id: string | null;
-        options?:
-          | {
-              value?: string | null;
-              id?: string | null;
-            }[]
-          | null;
-        description?: string | null;
-      }[]
-    | null;
-  responses?:
-    | {
-        fieldId: string;
-        value?: string | null;
-        submittedAt?: string | null;
-        id?: string | null;
-      }[]
-    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -534,6 +477,65 @@ export interface RegistrationFormTemplate {
     | string
     | number
     | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "forms".
+ */
+export interface Form {
+  id: number;
+  /**
+   * The event this form belongs to
+   */
+  eventId?: (number | null) | Event;
+  /**
+   * Form title that will be displayed to users
+   */
+  title: string;
+  /**
+   * A brief description of what this form is for
+   */
+  description?: string | null;
+  formBuilder?:
+    | {
+        name: string;
+        label: string;
+        required?: boolean | null;
+        fieldType:
+          | 'text'
+          | 'email'
+          | 'phone'
+          | 'number'
+          | 'date'
+          | 'time'
+          | 'multipleChoice'
+          | 'checkbox'
+          | 'dropdown'
+          | 'file'
+          | 'shortText'
+          | 'longText'
+          | 'region'
+          | 'city';
+        id: string | null;
+        options?:
+          | {
+              value?: string | null;
+              id?: string | null;
+            }[]
+          | null;
+        description?: string | null;
+      }[]
+    | null;
+  responses?:
+    | {
+        fieldId: string;
+        value?: string | null;
+        submittedAt?: string | null;
+        id?: string | null;
+      }[]
     | null;
   updatedAt: string;
   createdAt: string;
@@ -1000,7 +1002,6 @@ export interface EventCategoriesSelect<T extends boolean = true> {
  * via the `definition` "events_select".
  */
 export interface EventsSelect<T extends boolean = true> {
-  formId?: T;
   title?: T;
   slug?: T;
   location?: T;
@@ -1025,6 +1026,7 @@ export interface EventsSelect<T extends boolean = true> {
         contactPhone?: T;
         id?: T;
       };
+  form?: T;
   ticketType?: T;
   updatedAt?: T;
   createdAt?: T;

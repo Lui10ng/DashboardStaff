@@ -2,7 +2,7 @@ import type { RequestEvent } from '@sveltejs/kit';
 import type { FormData, FieldType } from './types';
 import type { PageServerLoad, Actions } from './$types';
 import { createApiClient } from '$lib/services/payload.server.js';
-import type { PayloadFormResponse } from '$lib/types/formTypes';
+import type { PayloadForm, PayloadResponse } from '$lib/types/formTypes';
 import { handleSvelteError } from '$lib/utils/errorHandler';
 import { error } from '@sveltejs/kit';
 
@@ -21,7 +21,7 @@ export const load: PageServerLoad = async (event: RequestEvent) => {
 		console.log('Request URL params:', params);
 
 		const apiClient = createApiClient(event);
-		const response = await apiClient.get<PayloadFormResponse>('forms', params);
+		const response = await apiClient.get<PayloadResponse>('forms', params);
 
 		console.log('Raw API Response:', JSON.stringify(response, null, 2));
 

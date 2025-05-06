@@ -39,10 +39,16 @@ const Events: CollectionConfig = {
 
         console.log('beforeChange hook - operation:', operation)
 
-        if (operation === 'create' && !data.formId) {
+        return data
+      },
+    ],
+    afterChange: [
+      async ({ doc, operation, req }) => {
+        console.log('afterChange hook - operation:', operation)
+
+        if (operation === 'create' && req?.payload && doc?.id) {
           try {
-            console.log('Creating form for new event with title:', data.title)
-            console.log('crypto.randomUUID exists:', typeof crypto.randomUUID === 'function')
+            console.log('Creating form for new event with title:', doc.title)
 
             const formBuilderFields = [
               {
@@ -76,70 +82,33 @@ const Events: CollectionConfig = {
             ]
 
             console.log('Form fields prepared:', formBuilderFields.length)
-
             console.log('Attempting to create form...')
-            const form = await req.payload.create({
-              collection: 'forms',
-              data: {
-                title: `${data.title || 'Event'} Registration Form`,
-                description: 'Please fill out this registration form',
-                formBuilder: formBuilderFields,
-              },
-              overrideAccess: true,
-            })
 
-            console.log('Form created successfully:', Boolean(form))
+            setTimeout(async () => {
+              try {
+                const form = await req.payload.create({
+                  collection: 'forms',
+                  data: {
+                    title: `${doc.title || 'Event'} Registration Form`,
+                    description: 'Please fill out this registration form',
+                    formBuilder: formBuilderFields,
+                    eventId: doc.id,
+                  },
+                  overrideAccess: true,
+                })
 
-            if (form?.id) {
-              data.formId = form.id
-              console.log('Form ID stored in event data:', data.formId)
-            }
-
-            return data
+                console.log('Form created successfully for event:', doc.id, 'Form ID:', form.id)
+              } catch (delayedError) {
+                console.error('Delayed form creation failed:', delayedError)
+              }
+            }, 500)
           } catch (error) {
             const err = error as Error
-            console.error('Error in beforeChange hook:', {
+            console.error('Error creating form in afterChange hook:', {
               message: err.message,
               stack: err.stack,
             })
-            return data
           }
-        }
-
-        return data
-      },
-    ],
-    afterChange: [
-      async ({ doc, operation, req }) => {
-        console.log('afterChange hook - operation:', operation)
-
-        if (operation === 'create' && doc.formId) {
-          const formId = typeof doc.formId === 'object' ? doc.formId.id : doc.formId
-          const eventId = doc.id
-
-          console.log('Updating form with event ID:', {
-            formId,
-            eventId,
-            formIdType: typeof formId,
-            eventIdType: typeof eventId,
-          })
-
-          setTimeout(async () => {
-            try {
-              const updatedForm = await req.payload.update({
-                collection: 'forms',
-                id: formId,
-                data: {
-                  eventId: eventId,
-                },
-                overrideAccess: true,
-              })
-
-              console.log('Delayed form update completed:', Boolean(updatedForm))
-            } catch (delayedError) {
-              console.error('Delayed form update failed:', delayedError)
-            }
-          }, 500)
         }
 
         if (operation === 'create' && req?.user && doc?.id) {
@@ -233,16 +202,6 @@ const Events: CollectionConfig = {
   },
   fields: [
     // --- Core Details ---
-    {
-      name: 'formId',
-      type: 'relationship',
-      relationTo: 'forms',
-      hasMany: false,
-      admin: {
-        position: 'sidebar',
-        description: 'The registration form linked to this event',
-      },
-    },
     {
       name: 'title',
       label: 'Event Title',
@@ -477,6 +436,12 @@ const Events: CollectionConfig = {
           ],
         },
       ],
+    },
+    {
+      name: 'form',
+      type: 'join',
+      collection: 'forms',
+      on: 'eventId',
     },
     {
       name: 'ticketType',
