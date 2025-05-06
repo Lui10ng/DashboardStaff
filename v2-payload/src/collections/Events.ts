@@ -42,122 +42,11 @@ const Events: CollectionConfig = {
         return data
       },
     ],
-    afterChange: [
-      async ({ doc, operation, req }) => {
-        console.log('afterChange hook - operation:', operation)
 
-        if (operation === 'create' && req?.payload && doc?.id) {
-          try {
-            console.log('Creating form for new event with title:', doc.title)
-
-            const formBuilderFields = [
-              {
-                name: 'firstName',
-                label: 'First Name',
-                required: true,
-                fieldType: 'text' as const,
-                id: crypto.randomUUID(),
-              },
-              {
-                name: 'lastName',
-                label: 'Last Name',
-                required: true,
-                fieldType: 'text' as const,
-                id: crypto.randomUUID(),
-              },
-              {
-                name: 'contactNumber',
-                label: 'Contact Number',
-                required: true,
-                fieldType: 'text' as const,
-                id: crypto.randomUUID(),
-              },
-              {
-                name: 'email',
-                label: 'Email',
-                required: true,
-                fieldType: 'email' as const,
-                id: crypto.randomUUID(),
-              },
-            ]
-
-            console.log('Form fields prepared:', formBuilderFields.length)
-            console.log('Attempting to create form...')
-
-            setTimeout(async () => {
-              try {
-                const form = await req.payload.create({
-                  collection: 'forms',
-                  data: {
-                    title: `${doc.title || 'Event'} Registration Form`,
-                    description: 'Please fill out this registration form',
-                    formBuilder: formBuilderFields,
-                    eventId: doc.id,
-                  },
-                  overrideAccess: true,
-                })
-
-                console.log('Form created successfully for event:', doc.id, 'Form ID:', form.id)
-              } catch (delayedError) {
-                console.error('Delayed form creation failed:', delayedError)
-              }
-            }, 500)
-          } catch (error) {
-            const err = error as Error
-            console.error('Error creating form in afterChange hook:', {
-              message: err.message,
-              stack: err.stack,
-            })
-          }
-        }
-
-        if (operation === 'create' && req?.user && doc?.id) {
-          console.log('Assigning manager role via afterChange:', {
-            userId: req.user.id,
-            eventId: doc.id,
-          })
-          const userId = req.user.id
-          const eventId = doc.id
-
-          try {
-            const payload = req.payload
-            const newUserEventRole = await payload.create({
-              collection: 'event-user-roles',
-              data: {
-                user: userId,
-                event: eventId,
-                role: MANAGER,
-              },
-              overrideAccess: true,
-              req: req,
-            })
-
-            console.log('Manager role assigned successfully via afterChange:', {
-              newUserEventRoleId: newUserEventRole.id,
-            })
-          } catch (error) {
-            const err = error as Error
-            console.error(
-              `Error assigning manager role (afterChange) to user ${userId} for event ${eventId}:`,
-              {
-                message: err.message,
-              },
-            )
-          }
-        }
-
-        return doc
-      },
-    ],
     afterOperation: [
       async ({ args, operation, result, req }) => {
         const request = req || args?.req
         const doc = result
-
-        // console.log('--- Starting afterOperation Hook ---');
-        // console.log('afterOperation - operation:', operation);
-        // console.log('afterOperation - result (doc):', doc);
-        // console.log('afterOperation - req user:', request?.user);
 
         // Assign manager role after a successful 'create' operation
         if (operation === 'create' && request?.user && doc?.id) {
@@ -193,6 +82,69 @@ const Events: CollectionConfig = {
                 // stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
               },
             )
+          }
+        }
+
+        if (operation === 'create' && request?.payload && doc?.id) {
+          try {
+            const eventId = doc.id
+            const payload = request.payload
+            const title = `${doc.title || 'Event'} Registration Form`
+
+            const formBuilderFields = [
+              {
+                name: 'firstName',
+                label: 'First Name',
+                required: true,
+                fieldType: 'text' as const,
+                id: crypto.randomUUID(),
+              },
+              {
+                name: 'lastName',
+                label: 'Last Name',
+                required: true,
+                fieldType: 'text' as const,
+                id: crypto.randomUUID(),
+              },
+              {
+                name: 'contactNumber',
+                label: 'Contact Number',
+                required: true,
+                fieldType: 'text' as const,
+                id: crypto.randomUUID(),
+              },
+              {
+                name: 'email',
+                label: 'Email',
+                required: true,
+                fieldType: 'email' as const,
+                id: crypto.randomUUID(),
+              },
+            ]
+
+            try {
+              const form = await payload.create({
+                collection: 'forms',
+                data: {
+                  title: title,
+                  description: 'Please fill out this registration form',
+                  formBuilder: formBuilderFields,
+                  eventId: eventId,
+                },
+                overrideAccess: true,
+                req: request,
+              })
+
+              console.log('Form created successfully for event:', doc.id, 'Form ID:', form.id)
+            } catch (delayedError) {
+              console.error('Delayed form creation failed:', delayedError)
+            }
+          } catch (error) {
+            const err = error as Error
+            console.error('Error creating form in afterChange hook:', {
+              message: err.message,
+              stack: err.stack,
+            })
           }
         }
 
