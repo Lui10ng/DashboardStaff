@@ -18,11 +18,15 @@
 	import { stateDrawer } from '$lib/stores/state.svelte.ts';
 	import { useClerkContext } from 'svelte-clerk/client';
 	import { Tabs } from 'bits-ui';
+	import { event } from '$lib/types/eventData.js';
+	import EmptyState from '$lib/components/ui/EmptyState.svelte';
+	import HomeSkeleton from '$lib/components/ui/HomeSkeleton.svelte';
 
 	const ctx = useClerkContext();
 	const fullName = $derived(ctx.user?.fullName);
 
 	let { data } = $props();
+	let loading = $state(true);
 
 	$effect(() => {
 		if (browser && data.requiresRedirect && data.redirectTo) {
@@ -52,7 +56,11 @@
 	});
 
 	$effect(() => {
-		eventListStore.setEvents(data.events);
+		console.log('does have events', data.events?.length);
+		if (data.events !== undefined) {
+			eventListStore.setEvents(data.events);
+			loading = false;
+		}
 	});
 
 	const formatStatus = (status: string) => {
@@ -188,8 +196,19 @@
 {#if !data.requiresRedirect}
 	<div class="space-y-5" in:fly={{ y: -50, duration: 200 }}>
 		<div class="prose space-y-2">
-			<h1 class="text-2xl font-semibold sm:text-3xl sm:font-bold">Welcome back, {fullName}</h1>
-			<p class="text-gray-500">Manage your events and track their performance</p>
+			{#if loading || !fullName}
+				<div class="animate-pulse space-y-3">
+					<!-- Title skeleton -->
+					<div class="h-8 w-64 rounded bg-gray-200 sm:h-9 sm:w-72"></div>
+					<!-- Subtitle skeleton -->
+					<div class="h-4 w-80 rounded bg-gray-200"></div>
+				</div>
+			{:else}
+				<h1 class="text-2xl font-semibold sm:text-3xl sm:font-bold">
+					Welcome back, {fullName}
+				</h1>
+				<p class="text-gray-500">Manage your events and track their performance</p>
+			{/if}
 		</div>
 
 		<Tabs.Root value="tab1">
@@ -201,17 +220,19 @@
 				>
 				<Tabs.Trigger
 					value="tab2"
-					class="prose data-[state=active]:text-primary data-[state=active]:border-primary border-b-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none data-[state=inactive]:border-transparent data-[state=inactive]:text-gray-500 data-[state=inactive]:hover:border-gray-300 data-[state=inactive]:hover:text-gray-700"
+					class="prose border-b-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none data-[state=active]:border-[#DF4D60] data-[state=inactive]:border-transparent data-[state=active]:text-[#DF4D60] data-[state=inactive]:text-gray-500 data-[state=inactive]:hover:border-gray-300 data-[state=inactive]:hover:text-gray-700"
 					>Analytics Overview</Tabs.Trigger
 				>
 			</Tabs.List>
 			<Tabs.Content class="pt-5" value="tab1">
-				<Button
-					label="Create Event"
-					icon="fa-solid fa-plus"
-					className="bg-primary text-white rounded-lg mb-4 px-4 py-2"
-					onClick={() => handleOpenDrawer()}
-				/>
+				{#if events.length > 0}
+					<Button
+						label="Create Event"
+						icon="fa-solid fa-plus"
+						className="bg-primary text-white rounded-lg mb-4 px-4 py-2"
+						onClick={() => handleOpenDrawer()}
+					/>
+				{/if}
 				<Drawer
 					isOpen={drawerState}
 					contentBaseClass="bg-white py-7 px-4 space-y-4 shadow-xl w-full h-[90svh] overflow-y-auto"
@@ -349,7 +370,9 @@
 									<input type="hidden" name="location" value={$form.location || ''} />
 
 									{#if $errors.location}
-										<p class="prose text-primary mt-2 text-sm">{$errors.location}</p>
+										<p class="prose text-primary mt-2 text-sm">
+											{$errors.location}
+										</p>
 									{/if}
 								</div>
 
@@ -357,7 +380,9 @@
 									<label for="description" class="prose text-gray-700">Description</label>
 									<RichText />
 									{#if $errors.richText}
-										<p class="prose text-primary mt-2 text-sm">{$errors.richText}</p>
+										<p class="prose text-primary mt-2 text-sm">
+											{$errors.richText}
+										</p>
 									{/if}
 								</div>
 							</div>
@@ -468,46 +493,49 @@
 				</Drawer>
 
 				<div class="overflow-hidden rounded-xl border border-gray-200 shadow-sm">
-					<!-- Event List Items -->
-					<div>
-						{#each paginatedEvents as event (event.id)}
-							<div
-								class="grid cursor-pointer grid-cols-2 items-center justify-between gap-2 border-b border-gray-200 p-4 transition-colors hover:bg-gray-50 sm:grid-cols-6"
-								onclick={() => handleEvent(event.id)}
-								onkeydown={(e) => e.key === 'Enter' && handleEvent(event.id)}
-								tabindex="0"
-								role="button"
-								aria-label="View details for {event.title}"
-							>
-								<div class="col-span-2 flex justify-between sm:col-span-1">
-									<img
-										src="/images/veent-logo.svg"
-										alt={event.title}
-										class={event.eventImages && event.eventImages.length > 0
-											? 'h-16 w-16 rounded-lg bg-gray-100 object-cover object-center transition-all duration-500 hover:scale-125'
-											: 'h-16 w-16 rounded-lg bg-gray-100  object-contain p-2'}
-									/>
-									{#if !stateDrawer.open}
-										<div class="sm:hidden">
-											<DropdownMenu
-												icon="fa-solid fa-ellipsis text-2xl text-gray-400 hover:text-primary p-2"
-												className="prose cursor-pointer relative z-10"
-												classMenu="mt-2 shadow-md"
-												alignContent="end"
-												buttonText=""
-												items={['Scanner', 'Copy link', 'Share event', 'Duplicate event']}
-												on:select={(e) => {
-													e.stopPropagation();
-													handleDropdownSelection(e.detail, event.id);
-												}}
-											/>
+					{#if loading}
+						<!-- Skeleton loading for events -->
+						{#each Array(Math.min(data.events?.length || 0)) as _}
+							<HomeSkeleton />
+						{/each}
+					{:else if !loading && events.length > 0}
+						<!-- Event List Items -->
+						<div>
+							{#each paginatedEvents as event (event.id)}
+								<div
+									class="grid cursor-pointer grid-cols-12 items-center justify-between gap-x-4 gap-y-2 border-b border-gray-200 p-4 transition-colors hover:bg-gray-50"
+									onclick={() => handleEvent(event.id)}
+									onkeydown={(e) => e.key === 'Enter' && handleEvent(event.id)}
+									tabindex="0"
+									role="button"
+								>
+									<div class="col-span-3 flex items-center sm:col-span-2">
+										<img
+											src={event.eventImages && event.eventImages.length > 0
+												? `${PUBLIC_PAYLOAD_API_URL}${event.eventImages[0].url}`
+												: '/images/veent-logo.svg'}
+											alt={event.title}
+											class={event.eventImages && event.eventImages.length > 0
+												? 'h-16 w-16 rounded-lg bg-gray-100 object-cover object-center transition-all duration-500 hover:scale-125'
+												: 'h-16 w-16 rounded-lg bg-gray-100 object-contain p-2 sm:h-20 sm:w-20'}
+										/>
+									</div>
+
+									<div class="col-span-9 flex flex-col justify-center sm:col-span-4">
+										<h3 class="prose truncate font-medium text-gray-900">
+											{event.title}
+										</h3>
+
+										<div class="text-xs sm:hidden">
+											<span
+												class="prose inline-block rounded-full px-2 py-0.5 text-xs {formatStatus(
+													event.status
+												)}"
+											>
+												{event.status}
+											</span>
 										</div>
-									{/if}
-								</div>
-								<div class="col-span-2 sm:col-span-1">
-									<div class="flex items-start gap-4">
-										<div class="flex-1">
-											<h3 class="prose font-medium text-gray-900">{event.title}</h3>
+										<div class="hidden sm:block">
 											<Tooltip
 												icon="fa-solid fa-location-dot text-sm text-gray-500"
 												text={extractLocation(event.location)}
@@ -517,15 +545,13 @@
 											/>
 										</div>
 									</div>
-								</div>
-								<div class="col-span-2 sm:col-span-1">
-									<p class="prose text-font-primary mb-1 text-start text-sm">Date</p>
-									<div class="flex flex-col gap-1">
+
+									<div class="hidden sm:col-span-3 sm:flex sm:flex-col sm:justify-center">
 										<div class="flex items-center gap-2">
 											<i class="fa-regular fa-calendar text-gray-400"></i>
 											<span class="prose text-sm text-gray-600">
 												{new Date(event.startTime).toLocaleDateString('en-US', {
-													month: 'long',
+													month: 'short' /* Using short month for space */,
 													day: 'numeric',
 													year: 'numeric'
 												})}
@@ -538,7 +564,8 @@
 													hour: 'numeric',
 													minute: '2-digit',
 													hour12: true
-												})} to {new Date(event.endTime).toLocaleTimeString('en-US', {
+												})} - {new Date(event.endTime).toLocaleTimeString('en-US', {
+													/* Note: corrected 'to' to '-' for consistency */
 													hour: 'numeric',
 													minute: '2-digit',
 													hour12: true
@@ -546,110 +573,108 @@
 											</span>
 										</div>
 									</div>
-								</div>
-								<div class="col-span-1">
-									<p class="prose text-font-primary mb-1 text-sm sm:text-start">Status</p>
-									<h3
-										class="prose inline-block rounded-full px-5 py-1 text-sm {formatStatus(
-											event.status
-										)}"
-									>
-										{event.status}
-									</h3>
-								</div>
-								<div class="col-span-1 text-right sm:text-left">
-									<p class="prose text-font-primary mb-1 text-sm">Ticket Sold</p>
-									<h3 class="prose font-medium">{event.tickets.sold}/{event.tickets.total}</h3>
-								</div>
 
-								<div class="hidden sm:block">
-									<button
-										class="cursor-pointer p-2 text-gray-500 transition-colors hover:text-gray-600"
-										aria-label="QR Scanner"
-										tabindex="0"
-										onclick={(e) => {
-											e.preventDefault();
-											e.stopPropagation();
-											handleScanQR(event.id);
-										}}
-										onkeydown={(e) => e.key === 'Enter' && handleScanQR(event.id)}
-									>
-										<Tooltip
-											icon="fa-solid fa-expand text-lg text-gray-400 hover:text-primary"
-											text=""
-											content="Scanner"
-											classTrigger=""
-											classContent="border bg-white px-2 py-1 rounded-lg text-primary"
-										/>
-									</button>
+									<div class="hidden sm:col-span-1 sm:flex sm:items-center sm:justify-start">
+										<h3
+											class="prose inline-block rounded-full px-3 py-1 text-xs {formatStatus(
+												event.status
+											)}"
+										>
+											{event.status}
+										</h3>
+									</div>
 
-									<button
-										class="cursor-pointer p-2 text-gray-500 transition-colors hover:text-gray-600"
-										aria-label="Copy link"
-										tabindex="0"
-										onclick={(e) => {
-											e.stopPropagation();
-											handleCopyLink(event.id);
-										}}
-										onkeydown={(e) => e.key === 'Enter' && handleCopyLink(event.id)}
+									{#if !stateDrawer.open}
+										<div class="col-span-3 col-start-10 flex items-center justify-end sm:hidden">
+											<DropdownMenu
+												icon="fa-solid fa-ellipsis text-xl text-gray-400 hover:text-red-600 p-1"
+												className="prose cursor-pointer relative z-10"
+												classMenu="mt-2 shadow-md"
+												alignContent="end"
+												buttonText=""
+												items={['Scanner', 'Copy link', 'Share event', 'Duplicate event']}
+												on:select={(e) => {
+													e.stopPropagation();
+													handleDropdownSelection(e.detail, event.id);
+												}}
+											/>
+										</div>
+									{/if}
+
+									<div
+										class="hidden space-x-1 sm:col-span-2 sm:flex sm:items-center sm:justify-end"
 									>
-										<Tooltip
-											icon="fa-sharp fa-solid fa-link text-lg text-gray-400 hover:text-primary"
-											text=""
-											content="Copy link"
-											classTrigger=""
-											classContent="border bg-white px-2 py-1 rounded-lg text-primary"
-										/>
-									</button>
-									<button
-										class="cursor-pointer p-2 text-gray-500 transition-colors hover:text-gray-600"
-										aria-label="Share"
-										tabindex="0"
-										onclick={(e) => {
-											e.stopPropagation();
-											handleShare(event.id);
-										}}
-										onkeydown={(e) => e.key === 'Enter' && handleShare(event.id)}
-									>
-										<Tooltip
-											icon="fa-sharp fa-solid fa-share-nodes text-lg text-gray-400 hover:text-primary"
-											text=""
-											content="Share event"
-											classTrigger=""
-											classContent="border bg-white px-2 py-1 rounded-lg text-primary"
-										/>
-									</button>
-									<button
-										class="cursor-pointer p-2 text-gray-500 transition-colors hover:text-gray-600"
-										aria-label="Duplicate event"
-										tabindex="0"
-										onclick={(e) => {
-											e.stopPropagation();
-											handleDuplicateEvent(event.id);
-										}}
-										onkeydown={(e) => e.key === 'Enter' && handleDuplicateEvent(event.id)}
-									>
-										<Tooltip
-											icon="fa-solid fa-clone text-lg text-gray-400 hover:text-primary"
-											text=""
-											content="Duplicate event"
-											classTrigger=""
-											classContent="border bg-white px-2 py-1 rounded-lg text-primary"
-										/>
-									</button>
+										<button
+											class="cursor-pointer p-1 text-gray-500 transition-colors hover:text-gray-600"
+											aria-label="QR Scanner"
+											tabindex="0"
+											onkeydown={(e) => e.key === 'Enter' && handleScanQR(event.id)}
+										>
+											<Tooltip
+												icon="fa-solid fa-expand text-base text-gray-400 hover:text-red-600"
+												content="Scanner"
+												classContent="border bg-white px-2 py-1 rounded-lg text-red-600 text-xs"
+											/>
+										</button>
+										<button
+											class="cursor-pointer p-1 text-gray-500 transition-colors hover:text-gray-600"
+											aria-label="Copy link"
+											tabindex="0"
+											onkeydown={(e) => e.key === 'Enter' && handleCopyLink(event.id)}
+										>
+											<Tooltip
+												icon="fa-sharp fa-solid fa-link text-base text-gray-400 hover:text-red-600"
+												content="Copy link"
+												classContent="border bg-white px-2 py-1 rounded-lg text-red-600 text-xs"
+											/>
+										</button>
+										<button
+											class="cursor-pointer p-1 text-gray-500 transition-colors hover:text-gray-600"
+											aria-label="Share"
+											tabindex="0"
+											onkeydown={(e) => e.key === 'Enter' && handleShare(event.id)}
+										>
+											<Tooltip
+												icon="fa-sharp fa-solid fa-share-nodes text-base text-gray-400 hover:text-red-600"
+												content="Share event"
+												classContent="border bg-white px-2 py-1 rounded-lg text-red-600 text-xs"
+											/>
+										</button>
+										<button
+											class="cursor-pointer p-1 text-gray-500 transition-colors hover:text-gray-600"
+											aria-label="Duplicate event"
+											tabindex="0"
+											onkeydown={(e) => e.key === 'Enter' && handleDuplicateEvent(event.id)}
+										>
+											<Tooltip
+												icon="fa-solid fa-clone text-base text-gray-400 hover:text-red-600"
+												content="Duplicate event"
+												classContent="border bg-white px-2 py-1 rounded-lg text-red-600 text-xs"
+											/>
+										</button>
+									</div>
+								</div>
+							{/each}
+							<div class="px-3 py-4 sm:px-6">
+								<div class="px-3 py-4 sm:px-6">
+									<Pagination
+										totalItems={events?.length || 0}
+										itemsPerPage={eventsPerPage}
+										{currentPage}
+										on:pageChange={handlePageChange}
+										on:pageSizeChange={handlePageSizeChange}
+									/>
 								</div>
 							</div>
-						{/each}
-					</div>
-					<div class="px-3 py-4 sm:px-6">
-						<Pagination
-							totalItems={events.length}
-							itemsPerPage={eventsPerPage}
-							{currentPage}
-							on:pageChange={handlePageChange}
-							on:pageSizeChange={handlePageSizeChange}
+						</div>
+					{:else}
+						<EmptyState
+							title="No events yet"
+							buttonLabel="Create Event"
+							onClick={() => handleOpenDrawer()}
+							description="Get started by creating your first event. Click the 'Create Event' button above to begin."
 						/>
-					</div>
+					{/if}
 				</div>
 			</Tabs.Content>
 			<Tabs.Content class="pt-5" value="tab2">
@@ -677,10 +702,7 @@
 										class="prose whitespace-nowrap px-4 py-3 text-left text-sm font-medium text-black"
 										>Gross Sales</th
 									>
-									<th
-										class="prose whitespace-nowrap px-4 py-3 text-left text-sm font-medium text-black"
-										>Total Ticket Sold</th
-									>
+
 									<th
 										class="prose whitespace-nowrap px-4 py-3 text-left text-sm font-medium text-black"
 										>Status</th
