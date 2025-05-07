@@ -276,8 +276,14 @@ body {
 	}
 
 	::selection {
-		background: #fdffa4;
-		color: black;
+		background: #df4d60;
+		color: white;
+	}
+
+	input:-webkit-autofill {
+		-webkit-text-fill-color: var(--color-font-primary);
+		box-shadow: 0 0 0px 1000px white inset;
+		caret-color: #df4d60;
 	}
 }
 
@@ -295,7 +301,7 @@ body {
 }
 
 @theme {
-	--color-primary: #DF4D60;
+	--color-primary: #df4d60;
 	--color-secondary: #f3f3f3;
 	--color-white: #ffffff;
 	--color-gray-100: #f9fafb;
@@ -327,7 +333,7 @@ body {
 
 .prose {
 	max-width: initial;
-	:where(p):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
+	:where(p):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
 		margin-top: auto;
 		margin-bottom: auto;
 	}

@@ -24,7 +24,11 @@
 	{#snippet children({ pages, range })}
 		<div class="flex flex-col items-center justify-between gap-3 sm:flex-row">
 			<p class="order-1 text-center text-sm text-gray-600 sm:order-none sm:text-base">
-				Showing {range.start + 1} to {Math.min(range.end, totalItems)} of {totalItems} items
+				{#if totalItems === 0}
+					No items to display
+				{:else}
+					Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems} items
+				{/if}
 			</p>
 			<div class="flex items-center">
 				<Pagination.PrevButton
