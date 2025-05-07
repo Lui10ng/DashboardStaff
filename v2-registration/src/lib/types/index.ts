@@ -1,9 +1,3 @@
-export type TicketDetail = {
-	label: string;
-	price: number;
-	color: string;
-};
-
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 
 export interface RequestOptions {
@@ -36,3 +30,24 @@ export interface PayloadError {
 	// Add other potential properties if known
 	[key: string]: any; // Allow other properties
 }
+
+export type ClientOptions = Omit<RequestOptions, 'fetchInstance' | 'token'>;
+
+export interface PayloadPaginatedResponse<T> {
+	docs: T[];
+	totalDocs: number;
+	limit: number;
+	totalPages: number;
+	page: number;
+	pagingCounter: number;
+	hasPrevPage: boolean;
+	hasNextPage: boolean;
+	prevPage: number | null;
+	nextPage: number | null;
+}
+
+export type TicketDetail = {
+	name: string;
+	price: number;
+	color: string;
+};
