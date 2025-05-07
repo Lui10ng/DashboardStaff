@@ -2,11 +2,12 @@
 	import { superForm } from 'sveltekit-superforms';
 	import { ProgressRing } from '@skeletonlabs/skeleton-svelte';
 	import { Tabs } from '@skeletonlabs/skeleton-svelte';
-
 	import { browser } from '$app/environment';
 	import { Modal } from '@skeletonlabs/skeleton-svelte';
 	import { regions } from '$lib/static/constant.js';
 	import { formatDateTime, getTimeRemaining } from '$lib/utils';
+	import Tooltip from '$lib/components/Tooltip.svelte';
+	import type { TicketDetail } from '$lib/types';
 
 	let { data } = $props();
 
@@ -24,6 +25,9 @@
 	let bgImage = $state('/images/dummy-bg1.jpg');
 
 	let cities: string[] = $state([]);
+	let ticketDetails = $state<TicketDetail[]>([]);
+	let quantity = $state(1);
+	let convenienceFee = $state(20);
 
 	const { form, errors, enhance, delayed, message } = superForm(data.form, {
 		dataType: 'json'
@@ -112,6 +116,33 @@
 	setInterval(() => {
 		timeRemaining = getTimeRemaining(formatTime);
 	}, 1000);
+
+	const selectTicket = (ticket: any, index: number) => {
+		ticketDetails[index] = ticket;
+	};
+
+	const checkTicketValid = (payment: any) => {
+		const from = new Date(payment.salesStart).setHours(0, 0, 0, 0);
+		let to = new Date(payment.salesEnd).setHours(0, 0, 0, 0);
+		const currentDate = serverTime.setHours(0, 0, 0, 0);
+
+		if (to < 0) {
+			to = currentDate + 86400000;
+		}
+
+		if (currentDate >= from && currentDate <= to) {
+			return true;
+		} else {
+			return false;
+		}
+	};
+
+	const adjustQuantity = (amount: number) => {
+		const newQuantity = quantity + amount;
+		if (newQuantity) {
+			quantity = newQuantity;
+		}
+	};
 </script>
 
 <!-- prevent hydration browser -->
@@ -462,6 +493,119 @@
 														bind:value={$form.tabs[i][field.id]}
 													/>
 												</div>
+											{:else if field.fieldType == 'json'}
+												<div class="my-3 space-y-1">
+													<div class="grid grid-cols-2 gap-3">
+														{#each field.ticketData as ticket}
+															<button
+																onclick={() => {
+																	selectTicket(ticket, i);
+																	$form.tabs[i][field.name] = ticket.id;
+																}}
+																type="button"
+																disabled={!ticket.quantityAvailable || !checkTicketValid(ticket)}
+																style="border-color:{ticket.color}; border-left-width: 11px"
+																class="text-tertiary-950 relative transform rounded-md bg-white p-2 text-left transition hover:-translate-y-0.5
+																{!ticket.quantityAvailable || !checkTicketValid(ticket) ? 'cursor-not-allowed' : ''}"
+															>
+																<div class="flex items-center justify-between">
+																	<div>
+																		<span class="text-sm">{ticket.name}</span><br />
+																		<span class="font-bold">₱{ticket.price}</span>
+																	</div>
+
+																	{#if $form.tabs[i][field.name] == ticket.id}
+																		<input
+																			class="mr-1 size-6 accent-white checked:bg-transparent"
+																			type="checkbox"
+																			name={field.name}
+																			value={ticket.id}
+																			bind:checked={$form.tabs[i][field.name]}
+																		/>
+																	{/if}
+																</div>
+
+																{#if !ticket.quantityAvailable}
+																	<div
+																		class="absolute inset-0 m-2 flex items-center justify-center bg-red-500 text-center font-bold text-white opacity-80 sm:m-3"
+																	>
+																		SOLD OUT
+																	</div>
+																{:else if !checkTicketValid(ticket)}
+																	<div
+																		class="text-surface-50 absolute inset-0 m-2 flex items-center justify-center bg-red-500 text-center text-xs font-bold opacity-80 sm:m-3 sm:text-sm"
+																	>
+																		{#if ticket.salesStart != ticket.salesEnd}
+																			Only available between {`${String(new Date(ticket.salesStart).getMonth() + 1).padStart(2, '0')}/${String(new Date(ticket.salesStart).getDate()).padStart(2, '0')}/${String(new Date(ticket.salesStart).getFullYear()).slice(2)}`}
+																			and {`${String(new Date(ticket.salesEnd).getMonth() + 1).padStart(2, '0')}/${String(new Date(ticket.salesEnd).getDate()).padStart(2, '0')}/${String(new Date(ticket.salesEnd).getFullYear()).slice(2)}`}
+																		{:else}
+																			Only available on {`${String(new Date(ticket.salesEnd).getMonth() + 1).padStart(2, '0')}/${String(new Date(ticket.salesEnd).getDate()).padStart(2, '0')}/${String(new Date(ticket.salesEnd).getFullYear()).slice(2)}`}
+																		{/if}
+																	</div>
+																{/if}
+															</button>
+														{/each}
+													</div>
+												</div>
+												{#if ticketDetails[i]}
+													<div class="mb-3 space-y-1">
+														<h2>Voucher (Optional)</h2>
+														<form action="">
+															<div class="flex gap-2">
+																<input
+																	type="text"
+																	name="voucher"
+																	placeholder="Enter voucher code"
+																	class="flex-1 rounded border-none bg-gray-300 p-3 text-base text-gray-800"
+																/>
+
+																<button
+																	type="button"
+																	class="cursor-pointer rounded border-none bg-gray-400 px-5 font-bold text-white transition"
+																>
+																	Apply
+																</button>
+															</div>
+														</form>
+													</div>
+													<div class="bg-surface-800 space-y-4 rounded p-5">
+														<div class=" flex items-center justify-between">
+															<span>Quantity</span>
+															<div class="bg-surface-600 flex items-center rounded-full">
+																<button
+																	type="button"
+																	class="h-9 w-9 cursor-pointer rounded-full bg-transparent text-lg text-white disabled:cursor-not-allowed disabled:opacity-50"
+																	onclick={() => adjustQuantity(-1)}
+																	disabled={quantity <= 1}>−</button
+																>
+																<span class="w-10 text-center">{quantity}</span>
+																<button
+																	type="button"
+																	class="h-9 w-9 cursor-pointer rounded-full bg-transparent text-lg text-white disabled:cursor-not-allowed disabled:opacity-50"
+																	onclick={() => adjustQuantity(1)}>+</button
+																>
+															</div>
+														</div>
+
+														<p class="text-xs text-gray-500">Single registration will be used</p>
+
+														<div class="flex items-center justify-between">
+															<Tooltip
+																text="*Convenience Fee"
+																content="This small fee helps us keep things running smoothly, ensuring you have a seamless and
+																 secure experience every time. Thanks for supporting us!"
+															/>
+															<div class="text-right">₱{convenienceFee}</div>
+														</div>
+
+														<div class="flex items-center justify-between">
+															<span>Total:</span>
+															<span class="text-2xl font-bold"
+																>₱ {ticketDetails[i].price * quantity - convenienceFee}</span
+															>
+														</div>
+													</div>
+												{/if}
 											{:else}
 												<input
 													class="text-surface-950 bg-surface-50 rounded-lg border px-4 py-2 outline-none {$errors

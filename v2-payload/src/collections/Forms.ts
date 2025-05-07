@@ -12,7 +12,8 @@ const Forms: CollectionConfig = {
     defaultColumns: ['title', 'eventId', 'description', 'createdAt'],
   },
   access: {
-    read: isAdminOrEventRole([MANAGER, EDITOR, VIEWER]),
+    // read: isAdminOrEventRole([MANAGER, EDITOR, VIEWER]),
+    read: () => true,
     create: isAdminOrEventRole([MANAGER, EDITOR]),
     update: isAdminOrEventRole([MANAGER, EDITOR]),
     delete: isAdminOrEventRole([MANAGER, EDITOR]),

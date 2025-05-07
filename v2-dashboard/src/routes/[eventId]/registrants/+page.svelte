@@ -19,7 +19,7 @@
 	// Get the data from props
 	let { data } = $props();
 
-	let registrants = $derived(data.registrantList);
+	let registrants = $derived(data.registrants);
 
 	// Handler functions
 	const handleResendQR = (guestId: string) => {

@@ -28,7 +28,8 @@ const Registrants: CollectionConfig = {
   // - Guests need a secure way (unique link?) to view/manage their submission if allowed.
   access: {
     read: isAdminOrEventRole([MANAGER, EDITOR, VIEWER]),
-    create: isAdmin,
+    // create: isAdmin,
+    create: () => true,
     update: isAdmin,
     delete: isAdmin,
   },
