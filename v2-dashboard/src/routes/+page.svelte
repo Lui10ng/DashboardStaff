@@ -21,6 +21,20 @@
 	import { event } from '$lib/types/eventData.js';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import HomeSkeleton from '$lib/components/ui/HomeSkeleton.svelte';
+	import {
+		Chart,
+		Svg,
+		Axis,
+		Highlight,
+		Area,
+		Spline,
+		Bars,
+		Tooltip as LayerchartTooltip,
+		AreaChart
+	} from 'layerchart';
+	import { scaleBand, scaleTime } from 'd3-scale';
+	import Modal from '$lib/components/ui/Modal.svelte';
+	import { format } from 'date-fns';
 
 	const ctx = useClerkContext();
 	const fullName = $derived(ctx.user?.fullName);
@@ -191,6 +205,179 @@
 	const handleOpenDrawer = () => {
 		return (stateDrawer.open = true);
 	};
+
+	const revenueGoal = {
+		current: 3156634,
+		target: 10000000,
+		get percentage() {
+			return Math.round((this.current / this.target) * 100);
+		},
+		formatCurrency(value: number) {
+			return `₱${value.toLocaleString()}`;
+		}
+	};
+
+	const attendeesGoal = {
+		current: 2567,
+		target: 10000,
+		get percentage() {
+			return Math.round((this.current / this.target) * 100);
+		},
+		formatNumber(value: number) {
+			return value.toLocaleString();
+		}
+	};
+
+	const statistics = {
+		totalRevenue: {
+			value: revenueGoal.formatCurrency(revenueGoal.current),
+			change: '20.5%',
+			goal: revenueGoal
+		},
+		totalAttendees: {
+			value: attendeesGoal.formatNumber(attendeesGoal.current),
+			change: '+6.3%',
+			goal: attendeesGoal
+		}
+	};
+
+	const totalRevenueData = [
+		{ date: new Date('2025-04-01T16:00:00.000Z'), value: 950 },
+		{ date: new Date('2025-04-02T16:00:00.000Z'), value: 1100 },
+		{ date: new Date('2025-04-03T16:00:00.000Z'), value: 850 },
+		{ date: new Date('2025-04-04T16:00:00.000Z'), value: 1300 },
+		{ date: new Date('2025-04-05T16:00:00.000Z'), value: 1550 },
+		{ date: new Date('2025-04-06T16:00:00.000Z'), value: 1400 },
+		{ date: new Date('2025-04-07T16:00:00.000Z'), value: 1200 },
+		{ date: new Date('2025-04-08T16:00:00.000Z'), value: 900 },
+		{ date: new Date('2025-04-09T16:00:00.000Z'), value: 1150 },
+		{ date: new Date('2025-04-10T16:00:00.000Z'), value: 1000 },
+		{ date: new Date('2025-04-11T16:00:00.000Z'), value: 1450 },
+		{ date: new Date('2025-04-12T16:00:00.000Z'), value: 1650 },
+		{ date: new Date('2025-04-13T16:00:00.000Z'), value: 1500 },
+		{ date: new Date('2025-04-14T16:00:00.000Z'), value: 1250 },
+		{ date: new Date('2025-04-15T16:00:00.000Z'), value: 980 },
+		{ date: new Date('2025-04-16T16:00:00.000Z'), value: 1220 },
+		{ date: new Date('2025-04-17T16:00:00.000Z'), value: 1050 },
+		{ date: new Date('2025-04-18T16:00:00.000Z'), value: 1500 },
+		{ date: new Date('2025-04-19T16:00:00.000Z'), value: 1750 },
+		{ date: new Date('2025-04-20T16:00:00.000Z'), value: 1600 },
+		{ date: new Date('2025-04-21T16:00:00.000Z'), value: 875 },
+		{ date: new Date('2025-04-22T16:00:00.000Z'), value: 1050 },
+		{ date: new Date('2025-04-23T16:00:00.000Z'), value: 800 },
+		{ date: new Date('2025-04-24T16:00:00.000Z'), value: 1400 },
+		{ date: new Date('2025-04-25T16:00:00.000Z'), value: 1700 },
+		{ date: new Date('2025-04-26T16:00:00.000Z'), value: 1600 },
+		{ date: new Date('2025-04-27T16:00:00.000Z'), value: 1300 },
+		{ date: new Date('2025-04-28T16:00:00.000Z'), value: 1000 },
+		{ date: new Date('2025-04-29T16:00:00.000Z'), value: 1280 },
+		{ date: new Date('2025-04-30T16:00:00.000Z'), value: 1100 }
+	];
+
+	let activeFilter = $state('day');
+	let filteredRevenueData = $derived(filterChartData(totalRevenueData, activeFilter));
+	let isEditModalOpen = $state(false);
+	let tempRevenueGoal = $state(0);
+	let tempAttendeesGoal = $state(0);
+
+	function filterChartData(data: any[], filter: string) {
+		const today = new Date();
+		const startDate = new Date();
+
+		// First filter the date range
+		switch (filter) {
+			case 'day':
+				startDate.setDate(today.getDate() - 7); // Last 7 days
+				break;
+			case 'week':
+				startDate.setDate(today.getDate() - 28); // Last 4 weeks
+				break;
+			case 'month':
+				startDate.setMonth(today.getMonth() - 6); // Last 6 months
+				break;
+			case 'year':
+				startDate.setFullYear(today.getFullYear() - 1); // Last year
+				break;
+			default:
+				return data;
+		}
+
+		// Filter data within date range
+		const filteredData = data.filter((item) => {
+			const itemDate = new Date(item.date);
+			return itemDate >= startDate && itemDate <= today;
+		});
+
+		// Aggregate data based on filter
+		if (filter === 'week') {
+			// Group by week
+			const weeklyData = new Map();
+
+			filteredData.forEach((item) => {
+				const date = new Date(item.date);
+				const weekStart = new Date(date);
+				weekStart.setDate(date.getDate() - date.getDay()); // Start of week (Sunday)
+				const weekKey = weekStart.toISOString();
+
+				if (!weeklyData.has(weekKey)) {
+					weeklyData.set(weekKey, { date: weekStart, value: 0 });
+				}
+				weeklyData.get(weekKey).value += item.value;
+			});
+
+			return Array.from(weeklyData.values());
+		} else if (filter === 'month') {
+			// Group by month
+			const monthlyData = new Map();
+
+			filteredData.forEach((item) => {
+				const date = new Date(item.date);
+				const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+				const monthKey = monthStart.toISOString();
+
+				if (!monthlyData.has(monthKey)) {
+					monthlyData.set(monthKey, { date: monthStart, value: 0 });
+				}
+				monthlyData.get(monthKey).value += item.value;
+			});
+
+			return Array.from(monthlyData.values());
+		} else if (filter === 'year') {
+			// Group by year
+			const yearlyData = new Map();
+
+			filteredData.forEach((item) => {
+				const date = new Date(item.date);
+				const yearStart = new Date(date.getFullYear(), 0, 1);
+				const yearKey = yearStart.toISOString();
+
+				if (!yearlyData.has(yearKey)) {
+					yearlyData.set(yearKey, { date: yearStart, value: 0 });
+				}
+				yearlyData.get(yearKey).value += item.value;
+			});
+
+			return Array.from(yearlyData.values());
+		}
+
+		return filteredData; // Return daily data as is
+	}
+
+	function handleFilterChange(filter: string) {
+		activeFilter = filter;
+	}
+
+	function handleEditGoal() {
+		tempRevenueGoal = statistics.totalRevenue.goal.target;
+		tempAttendeesGoal = statistics.totalAttendees.goal.target;
+		isEditModalOpen = true;
+	}
+
+	function handleSaveGoals() {
+		statistics.totalRevenue.goal.target = tempRevenueGoal;
+		statistics.totalAttendees.goal.target = tempAttendeesGoal;
+		isEditModalOpen = false;
+	}
 </script>
 
 {#if !data.requiresRedirect}
@@ -679,6 +866,347 @@
 			</Tabs.Content>
 			<Tabs.Content class="pt-5" value="tab2">
 				<div class="prose pb-5 font-semibold">Reports & Analytics</div>
+
+				<div
+					class="mt-5 flex flex-col justify-between space-y-6 lg:flex-row lg:space-x-6 lg:space-y-0"
+				>
+					<div class="flex w-full flex-col space-y-6 lg:flex-row lg:space-x-6 lg:space-y-0">
+						<!-- Revenue Overtime Card -->
+						<div class="w-full rounded-lg border border-gray-200 bg-white p-4 shadow-sm lg:w-2/3">
+							<div
+								class="mb-6 flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-x-5 lg:space-y-0"
+							>
+								<div class="text-[16px] text-[#121826]">Revenue Overtime</div>
+								<div class="flex space-x-4">
+									<button
+										class="focus:ring-offset-3 rounded-lg bg-white px-4 py-2 text-[12px] font-medium text-gray-500 hover:bg-gray-200 focus:bg-gray-200 focus:text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-200"
+										onclick={() => handleFilterChange('day')}
+									>
+										Day
+									</button>
+									<button
+										class="focus:ring-offset-3 rounded-lg bg-white px-4 py-2 text-[12px] font-medium text-gray-500 hover:bg-gray-200 focus:bg-gray-200 focus:text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-200"
+										onclick={() => handleFilterChange('week')}
+									>
+										Week
+									</button>
+									<button
+										class="focus:ring-offset-3 rounded-lg bg-white px-4 py-2 text-[12px] font-medium text-gray-500 hover:bg-gray-200 focus:bg-gray-200 focus:text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-200"
+										onclick={() => handleFilterChange('month')}
+									>
+										Month
+									</button>
+									<button
+										class="focus:ring-offset-3 rounded-lg bg-white px-4 py-2 text-[12px] font-medium text-gray-500 hover:bg-gray-200 focus:bg-gray-200 focus:text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-200"
+										onclick={() => handleFilterChange('year')}
+									>
+										Year
+									</button>
+								</div>
+							</div>
+
+							<div class="mt-4 flex flex-col">
+								{#if !filteredRevenueData || filteredRevenueData.length === 0}
+									<div class="flex h-[300px] items-center justify-center">
+										<div class="text-center">
+											<i class="fa-solid fa-chart-line mb-2 text-4xl text-gray-400"></i>
+											<p class="text-gray-500">No revenue data available</p>
+										</div>
+									</div>
+								{:else}
+									<div class="h-[300px] rounded border p-4 pt-20">
+										<Chart
+											data={filteredRevenueData}
+											x="date"
+											xScale={scaleTime()}
+											y="value"
+											yDomain={[0, null]}
+											yNice
+											padding={{ left: 20, right: 20, bottom: 50, top: 50 }}
+											tooltip={{ mode: 'bisect-x' }}
+										>
+											<Svg>
+												<defs>
+													<linearGradient id="lineGradient4" x1="0" x2="0" y1="0" y2="1">
+														<stop offset="0%" stop-color="#A30B37" stop-opacity="1" />
+														<stop offset="100%" stop-color="#A30B37" stop-opacity="0.0" />
+													</linearGradient>
+
+													<linearGradient id="areaGradient4" x1="0" x2="0" y1="0" y2="1">
+														<stop offset="0%" stop-color="#A30B37" stop-opacity="0.2" />
+														<stop offset="100%" stop-color="#A30B37" stop-opacity="0" />
+													</linearGradient>
+												</defs>
+												<Axis placement="left" grid rule />
+												<Axis
+													placement="bottom"
+													format={(date: Date) => format(date, 'MMM d')}
+													rule
+													ticks={7}
+													tickRotate={-45}
+													gridColor="#f1f1f1"
+													tickSize={8}
+													tickPadding={16}
+												/>
+												<Area
+													spline
+													class="fill-[url(#areaGradient4)] stroke-[url(#lineGradient4)] stroke-2"
+												/>
+												<Highlight points lines />
+											</Svg>
+
+											<LayerchartTooltip.Root let:data>
+												<LayerchartTooltip.Header class="rounded-lg bg-[#f1f1f1] px-2 text-black">
+													{#if activeFilter === 'week'}
+														Week of {format(data.date, 'MMM d, yyyy')}
+													{:else if activeFilter === 'month'}
+														{format(data.date, 'MMMM yyyy')}
+													{:else if activeFilter === 'year'}
+														{format(data.date, 'yyyy')}
+													{:else}
+														{format(data.date, 'eee, MMMM do')}
+													{/if}
+												</LayerchartTooltip.Header>
+												<LayerchartTooltip.List>
+													<LayerchartTooltip.Item
+														class="rounded-lg bg-[#f1f1f1] px-2 text-black"
+														label="Total Sales"
+														value={data.value}
+													/>
+												</LayerchartTooltip.List>
+											</LayerchartTooltip.Root>
+										</Chart>
+									</div>
+								{/if}
+							</div>
+						</div>
+
+						<!-- Ticket Sales Per Event Card -->
+						<div
+							class="w-full rounded-lg border border-gray-200 bg-white p-6 py-5 shadow-sm lg:w-1/3"
+						>
+							<h3 class="text-[16px] text-[#121826]">Ticket Sales Per Event</h3>
+							<div class="mt-4">
+								{#if events.length === 0}
+									<div class="flex h-[400px] items-center justify-center">
+										<div class="text-center">
+											<i class="fa-regular fa-calendar-xmark mb-2 text-4xl text-gray-400"></i>
+											<p class="text-gray-500">No events registered</p>
+										</div>
+									</div>
+								{:else}
+									<div class="group h-[300px]">
+										<div class="h-full rounded">
+											<Chart
+												data={events.map((event) => ({
+													name: event.title,
+													value: event.tickets.sold
+												}))}
+												x="name"
+												xScale={scaleBand().padding(0.3)}
+												y="value"
+												yDomain={[0, 1000]}
+												padding={{ bottom: 20, top: 15, right: 40 }}
+												tooltip={{ mode: 'bisect-band' }}
+											>
+												<Svg>
+													<Axis placement="right" grid rule />
+													<Axis placement="bottom" rule />
+													<Bars
+														radius={10}
+														class="fill-[#FFCACA] transition-colors group-hover:fill-white"
+														stroke="#DC2626"
+														strokeWidth={0.3}
+													/>
+
+													<Highlight
+														area={{
+															fill: 'rgba(223, 77, 96, 0.2)',
+															strokeWidth: 0.1
+														}}
+														bar={{
+															fill: '#DF4D60',
+															rx: 10,
+															ry: 10
+														}}
+													/>
+												</Svg>
+
+												<LayerchartTooltip.Root let:data>
+													<div class="rounded-[10px] bg-[#f1f1f1] p-3 text-black">
+														<LayerchartTooltip.Header class="text-[14px] font-bold">
+															{data.name}
+														</LayerchartTooltip.Header>
+														<div class="inline-flex items-center justify-between gap-5 text-[12px]">
+															<LayerchartTooltip.Item label="Ticket Sales" />
+															<LayerchartTooltip.Item
+																class="text-green font-semibold"
+																label=""
+																value={data.value.toLocaleString()}
+															/>
+														</div>
+													</div>
+												</LayerchartTooltip.Root>
+											</Chart>
+										</div>
+									</div>
+								{/if}
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="mt-6">
+					<!-- Title and Edit Button -->
+					<div class="mb-4 flex items-center justify-between">
+						<h2 class="pb-5 font-semibold">Goals and Milestone</h2>
+						<button
+							class="rounded-lg bg-red-300 px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-red-200"
+							onclick={handleEditGoal}
+						>
+							Edit Goal
+						</button>
+					</div>
+
+					<!-- Cards Container -->
+					<div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+						<!-- Revenue Goal Progress -->
+						<div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+							<div class="mb-4 flex items-center justify-between">
+								<h3 class="text-[16px] text-[#121826]">Revenue Goal Progress</h3>
+								<span class="text-2xl font-medium">{statistics.totalRevenue.value}</span>
+							</div>
+							<div class="space-y-2">
+								<div class="flex justify-between text-sm">
+									<span>Progress</span>
+									<span>{statistics.totalRevenue.goal.percentage}%</span>
+								</div>
+								<div class="h-2 w-full rounded-full bg-gray-100">
+									<div
+										class="bg-primary h-full rounded-full transition-all duration-300"
+										style="width: {statistics.totalRevenue.goal.percentage}%"
+									></div>
+								</div>
+								<div class="flex items-start justify-start text-sm text-black">
+									<span>{statistics.totalRevenue.value}</span>
+									<span class="ml-3 mr-3">to</span>
+									<span
+										>{statistics.totalRevenue.goal.formatCurrency(
+											statistics.totalRevenue.goal.target
+										)}</span
+									>
+								</div>
+							</div>
+						</div>
+
+						<!-- Attendees Goal Progress -->
+						<div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+							<div class="mb-4 flex items-center justify-between">
+								<h3 class="text-[16px] text-[#121826]">Attendees Goal Progress</h3>
+								<span class="text-2xl font-medium">{statistics.totalAttendees.value}</span>
+							</div>
+							<div class="space-y-2">
+								<div class="flex justify-between text-sm">
+									<span>Progress</span>
+									<span>{statistics.totalAttendees.goal.percentage}%</span>
+								</div>
+								<div class="h-2 w-full rounded-full bg-gray-100">
+									<div
+										class="bg-primary h-full rounded-full transition-all duration-300"
+										style="width: {statistics.totalAttendees.goal.percentage}%"
+									></div>
+								</div>
+								<div class="flex items-start justify-start text-sm text-black">
+									<span>{statistics.totalAttendees.value}</span>
+									<span class="ml-3 mr-3">to</span>
+									<span
+										>{statistics.totalAttendees.goal.formatNumber(
+											statistics.totalAttendees.goal.target
+										)}</span
+									>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Edit Modal -->
+					<Modal bind:open={isEditModalOpen}>
+						{#snippet button()}
+							<span></span>
+						{/snippet}
+
+						{#snippet header()}
+							<div class="flex items-center justify-between">
+								<h2 class="text-xl font-semibold text-gray-900">Edit Goals</h2>
+								<button
+									class="rounded-lg bg-gray-100 p-2 text-gray-400 hover:text-gray-500"
+									onclick={() => (isEditModalOpen = false)}
+								>
+									<i class="fa-solid fa-xmark"></i>
+								</button>
+							</div>
+						{/snippet}
+
+						{#snippet content()}
+							<div class="space-y-6 p-6">
+								<form
+									class="space-y-6"
+									onsubmit={(e) => {
+										e.preventDefault();
+										handleSaveGoals();
+									}}
+								>
+									<div class="space-y-2">
+										<label class="text-sm font-medium text-gray-700">Revenue Goal</label>
+										<div class="relative">
+											<span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₱</span>
+											<input
+												type="number"
+												bind:value={tempRevenueGoal}
+												class="focus:border-primary w-full rounded-lg border border-gray-200 px-8 py-2 focus:outline-none"
+												min="0"
+												required
+											/>
+										</div>
+										<p class="text-xs text-gray-500">
+											Current progress: {statistics.totalRevenue.goal.percentage}%
+										</p>
+									</div>
+
+									<div class="space-y-2">
+										<label class="text-sm font-medium text-gray-700">Attendees Goal</label>
+										<input
+											type="number"
+											bind:value={tempAttendeesGoal}
+											class="focus:border-primary w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none"
+											min="0"
+											required
+										/>
+										<p class="text-xs text-gray-500">
+											Current progress: {statistics.totalAttendees.goal.percentage}%
+										</p>
+									</div>
+
+									<div class="flex justify-end gap-3 pt-4">
+										<button
+											type="button"
+											class="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50"
+											onclick={() => (isEditModalOpen = false)}
+										>
+											Cancel
+										</button>
+										<button
+											type="submit"
+											class="bg-primary rounded-lg px-4 py-2 text-sm font-medium text-white hover:bg-red-600"
+										>
+											Save Changes
+										</button>
+									</div>
+								</form>
+							</div>
+						{/snippet}
+					</Modal>
+				</div>
 
 				<div class="mt-3 w-full overflow-x-auto border border-gray-200 shadow-sm sm:rounded-lg">
 					<div class="inline-block min-w-full align-middle">
