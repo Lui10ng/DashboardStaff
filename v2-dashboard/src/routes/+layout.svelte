@@ -11,14 +11,11 @@
 	import { SignedIn, SignedOut, SignInButton, SignOutButton, UserButton } from 'svelte-clerk';
 
 	const { children }: { children: Snippet } = $props();
-
 	const push = (to: string) => goto(to);
 	const replace = (to: string) => goto(to, { replaceState: true });
-
 	const home = () => {
 		goto('/');
 	};
-
 	const wallet = () => {
 		goto('/wallet');
 	};
