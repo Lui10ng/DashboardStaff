@@ -87,7 +87,7 @@ export const actions: Actions = {
 		}
 
 		const formData = {
-			event: { id: eventId },
+			event: parseInt(eventId),
 			name: form.data.ticketName,
 			price: form.data.price,
 			currency: 'PHP',
