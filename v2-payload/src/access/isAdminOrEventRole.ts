@@ -3,7 +3,7 @@ import type { EventRole } from '@/types/eventRoles'
 import { isAdmin } from './isAdmin'
 import chalk from 'chalk'
 import util from 'util';
-import type { FieldQueryOperators } from '@/types/access';
+import type { FieldQueryOperators, RequestBodyWithEvent } from '@/types/access';
 
 /**
  * Generates a Payload Access Control (ACL) function.
@@ -141,9 +141,16 @@ export const isAdminOrEventRole =
         
         if (whereClause && typeof whereClause === 'object' && EVENT_FIELD_NAME in whereClause) {
           const eventFieldFilter = whereClause[EVENT_FIELD_NAME] as FieldQueryOperators | undefined;
-          const rawEventId = eventFieldFilter?.equals;
-      
-          eventIdFromQuery = rawEventId;
+
+          eventIdFromQuery = eventFieldFilter?.equals
+        } else if (req.data?.event){
+          // POST Request
+          const requestBody = req.data as RequestBodyWithEvent;
+          
+          eventIdFromQuery = requestBody.event;
+        } else {
+          console.error('No event ID found in query or body');
+          return false;
         }
 
         const userHasEventRole = await payload.find({
