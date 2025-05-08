@@ -22,6 +22,15 @@
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import HomeSkeleton from '$lib/components/ui/HomeSkeleton.svelte';
 	import {
+        revenueGoal,
+        attendeesGoal,
+        statistics,
+        totalRevenueData,
+        totalEventData,
+        totalTicketSoldData,
+        totalAttendees
+    } from '$lib/services/analyticsData';
+	import {
 		Chart,
 		Svg,
 		Axis,
@@ -206,116 +215,7 @@
 		return (stateDrawer.open = true);
 	};
 
-	const revenueGoal = {
-		current: 3156634,
-		target: 10000000,
-		get percentage() {
-			return Math.round((this.current / this.target) * 100);
-		},
-		formatCurrency(value: number) {
-			return `₱${value.toLocaleString()}`;
-		}
-	};
-
-	const attendeesGoal = {
-		current: 2567,
-		target: 10000,
-		get percentage() {
-			return Math.round((this.current / this.target) * 100);
-		},
-		formatNumber(value: number) {
-			return value.toLocaleString();
-		}
-	};
-
-	const statistics = {
-		totalRevenue: {
-			value: revenueGoal.formatCurrency(revenueGoal.current),
-			change: '20.5%',
-			goal: revenueGoal
-		},
-		totalAttendees: {
-			value: attendeesGoal.formatNumber(attendeesGoal.current),
-			change: '+6.3%',
-			goal: attendeesGoal
-		},
-		totalEvent: {
-			value: 6,
-			change: '+1 This week'
-		},
-		totalTicketSold: {
-			value: 1264,
-			change: '+5.5% This week'
-		},
-	};
-
-	let selectedFilter = 'Day';
-	const totalRevenueData = [
-		{ date: new Date('2025-04-01T16:00:00.000Z'), value: 950 },
-		{ date: new Date('2025-04-02T16:00:00.000Z'), value: 1100 },
-		{ date: new Date('2025-04-03T16:00:00.000Z'), value: 850 },
-		{ date: new Date('2025-04-04T16:00:00.000Z'), value: 1300 },
-		{ date: new Date('2025-04-05T16:00:00.000Z'), value: 1550 },
-		{ date: new Date('2025-04-06T16:00:00.000Z'), value: 1400 },
-		{ date: new Date('2025-04-07T16:00:00.000Z'), value: 1200 },
-		{ date: new Date('2025-04-08T16:00:00.000Z'), value: 900 },
-		{ date: new Date('2025-04-09T16:00:00.000Z'), value: 1150 },
-		{ date: new Date('2025-04-10T16:00:00.000Z'), value: 1000 },
-		{ date: new Date('2025-04-11T16:00:00.000Z'), value: 1450 },
-		{ date: new Date('2025-04-12T16:00:00.000Z'), value: 1650 },
-		{ date: new Date('2025-04-13T16:00:00.000Z'), value: 1500 },
-		{ date: new Date('2025-04-14T16:00:00.000Z'), value: 1250 },
-		{ date: new Date('2025-04-15T16:00:00.000Z'), value: 980 },
-		{ date: new Date('2025-04-16T16:00:00.000Z'), value: 1220 },
-		{ date: new Date('2025-04-17T16:00:00.000Z'), value: 1050 },
-		{ date: new Date('2025-04-18T16:00:00.000Z'), value: 1500 },
-		{ date: new Date('2025-04-19T16:00:00.000Z'), value: 1750 },
-		{ date: new Date('2025-04-20T16:00:00.000Z'), value: 1600 },
-		{ date: new Date('2025-04-21T16:00:00.000Z'), value: 875 },
-		{ date: new Date('2025-04-22T16:00:00.000Z'), value: 1050 },
-		{ date: new Date('2025-04-23T16:00:00.000Z'), value: 800 },
-		{ date: new Date('2025-04-24T16:00:00.000Z'), value: 1400 },
-		{ date: new Date('2025-04-25T16:00:00.000Z'), value: 1700 },
-		{ date: new Date('2025-04-26T16:00:00.000Z'), value: 1600 },
-		{ date: new Date('2025-04-27T16:00:00.000Z'), value: 1300 },
-		{ date: new Date('2025-04-28T16:00:00.000Z'), value: 1000 },
-		{ date: new Date('2025-04-29T16:00:00.000Z'), value: 1280 },
-		{ date: new Date('2025-04-30T16:00:00.000Z'), value: 1100 }
-	];
-
-		// Small Chart data
-		const totalEventData = [
-		{ date: new Date('2025-04-21T16:00:00.000Z'), value: 2 },
-		{ date: new Date('2025-04-22T16:00:00.000Z'), value: 2 },
-		{ date: new Date('2025-04-23T16:00:00.000Z'), value: 5 },
-		{ date: new Date('2025-04-24T16:00:00.000Z'), value: 6 },
-		{ date: new Date('2025-04-25T16:00:00.000Z'), value: 2 },
-		{ date: new Date('2025-04-26T16:00:00.000Z'), value: 5 },
-		{ date: new Date('2025-04-27T16:00:00.000Z'), value: 3 }
-	];
-	const totalTicketSoldData = [
-		{ date: new Date('2025-04-21T16:00:00.000Z'), value: 1367 },
-		{ date: new Date('2025-04-22T16:00:00.000Z'), value: 986 },
-		{ date: new Date('2025-04-23T16:00:00.000Z'), value: 2576 },
-		{ date: new Date('2025-04-24T16:00:00.000Z'), value: 1237 },
-		{ date: new Date('2025-04-25T16:00:00.000Z'), value: 1001 },
-		{ date: new Date('2025-04-26T16:00:00.000Z'), value: 1902 },
-		{ date: new Date('2025-04-27T16:00:00.000Z'), value: 2145 }
-	];
-
-
-	const totalAttendees = [
-		{ date: new Date('2025-04-21T16:00:00.000Z'), value: 1000 },
-		{ date: new Date('2025-04-22T16:00:00.000Z'), value: 2100 },
-		{ date: new Date('2025-04-23T16:00:00.000Z'), value: 2567 },
-		{ date: new Date('2025-04-24T16:00:00.000Z'), value: 1200 },
-		{ date: new Date('2025-04-25T16:00:00.000Z'), value: 1100 },
-		{ date: new Date('2025-04-26T16:00:00.000Z'), value: 1465 },
-		{ date: new Date('2025-04-27T16:00:00.000Z'), value: 1900 }
-	];
-
 	// svelte-ignore non_reactive_update
-
 
 	let activeFilter = $state('day');
 	let filteredRevenueData = $derived(filterChartData(totalRevenueData, activeFilter));
@@ -914,8 +814,6 @@
 					<div class="relative">
 						<i class="fa-solid fa-filter absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
 						<select
-							bind:value={selectedFilter}
-							onchange={() => applyFilter(selectedFilter)}
 							class="border rounded-lg pl-10 pr-5 px-3 py-2 text-sm text-gray-700 text-left"
 						>
 							<option value="Day">Day</option>
@@ -942,7 +840,7 @@
 								</div>
 	
 								<div
-									class="flex grid w-full grid-cols-1 items-center justify-between space-x-4 md:grid-cols-2 md:gap-10 lg:grid-cols-2 lg:gap-10 lg:gap-10 2xl:gap-10"
+									class="grid w-full grid-cols-1 items-center justify-between space-x-4 md:grid-cols-2 md:gap-10 lg:grid-cols-2 lg:gap-10 2xl:gap-10"
 								>
 									<div class="order-2 md:order-1 w-full">
 										<span class="text-[10px] text-green-500 md:text-[12px] lg:text-[10px]"
@@ -1020,7 +918,7 @@
 									</div>
 								</div>
 								<div
-									class="flex grid w-full grid-cols-1 items-center justify-between space-x-4 md:grid-cols-2 md:gap-10 lg:grid-cols-2 lg:gap-10 lg:gap-10 2xl:gap-10"
+									class="grid w-full grid-cols-1 items-center justify-between space-x-4 md:grid-cols-2 md:gap-10 lg:grid-cols-2 lg:gap-10 2xl:gap-10"
 								>
 									<div class="order-2 md:order-1 w-full">
 										<span class="text-[10px] text-green-500 md:text-[12px] lg:text-[10px]"
@@ -1098,7 +996,7 @@
 									</div>
 								</div>
 								<div
-									class="flex grid w-full grid-cols-1 items-center justify-between space-x-4 md:grid-cols-2 md:gap-10 lg:grid-cols-2 lg:gap-10 lg:gap-10 2xl:gap-10"
+									class="grid w-full grid-cols-1 items-center justify-between space-x-4 md:grid-cols-2 md:gap-10 lg:grid-cols-2 lg:gap-10 2xl:gap-10"
 								>
 									<div class="order-2 md:order-1 w-full">
 										<span class="text-[10px] text-green-500 md:text-[12px] lg:text-[10px]"
@@ -1178,7 +1076,7 @@
 	
 								
 								<div
-									class="flex grid w-full grid-cols-1 items-center justify-between space-x-4 md:grid-cols-2 md:gap-10 lg:grid-cols-2 lg:gap-10 lg:gap-10 2xl:gap-10"
+									class="grid w-full grid-cols-1 items-center justify-between space-x-4 md:grid-cols-2 md:gap-10 lg:grid-cols-2 lg:gap-10 2xl:gap-10"
 								>
 								<div class="order-1 md:order-2 md-h-full flex h-11 w-full justify-between py-2 md:w-full md:py-0"></div>
 								<div class="order-2 md:order-1 w-full flex-inline">
