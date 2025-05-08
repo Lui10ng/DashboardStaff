@@ -238,9 +238,18 @@
 			value: attendeesGoal.formatNumber(attendeesGoal.current),
 			change: '+6.3%',
 			goal: attendeesGoal
-		}
+		},
+		totalEvent: {
+			value: 6,
+			change: '+1 This week'
+		},
+		totalTicketSold: {
+			value: 1264,
+			change: '+5.5% This week'
+		},
 	};
 
+	let selectedFilter = 'Day';
 	const totalRevenueData = [
 		{ date: new Date('2025-04-01T16:00:00.000Z'), value: 950 },
 		{ date: new Date('2025-04-02T16:00:00.000Z'), value: 1100 },
@@ -273,6 +282,40 @@
 		{ date: new Date('2025-04-29T16:00:00.000Z'), value: 1280 },
 		{ date: new Date('2025-04-30T16:00:00.000Z'), value: 1100 }
 	];
+
+		// Small Chart data
+		const totalEventData = [
+		{ date: new Date('2025-04-21T16:00:00.000Z'), value: 2 },
+		{ date: new Date('2025-04-22T16:00:00.000Z'), value: 2 },
+		{ date: new Date('2025-04-23T16:00:00.000Z'), value: 5 },
+		{ date: new Date('2025-04-24T16:00:00.000Z'), value: 6 },
+		{ date: new Date('2025-04-25T16:00:00.000Z'), value: 2 },
+		{ date: new Date('2025-04-26T16:00:00.000Z'), value: 5 },
+		{ date: new Date('2025-04-27T16:00:00.000Z'), value: 3 }
+	];
+	const totalTicketSoldData = [
+		{ date: new Date('2025-04-21T16:00:00.000Z'), value: 1367 },
+		{ date: new Date('2025-04-22T16:00:00.000Z'), value: 986 },
+		{ date: new Date('2025-04-23T16:00:00.000Z'), value: 2576 },
+		{ date: new Date('2025-04-24T16:00:00.000Z'), value: 1237 },
+		{ date: new Date('2025-04-25T16:00:00.000Z'), value: 1001 },
+		{ date: new Date('2025-04-26T16:00:00.000Z'), value: 1902 },
+		{ date: new Date('2025-04-27T16:00:00.000Z'), value: 2145 }
+	];
+
+
+	const totalAttendees = [
+		{ date: new Date('2025-04-21T16:00:00.000Z'), value: 1000 },
+		{ date: new Date('2025-04-22T16:00:00.000Z'), value: 2100 },
+		{ date: new Date('2025-04-23T16:00:00.000Z'), value: 2567 },
+		{ date: new Date('2025-04-24T16:00:00.000Z'), value: 1200 },
+		{ date: new Date('2025-04-25T16:00:00.000Z'), value: 1100 },
+		{ date: new Date('2025-04-26T16:00:00.000Z'), value: 1465 },
+		{ date: new Date('2025-04-27T16:00:00.000Z'), value: 1900 }
+	];
+
+	// svelte-ignore non_reactive_update
+
 
 	let activeFilter = $state('day');
 	let filteredRevenueData = $derived(filterChartData(totalRevenueData, activeFilter));
@@ -378,6 +421,7 @@
 		statistics.totalAttendees.goal.target = tempAttendeesGoal;
 		isEditModalOpen = false;
 	}
+
 </script>
 
 {#if !data.requiresRedirect}
@@ -865,7 +909,294 @@
 				</div>
 			</Tabs.Content>
 			<Tabs.Content class="pt-5" value="tab2">
-				<div class="prose pb-5 font-semibold">Reports & Analytics</div>
+				<div class="flex items-center justify-between mb-5">
+					<div class="font-semibold">Reports & Analytics</div>
+					<div class="relative">
+						<i class="fa-solid fa-filter absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+						<select
+							bind:value={selectedFilter}
+							onchange={() => applyFilter(selectedFilter)}
+							class="border rounded-lg pl-10 pr-5 px-3 py-2 text-sm text-gray-700 text-left"
+						>
+							<option value="Day">Day</option>
+							<option value="Month">Month</option>
+							<option value="Custom">Custom</option>
+						</select>
+					</div>
+				</div>
+				
+				<div class="space-y-8" in:fly={{ y: -50, duration: 200 }}>
+					<div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+						<!-- Card 1 -->
+						<div class="rounded-lg border border-gray-200 bg-white p-0 shadow-sm">
+							<div class="p-3 sm:p-4">
+								<div class="flex items-center justify-between pb-5">
+									<h3 class="text-[10px] text-[#121826] md:text-[16px] lg:text-[14px]">
+										Total Revenue
+									</h3>
+									<div
+										class="m-[1px] inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#E0E7FF] text-[12px] text-[#4F46E5] md:h-8 md:w-8 lg:h-8 lg:w-8"
+									>
+										<i class="fa-solid fa-chart-line text-[8px] md:text-[13px] lg:text-[13px]"></i>
+									</div>
+								</div>
+	
+								<div
+									class="flex grid w-full grid-cols-1 items-center justify-between space-x-4 md:grid-cols-2 md:gap-10 lg:grid-cols-2 lg:gap-10 lg:gap-10 2xl:gap-10"
+								>
+									<div class="order-2 md:order-1 w-full">
+										<span class="text-[10px] text-green-500 md:text-[12px] lg:text-[10px]"
+											>{statistics.totalRevenue.change}</span
+										>
+										<p class="text-[16px] font-semibold md:text-[20px]">
+											{statistics.totalRevenue.value}
+										</p>
+									</div>
+	
+									<div class="order-1 md:order-2 md-h-full flex h-11 w-full justify-between py-2 md:w-full md:py-0">
+										<Chart
+											height={40}
+											data={totalRevenueData}
+											x="date"
+											xScale={scaleTime()}
+											y="value"
+											yDomain={[0, null]}
+											yNice
+											tooltip={{ mode: 'bisect-x' }}
+										>
+											<Svg>
+												<defs>
+													<!-- Stroke gradient (optional, for smooth fade) -->
+													<linearGradient id="lineGradient1" x1="0" x2="0" y1="0" y2="1">
+														<stop offset="50%" stop-color="#4F46E5" stop-opacity="1" />
+														<stop offset="100%" stop-color="#4F46E5" stop-opacity="0.0" />
+													</linearGradient>
+	
+													<!-- Area fill gradient -->
+													<linearGradient id="areaGradient1" x1="0" x2="0" y1="0" y2="1">
+														<stop offset="50%" stop-color="#4F46E5" stop-opacity="0.2" />
+														<stop offset="100%" stop-color="#4F46E5" stop-opacity="0" />
+													</linearGradient>
+												</defs>
+	
+												<!-- Area spline with smooth curve -->
+												<Area
+													spline
+													class="fill-[url(#areaGradient1)] stroke-[url(#lineGradient1)] stroke-2"
+												/>
+	
+												<Highlight points lines />
+											</Svg>
+	
+											<LayerchartTooltip.Root let:data>
+												<LayerchartTooltip.Header class="rounded-lg bg-[#f1f1f1] px-2 text-black">
+													{format(data.date, 'eee, MMMM do')}
+												</LayerchartTooltip.Header>
+												<LayerchartTooltip.List>
+													<LayerchartTooltip.Item
+														class="rounded-lg bg-[#f1f1f1] px-2 text-black"
+														label="Total Revenue"
+														value={data.value}
+													/>
+												</LayerchartTooltip.List>
+											</LayerchartTooltip.Root>
+										</Chart>
+									</div>
+								</div>
+							</div>
+						</div>
+	
+						<!-- Card 2 -->
+						<div class="rounded-lg border border-gray-200 bg-white shadow-sm">
+							<div class="p-3 sm:p-4">
+								<div class="flex items-center justify-between pb-5">
+									<h3 class="text-[10px] text-[#121826] md:text-[12px] lg:text-[14px]">
+										Total Ticket Sold
+									</h3>
+									<div
+										class="m-[1px] inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#FEE2E2] text-[12px] text-[#DC2626] md:h-8 md:w-8 lg:h-8 lg:w-8"
+									>
+										<i class="fa-solid fa-ticket text-[8px] md:text-[13px] lg:text-[13px]"></i>
+									</div>
+								</div>
+								<div
+									class="flex grid w-full grid-cols-1 items-center justify-between space-x-4 md:grid-cols-2 md:gap-10 lg:grid-cols-2 lg:gap-10 lg:gap-10 2xl:gap-10"
+								>
+									<div class="order-2 md:order-1 w-full">
+										<span class="text-[10px] text-green-500 md:text-[12px] lg:text-[10px]"
+											>{statistics.totalTicketSold.change}</span
+										>
+										<p class="text-[16px] font-semibold md:text-[20px]">
+											{statistics.totalTicketSold.value}
+										</p>
+									</div>
+	
+									<div class="order-1 md:order-2 md-h-full flex h-11 w-full justify-between py-2 md:w-full md:py-0">
+										<Chart
+											height={40}
+											data={totalTicketSoldData}
+											x="date"
+											xScale={scaleTime()}
+											y="value"
+											yDomain={[0, null]}
+											yNice
+											tooltip={{ mode: 'bisect-x' }}
+										>
+											<Svg>
+												<defs>
+													<!-- Stroke gradient (optional, for smooth fade) -->
+													<linearGradient id="lineGradient2" x1="0" x2="0" y1="0" y2="1">
+														<stop offset="50%" stop-color="#DC2626" stop-opacity="1" />
+														<stop offset="100%" stop-color="#DC2626" stop-opacity="0.0" />
+													</linearGradient>
+	
+													<!-- Area fill gradient -->
+													<linearGradient id="areaGradient2" x1="0" x2="0" y1="0" y2="1">
+														<stop offset="50%" stop-color="#DC2626" stop-opacity="0.2" />
+														<stop offset="100%" stop-color="#DC2626" stop-opacity="0" />
+													</linearGradient>
+												</defs>
+	
+												<!-- Area spline with smooth curve -->
+												<Area
+													spline
+													class="fill-[url(#areaGradient2)] stroke-[url(#lineGradient2)] stroke-2"
+												/>
+	
+												<Highlight points lines />
+											</Svg>
+	
+											<LayerchartTooltip.Root let:data>
+												<LayerchartTooltip.Header class="rounded-lg bg-[#f1f1f1] px-2 text-black">
+													{format(data.date, 'eee, MMMM do')}
+												</LayerchartTooltip.Header>
+												<LayerchartTooltip.List>
+													<LayerchartTooltip.Item
+														class="rounded-lg bg-[#f1f1f1] px-2 text-black"
+														label="Total ticket Sold"
+														value={data.value}
+													/>
+												</LayerchartTooltip.List>
+											</LayerchartTooltip.Root>
+										</Chart>
+									</div>
+								</div>
+							</div>
+						</div>
+	
+						<!-- Card 3 -->
+						<div class="rounded-lg border border-gray-200 bg-white shadow-sm">
+							<div class="p-3 sm:p-4">
+								<div class="flex items-center justify-between pb-5">
+									<h3 class="text-[10px] text-[#121826] md:text-[12px] lg:text-[14px]">
+										Total Attendees
+									</h3>
+									<div
+										class="m-[1px] inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#DCFCE7] text-[10px] text-[#19A44C] md:h-8 md:w-8 lg:h-8 lg:w-8"
+									>
+										<i class="fa-solid fa-user-group text-[8px] md:text-[13px] lg:text-[13px]"></i>
+									</div>
+								</div>
+								<div
+									class="flex grid w-full grid-cols-1 items-center justify-between space-x-4 md:grid-cols-2 md:gap-10 lg:grid-cols-2 lg:gap-10 lg:gap-10 2xl:gap-10"
+								>
+									<div class="order-2 md:order-1 w-full">
+										<span class="text-[10px] text-green-500 md:text-[12px] lg:text-[10px]"
+											>{statistics.totalAttendees.change}</span
+										>
+										<p class="text-[16px] font-semibold md:text-[20px]">
+											{statistics.totalAttendees.value}
+										</p>
+									</div>
+	
+									<div class="order-1 md:order-2 md-h-full flex h-11 w-full justify-between py-2 md:w-full md:py-0">
+										<Chart
+											height={40}
+											data={totalAttendees}
+											x="date"
+											xScale={scaleTime()}
+											y="value"
+											yDomain={[0, null]}
+											yNice
+											tooltip={{ mode: 'bisect-x' }}
+										>
+											<Svg>
+												<defs>
+													<!-- Stroke gradient (optional, for smooth fade) -->
+													<linearGradient id="lineGradient3" x1="0" x2="0" y1="0" y2="1">
+														<stop offset="50%" stop-color="#19A44C" stop-opacity="1" />
+														<stop offset="100%" stop-color="#19A44C" stop-opacity="0.0" />
+													</linearGradient>
+	
+													<!-- Area fill gradient -->
+													<linearGradient id="areaGradient3" x1="0" x2="0" y1="0" y2="1">
+														<stop offset="50%" stop-color="#19A44C" stop-opacity="0.2" />
+														<stop offset="100%" stop-color="#19A44C" stop-opacity="0" />
+													</linearGradient>
+												</defs>
+	
+												<!-- Area spline with smooth curve -->
+												<Area
+													spline
+													class="fill-[url(#areaGradient3)] stroke-[url(#lineGradient3)] stroke-2"
+												/>
+	
+												<Highlight points lines />
+											</Svg>
+	
+											<LayerchartTooltip.Root let:data>
+												<LayerchartTooltip.Header class="rounded-lg bg-[#f1f1f1] px-2 text-black">
+													{format(data.date, 'eee, MMMM do')}
+												</LayerchartTooltip.Header>
+												<LayerchartTooltip.List>
+													<LayerchartTooltip.Item
+														class="rounded-lg bg-[#f1f1f1] px-2 text-black"
+														label="Total Attendees"
+														value={data.value}
+													/>
+												</LayerchartTooltip.List>
+											</LayerchartTooltip.Root>
+										</Chart>
+									</div>
+								</div>
+							</div>
+						</div>
+	
+						<!-- Card 4 -->
+						<div class="rounded-lg border border-gray-200 bg-white shadow-sm">
+							<div class="p-3 sm:p-4">
+								<div class="flex items-center justify-between pb-5">
+									<h3 class="text-[10px] text-[#121826] md:text-[12px] lg:text-[14px]">
+										Total Event
+									</h3>
+									<div
+										class="m-[1px] inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#FFE0F6] text-[12px] text-[#824E73] md:h-8 md:w-8 lg:h-8 lg:w-8"
+									>
+										<i class="fa-regular fa-calendar text-[8px] md:text-[13px] lg:text-[13px]"></i>
+									</div>
+								</div>
+	
+								
+								<div
+									class="flex grid w-full grid-cols-1 items-center justify-between space-x-4 md:grid-cols-2 md:gap-10 lg:grid-cols-2 lg:gap-10 lg:gap-10 2xl:gap-10"
+								>
+								<div class="order-1 md:order-2 md-h-full flex h-11 w-full justify-between py-2 md:w-full md:py-0"></div>
+								<div class="order-2 md:order-1 w-full flex-inline">
+									<span class="text-[10px] text-green-500 md:text-[12px] lg:text-[10px]"
+										>{statistics.totalEvent.change}</span
+									>
+									<div class="flex items-end justify-between">
+										<p class="text-[16px] font-semibold md:text-[20px]">
+											{statistics.totalEvent.value.toLocaleString()}
+										</p>
+									</div>
+								</div>
+									
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
 
 				<div
 					class="mt-5 flex flex-col justify-between space-y-6 lg:flex-row lg:space-x-6 lg:space-y-0"
