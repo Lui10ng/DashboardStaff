@@ -30,7 +30,7 @@
 	routerReplace={replace}
 >
 	<div
-		class="sticky left-0 top-0 flex items-center justify-between border border-gray-200 bg-white p-6"
+		class="sticky left-0 top-0 z-50 flex items-center justify-between border border-gray-200 bg-white p-6"
 	>
 		<div class="sm:gap-13 flex gap-5">
 			<Button onClick={home}>
@@ -62,7 +62,7 @@
 				<SignedOut>
 					<SignInButton>
 						<button
-							class="w-full rounded bg-primary px-4 py-2 text-left text-white transition hover:bg-red-700"
+							class="bg-primary w-full rounded px-4 py-2 text-left text-white transition hover:bg-red-700"
 						>
 							Sign in
 						</button>
@@ -70,8 +70,8 @@
 				</SignedOut>
 				<SignedIn>
 					<div class="not-prose">
-						<UserButton showName={true} />	
-					</div>								
+						<UserButton afterSignOutUrl="/sign-in" showName={true} />
+					</div>
 				</SignedIn>
 			</div>
 		</header>
