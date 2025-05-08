@@ -8,8 +8,7 @@ import { handleSvelteError } from '$lib/utils/errorHandler';
 
 export const load: LayoutServerLoad = async (event: RequestEvent) => {
 	try {
-		const { url: eventUrl, params } = event;
-		const eventId = params.eventId;
+		const { url: eventUrl, params: { eventId } } = event;
 		const pathname = eventUrl.pathname;
 
 		const paramsEvent = new URLSearchParams({

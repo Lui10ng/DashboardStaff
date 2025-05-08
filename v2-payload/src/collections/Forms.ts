@@ -9,7 +9,7 @@ const Forms: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
     group: 'Configuration',
-    defaultColumns: ['title', 'eventId', 'description', 'createdAt'],
+    defaultColumns: ['title', 'event', 'description', 'createdAt'],
   },
   access: {
     // read: isAdminOrEventRole([MANAGER, EDITOR, VIEWER]),
@@ -20,7 +20,7 @@ const Forms: CollectionConfig = {
   },
   fields: [
     {
-      name: 'eventId',
+      name: 'event',
       type: 'relationship',
       relationTo: 'events',
       required: false,

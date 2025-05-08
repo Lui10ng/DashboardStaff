@@ -9,15 +9,14 @@ import { error } from '@sveltejs/kit';
 import type { EventContactsResponse } from '$lib/types/eventContacts';
 
 export const load: PageServerLoad = async (event: RequestEvent) => {
-	const { params } = event;
+	const { params: { eventId } } = event;
 
 	const paramContacts = new URLSearchParams({
-		'where[event][equals]': params.eventId!,
+		'where[event][equals]': eventId!,
 		'select[eventContacts]': 'true'
 	});
 
 	try {
-		const eventId = params.eventId;
 		const form = await superValidate(zod(contactSchema));
 
 		const apiClient = createApiClient(event);
@@ -45,7 +44,8 @@ export const load: PageServerLoad = async (event: RequestEvent) => {
 
 export const actions: Actions = {
 	updateContacts: async (event: RequestEvent) => {
-		const { request, params } = event;
+		const { request, params: { eventId } } = event;
+
 		const formData = await request.formData();
 
 		const contactData = formData.get('formData') as string;
@@ -68,7 +68,7 @@ export const actions: Actions = {
 
 		try {
 			const apiClient = createApiClient(event);
-			const response = await apiClient.patch(`events/${params.eventId}`, formDataSantized);
+			const response = await apiClient.patch(`events/${eventId}`, formDataSantized);
 			console.log('response: ', response);
 		} catch (err: unknown) {
 			const { statusCode, errorMessage } = handleSvelteError(

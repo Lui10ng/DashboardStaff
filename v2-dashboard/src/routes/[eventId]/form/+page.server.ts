@@ -15,7 +15,7 @@ export const load: PageServerLoad = async (event: RequestEvent) => {
 		console.log('Fetching form data for event:', eventId);
 
 		const params = new URLSearchParams({
-			'where[eventId][equals]': eventId as string
+			'where[event][equals]': eventId!
 		});
 
 		console.log('Request URL params:', params);
@@ -64,8 +64,10 @@ export const load: PageServerLoad = async (event: RequestEvent) => {
 export const actions: Actions = {
 	saveForm: async (event: RequestEvent) => {
 		try {
-			const { request } = event;
+			const { request, params: { eventId } } = event;
 			const formData = await request.formData();
+			formData.set('eventId', eventId!);
+			
 			const formDataJson = formData.get('formData');
 
 			if (!formDataJson || typeof formDataJson !== 'string') {
@@ -97,8 +99,8 @@ export const actions: Actions = {
 
 	deleteField: async (event: RequestEvent) => {
 		try {
-			const { request, params } = event;
-			const eventId = params.eventId;
+			const { request, params: { eventId } } = event;
+
 			if (!eventId) {
 				return { success: false, error: 'Event ID is required' };
 			}

@@ -26,7 +26,7 @@ export interface Promotion {
   /**
    * Only applies to these specific events if not checked above.
    */
-  applicableEvents?: (number | Event)[] | null;
+  event?: (number | Event)[] | null;
   updatedAt: string;
   createdAt: string;
 }
