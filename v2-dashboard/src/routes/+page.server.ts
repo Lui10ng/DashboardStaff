@@ -49,11 +49,6 @@ export async function load(event: ServerLoadEvent) {
 }
 
 export const actions = {
-	checkAvailableSubdomain: async ({ request }) => {
-		const data = await request.formData();
-		console.log(data);
-	},
-
 	createEvent: async (event: RequestEvent) => {
 		const { request } = event;
 		const data = await request.formData();

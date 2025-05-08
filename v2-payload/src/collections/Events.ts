@@ -130,7 +130,7 @@ const Events: CollectionConfig = {
                   title: title,
                   description: 'Please fill out this registration form',
                   formBuilder: formBuilderFields,
-                  eventId: eventId,
+                  event: eventId,
                 },
                 overrideAccess: true,
                 req: request,
@@ -394,7 +394,7 @@ const Events: CollectionConfig = {
       name: 'form',
       type: 'join',
       collection: 'forms',
-      on: 'eventId',
+      on: 'event',
     },
     {
       name: 'ticketType',

@@ -139,6 +139,17 @@ const Transactions: CollectionConfig = {
       admin: { readOnly: true },
     },
     {
+      name: 'event',
+      label: 'Associated Event',
+      type: 'relationship',
+      relationTo: 'events',
+      hasMany: false,
+      index: true,
+      admin: {
+        readOnly: true
+      },
+    },
+    {
       name: 'relatedPaymentIntentId',
       label: 'Payment Gateway Ref ID',
       type: 'text',

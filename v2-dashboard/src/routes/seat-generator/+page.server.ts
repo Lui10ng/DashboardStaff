@@ -6,6 +6,8 @@ import { error, fail } from '@sveltejs/kit';
 import { createApiClient } from '$lib/services/payload.server';
 
 export const load: PageServerLoad = async (event: RequestEvent) => {
+	const { params: { eventId } } = event;
+
 	try {
 		const apiClient = createApiClient(event);
 		// TODO: Fetch seat generator data from API

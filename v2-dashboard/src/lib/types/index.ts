@@ -151,5 +151,5 @@ export type PromotionProps = {
 	validUntil: string;
 	minimumOrderAmount: number;
 	appliesToAllEvents: boolean;
-	applicableEvents: Event[];
+	event: Event[];
 };

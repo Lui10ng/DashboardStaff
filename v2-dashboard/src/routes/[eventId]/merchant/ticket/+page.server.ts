@@ -12,7 +12,7 @@ import type { TicketType, Promotion } from '$lib/types/payload-types';
 import type { PayloadPaginatedResponse } from '$lib/types/payloadResponse';
 
 export const load: PageServerLoad = async (event: RequestEvent) => {
-	const { params } = event;
+	const { params: { eventId } } = event;
 
 	const initialConfig = {
 		ticketQuantity: 0,
@@ -29,13 +29,13 @@ export const load: PageServerLoad = async (event: RequestEvent) => {
 	};
 
 	const paramsTicket = new URLSearchParams({
-		'where[event][equals]': params.eventId,
+		'where[event][equals]': eventId!,
 		sort: 'date',
 		depth: '0'
 	});
 
 	const paramsVoucher = new URLSearchParams({
-		'where[applicableEvents][equals]': params.eventId,
+		'where[event][equals]': eventId!,
 		sort: 'date',
 		depth: '0'
 	});
@@ -77,11 +77,9 @@ export const load: PageServerLoad = async (event: RequestEvent) => {
 
 export const actions: Actions = {
 	createTicket: async (event: RequestEvent) => {
-		const { request, params } = event;
+		const { request, params: { eventId } } = event;
+
 		const data = await request.formData();
-
-		const eventId = parseInt(params.eventId);
-
 		const form = await superValidate(data, zod(ticketSchema));
 
 		if (!form.valid) {
@@ -176,10 +174,9 @@ export const actions: Actions = {
 	},
 
 	createVoucher: async (event: RequestEvent) => {
-		const { request, params } = event;
-		const data = await request.formData();
-		const eventId = parseInt(params.eventId);
+		const { request, params: { eventId } } = event;
 
+		const data = await request.formData();
 		const form = await superValidate(data, zod(voucherSchema));
 
 		if (!form.valid) {
@@ -198,7 +195,7 @@ export const actions: Actions = {
 			validUntil: new Date(`${form.data.validUntil}T23:59:00Z`).toISOString(),
 			minimumOrderAmount: form.data.minOrderAmount,
 			appliesToAllEvents: false,
-			applicableEvents: [eventId]
+			event: [eventId]
 		};
 
 		try {

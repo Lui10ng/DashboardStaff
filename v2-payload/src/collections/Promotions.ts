@@ -136,7 +136,7 @@ const Promotions: CollectionConfig = {
       defaultValue: true,
     },
     {
-      name: 'applicableEvents',
+      name: 'event',
       label: 'Applicable Events',
       type: 'relationship',
       relationTo: 'events',

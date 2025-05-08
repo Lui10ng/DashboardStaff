@@ -6,12 +6,12 @@ import type { RequestEvent } from '@sveltejs/kit';
 import type { RegistrantsResponse } from '$lib/types/registrants';
 
 export const load: PageServerLoad = async (event: RequestEvent) => {
-	const { url, params } = event;
+	const { url, params: { eventId } } = event;
 	const page = Number(url.searchParams.get('page') || '1');
 
 	try {
 		const paramRegistrant = new URLSearchParams({
-			'where[event][equals]': params.eventId!,
+			'where[event][equals]': eventId!,
 			'select[submittedAnswers]': 'true',
 			'select[createdAt]': 'true',
 			page: page.toString()

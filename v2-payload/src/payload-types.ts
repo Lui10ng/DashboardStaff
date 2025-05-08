@@ -490,7 +490,7 @@ export interface Form {
   /**
    * The event this form belongs to
    */
-  eventId?: (number | null) | Event;
+  event?: (number | null) | Event;
   /**
    * Form title that will be displayed to users
    */
@@ -608,7 +608,7 @@ export interface Promotion {
   /**
    * Only applies to these specific events if not checked above.
    */
-  applicableEvents?: (number | Event)[] | null;
+  event?: (number | Event)[] | null;
   applicableTicketTypes?: (number | TicketType)[] | null;
   updatedAt: string;
   createdAt: string;
@@ -826,6 +826,7 @@ export interface Transaction {
   description: string;
   relatedOrder?: (number | null) | Order;
   relatedUser?: (number | null) | User;
+  event?: (number | null) | Event;
   relatedPaymentIntentId?: string | null;
   metadata?:
     | {
@@ -1162,7 +1163,7 @@ export interface PromotionsSelect<T extends boolean = true> {
   validUntil?: T;
   minimumOrderAmount?: T;
   appliesToAllEvents?: T;
-  applicableEvents?: T;
+  event?: T;
   applicableTicketTypes?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1275,6 +1276,7 @@ export interface TransactionsSelect<T extends boolean = true> {
   description?: T;
   relatedOrder?: T;
   relatedUser?: T;
+  event?: T;
   relatedPaymentIntentId?: T;
   metadata?: T;
   updatedAt?: T;
@@ -1329,7 +1331,7 @@ export interface VenuesSelect<T extends boolean = true> {
  * via the `definition` "forms_select".
  */
 export interface FormsSelect<T extends boolean = true> {
-  eventId?: T;
+  event?: T;
   title?: T;
   description?: T;
   formBuilder?:
