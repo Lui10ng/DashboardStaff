@@ -7,6 +7,8 @@ import { createApiClient } from '$lib/services/payload.server';
 import { handleSvelteError } from '$lib/utils/errorHandler';
 import type { PayloadPaginatedResponse } from '$lib/types/payloadResponse';
 import type { Event } from '$lib/types/eventData';
+import { PUBLIC_PAYLOAD_API_URL } from '$env/static/public';
+import type { Actions } from './$types';
 
 export async function load(event: ServerLoadEvent) {
 	const authObject = await event.locals.auth();
@@ -48,7 +50,12 @@ export async function load(event: ServerLoadEvent) {
 	}
 }
 
-export const actions = {
+export const actions: Actions = {
+	checkAvailableSubdomain: async ({ request }) => {
+		const data = await request.formData();
+		console.log(data);
+	},
+
 	createEvent: async (event: RequestEvent) => {
 		const { request } = event;
 		const data = await request.formData();
@@ -127,5 +134,97 @@ export const actions = {
 	updateRegistrationInstruction: async ({ request }) => {
 		const data = await request.formData();
 		console.log(data);
+	},
+
+	saveSeatMap: async ({ request, locals }) => {
+		try {
+			const formData = await request.formData();
+			
+			// Basic info
+			const name = formData.get('name') as string;
+			
+			// Config
+			const ticketQuantity = parseInt(formData.get('ticketQuantity') as string);
+			const rows = parseInt(formData.get('rows') as string);
+			const seatsPerRow = parseInt(formData.get('seatsPerRow') as string);
+			const rowStartChar = formData.get('rowStartChar') as string;
+			const seatStartNum = parseInt(formData.get('seatStartNum') as string);
+			const rowOrder = formData.get('rowOrder') as 'down' | 'up';
+			const seatOrder = formData.get('seatOrder') as 'left' | 'right';
+			const rowLabel = formData.get('rowLabel') as string;
+			
+			// Seats and custom names
+			const seats = JSON.parse(formData.get('seats') as string);
+			const customSeatNames = formData.get('customSeatNames') ? 
+				JSON.parse(formData.get('customSeatNames') as string) : 
+				null;
+				
+			// Venue image
+			const venueImage = formData.get('venueImage') as string | null;
+			
+			// Summary
+			const totalSeats = parseInt(formData.get('totalSeats') as string);
+			const availableSeats = parseInt(formData.get('availableSeats') as string);
+			const unavailableSeats = parseInt(formData.get('unavailableSeats') as string);
+			const soldSeats = parseInt(formData.get('soldSeats') as string);
+
+			// Validate required fields
+			if (!name || !ticketQuantity || !rows || !seatsPerRow || !rowStartChar || 
+				!seatStartNum || !rowOrder || !seatOrder || !rowLabel || !seats ||
+				!totalSeats || typeof availableSeats !== 'number' || 
+				typeof unavailableSeats !== 'number' || typeof soldSeats !== 'number') {
+				return fail(400, {
+					error: 'Missing required fields',
+					success: false
+				});
+			}
+
+			// Create the seat map payload
+			const seatMapData = {
+				name,
+				config: {
+					ticketQuantity,
+					seatConfig: {
+						rows,
+						seatsPerRow,
+						rowStartChar,
+						seatStartNum,
+						rowOrder,
+						seatOrder,
+						rowLabel
+					}
+				},
+				seats,
+				...(customSeatNames && { customSeatNames }),
+				...(venueImage && { venueImage }),
+				summary: {
+					totalSeats,
+					availableSeats,
+					unavailableSeats,
+					soldSeats
+				}
+			};
+
+			const apiClient = createApiClient({ locals } as any);
+			const response = await apiClient.post('/seat-maps', seatMapData);
+
+			if (!response) {
+				return fail(500, {
+					error: 'Failed to save seat map',
+					success: false
+				});
+			}
+
+			return {
+				success: true,
+				seatMapId: response.id
+			};
+		} catch (error) {
+			console.error('Error saving seat map:', error);
+			return fail(500, {
+				error: 'Internal server error',
+				success: false
+			});
+		}
 	}
 };

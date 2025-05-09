@@ -7,7 +7,8 @@
 	import { Tabs } from 'bits-ui';
 	import { seatGeneratorStore } from '$lib/stores/seat-generator.svelte';
 	import type { SeatConfig as SeatConfigType } from '$lib/types/seat-generator';
-	import { superForm } from 'sveltekit-superforms';
+	import { superForm } from 'sveltekit-superforms/client';
+	import { ticketSchema } from '$lib/schema/ticket';
 	import DatePicker from '$lib/components/ui/DatePicker.svelte';
 	import PaymentToggle from '$lib/components/ui/PaymentToggle.svelte';
 	import SeatConfig from '$lib/components/seat-generator/SeatConfig.svelte';
@@ -21,19 +22,119 @@
 	import SeatStats from '$lib/components/seat-generator/SeatStats.svelte';
 	import { formatDate } from '$lib/utils/datetime.js';
 	import VoucherToggle from '$lib/components/ui/VoucherToggle.svelte';
+	import ReserveSeatToggle from '$lib/components/ui/ReserveSeatToggle.svelte';
+	import { seatMapStore } from '$lib/stores/seat-map';
+	import { createEventDispatcher } from 'svelte';
+	import { toast } from '$lib/stores/toast';
+	import { get } from 'svelte/store';
+	import type { SeatMap } from '$lib/types/seatMap';
+	import type { SeatMap as StoreSeatMap } from '$lib/stores/seat-map';
+	import type { PageData } from './$types';
 
-	let { data } = $props();
+	const { data } = $props<{ data: PageData }>();
 
-	const ticketList: TicketProps[] = $derived(data.ticketData);
-	const voucherList: PromotionProps[] = $derived(data.voucherData);
+	// Helper function to adapt between the two different SeatMap type formats
+	function adaptSeatMapForStore(seatMap: SeatMap): StoreSeatMap {
+		// Convert seats to include status and displayName properties required by store
+		const adaptedSeats: Record<
+			string,
+			{ status: 'available' | 'unavailable' | 'sold'; displayName: string }
+		> = {};
+
+		Object.entries(seatMap.seats).forEach(([id, seat]) => {
+			adaptedSeats[id] = {
+				status: seat.isPurchasable ? 'available' : 'unavailable',
+				displayName: seat.seatNumber
+			};
+		});
+
+		return {
+			name: seatMap.name,
+			config: seatMap.config,
+			seats: adaptedSeats,
+			customSeatNames: seatMap.customSeatNames || {},
+			summary: seatMap.summary,
+			venueImage: seatMap.venueImage
+		};
+	}
+
+	// Update the type for activeTab
+	let activeTab: 'ticket' | 'reserve-seating' = $state('ticket');
+
+	// Add proper typing for the ticket mapping
+	function mapTicketTypeToProps(ticket: any): TicketProps {
+		return {
+			id: String(ticket.id),
+			name: ticket.name,
+			description: ticket.description || '',
+			price: ticket.price,
+			currency: ticket.currency,
+			quantityAvailable: ticket.quantityAvailable,
+			minOrderQuantity: ticket.minOrderQuantity,
+			maxOrderQuantity: ticket.maxOrderQuantity,
+			salesStart: ticket.salesStart,
+			salesEnd: ticket.salesEnd,
+			color: ticket.color,
+			status: ticket.status as TicketStatus,
+			event: {
+				relationTo: 'events',
+				value: String(ticket.event)
+			},
+			seatMap: ticket.seatMap
+				? {
+						relationTo: 'seat-maps',
+						value: String(ticket.seatMap)
+					}
+				: undefined,
+			paymentActive: ticket.paymentActive
+		};
+	}
+
+	// Add store subscription
+	const seatGeneratorState = $derived($seatGeneratorStore);
+	let reserveSeatingEnabled = $derived(seatGeneratorState.reserveSeatingEnabled);
+
+	// Update the ticket list and voucher list types with proper mapping
+	const ticketList = $derived(data.ticketData ? data.ticketData.map(mapTicketTypeToProps) : []);
+	const voucherList = $derived(data.voucherData as PromotionProps[]);
 
 	const {
-		form: ticketForm,
-		errors: ticketErrors,
-		enhance: ticketEnhance,
-		delayed: ticketDelayed,
+		form,
+		errors,
+		enhance,
 		message: ticketMessage
-	} = superForm(data.ticketForm);
+	} = superForm(data.form, {
+		taintedMessage: null,
+		onSubmit: ({ formData, cancel }) => {
+			console.log('Starting ticket form submission...');
+
+			// Get seat map data from store
+			const seatMapData = $seatMapStore;
+			console.log('Current seat map data in store:', seatMapData);
+
+			if (reserveSeatingEnabled && !seatMapData) {
+				console.error('Reserve seating is enabled but no seat map data found');
+				cancel();
+				return;
+			}
+
+			if (seatMapData) {
+				formData.append('seatMapStore', JSON.stringify(seatMapData));
+				console.log('Added seat map data to form submission');
+			}
+		},
+		onResult: ({ result }) => {
+			console.log('Ticket submission result:', result);
+			if (result.type === 'success') {
+				// Only reset store and close drawer after successful server action
+				seatMapStore.reset();
+				ticketDrawer.open = false;
+				console.log('Ticket created successfully');
+			} else {
+				console.error('Ticket creation failed:', result);
+			}
+		}
+	});
 
 	const {
 		form: voucherForm,
@@ -115,6 +216,17 @@
 		selectedTicketStatus = event.detail as TicketStatus;
 	};
 
+<<<<<<< HEAD
+=======
+	const handleTogglePayment = (value: boolean) => {
+		isActivePayment = value;
+		if (form) {
+			console.log('Updating paymentActive value:', value);
+			// If there's a hidden input for payment active, we could update it here
+		}
+	};
+
+>>>>>>> 67511ce8 (initial backend integration of seat generator to sear selector)
 	const getStatusColor = (status: string) => {
 		if (status === 'active') return 'bg-green-500';
 		else if (status === 'expired') return 'bg-primary';
@@ -150,21 +262,205 @@
 		}
 		return 'Select Tickets';
 	};
+<<<<<<< HEAD
+=======
+
+	// Add this state for tracking reserve seating toggle
+	let seatMapId: string | null = $state(null);
+	let isActiveReserveSeating = $state(false);
+
+	// Add effect to keep the toggles synchronized
+	$effect(() => {
+		if (!initialized) return;
+		isActiveReserveSeating = reserveSeatingEnabled;
+	});
+
+	// Update the handleTabChange function
+	function handleTabChange(event: CustomEvent<{ tab: 'ticket' | 'reserve-seating' }>) {
+		console.log('Tab change event:', event.detail);
+		activeTab = event.detail.tab;
+	}
+
+	// Modify the toggle function to update both states and switch tabs
+	function handleReserveSeatingToggle(value: boolean) {
+		console.log('Reserve seating toggled:', value);
+		isActiveReserveSeating = value;
+		seatGeneratorStore.setReserveSeatingEnabled(value);
+		if (value) {
+			handleTabChange(new CustomEvent('tabChange', { detail: { tab: 'reserve-seating' } }));
+		}
+	}
+
+>>>>>>> 67511ce8 (initial backend integration of seat generator to sear selector)
 	$effect(() => {
 		if (initialized) return;
 
 		// Initialize stores with server-provided data
-		seatGeneratorStore.setTicketQuantity(data.initialConfig.ticketQuantity);
-		seatGeneratorStore.setReserveSeatingEnabled(data.initialConfig.reserveSeatingEnabled);
+		console.log('Initializing from server data:', data.initialConfig);
 
-		// Update section config - using type assertion to handle rowLabel type
-		seatGeneratorStore.setSectionConfig(data.initialConfig.seatConfig as Partial<SeatConfigType>);
+		// Set ticket quantity
+		seatGeneratorStore.setTicketQuantity(data.initialConfig?.ticketQuantity ?? 0);
 
-		// Generate seats based on the configuration
-		seatGeneratorStore.regenerateSeats();
+		// Set reserve seating state
+		const reserveSeatingEnabled = data.initialConfig?.reserveSeatingEnabled ?? false;
+		console.log('Setting reserve seating enabled:', reserveSeatingEnabled);
+		seatGeneratorStore.setReserveSeatingEnabled(reserveSeatingEnabled);
+		isActiveReserveSeating = reserveSeatingEnabled;
+
+		// Update section config if available
+		if (data.initialConfig?.seatConfig) {
+			console.log('Setting seat config:', data.initialConfig.seatConfig);
+			seatGeneratorStore.setSectionConfig(data.initialConfig.seatConfig as Partial<SeatConfigType>);
+			seatGeneratorStore.regenerateSeats();
+		}
+
 		// Mark as initialized
 		initialized = true;
 	});
+
+	// Add debug log for form submission
+	function logFormData() {
+		console.log('Submitting form with reserveSeating:', isActiveReserveSeating);
+	}
+
+	// Add state for seat map
+	let createdSeatMapId: string | null = $state(null);
+	let isReserveSeatingConfigured = $state(false);
+	let seatMapName = $state('Reserved Seating Layout');
+
+	// Handle seat map creation success
+	function handleSeatMapCreated(event: CustomEvent<{ seatMapId: string }>) {
+		createdSeatMapId = event.detail.seatMapId;
+		isReserveSeatingConfigured = true;
+	}
+
+	// Define the ticket data interface
+	interface TicketData {
+		event: number;
+		name: FormDataEntryValue | null;
+		description: string;
+		price: number;
+		currency: string;
+		status: string;
+		quantityAvailable: number;
+		minOrderQuantity: number;
+		maxOrderQuantity: number;
+		salesStart: FormDataEntryValue | null;
+		salesEnd: FormDataEntryValue | null;
+		color: string;
+		paymentActive: boolean;
+		seatMap?: number;
+	}
+
+	const dispatch = createEventDispatcher();
+
+	// Debugging helper
+	function logDebug(message: string, data?: any) {
+		console.log(`[DEBUG] ${message}`, data || '');
+	}
+
+	async function handleSaveLayout() {
+		console.log('[DEBUG] handleSaveLayout called');
+		const currentSeatMap = get(seatMapStore);
+		console.log('[DEBUG] Current seat map:', currentSeatMap);
+
+		if (!currentSeatMap) {
+			console.log('[DEBUG] No seat map data found');
+			toast.show({ type: 'error', message: 'No seat map data to save' });
+			return;
+		}
+
+		try {
+			const response = await fetch('/api/seat-maps', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(currentSeatMap),
+			});
+
+			console.log('[DEBUG] Seat map save response:', response);
+
+			if (!response.ok) {
+				const errorText = await response.text();
+				console.log('[DEBUG] Seat map save error:', errorText);
+				throw new Error(`Failed to save seat map: ${errorText}`);
+			}
+
+			const data = await response.json();
+			console.log('[DEBUG] Seat map creation response:', data);
+
+			const seatMapId = data.doc.id;
+			console.log('[DEBUG] Extracted seat map ID:', seatMapId);
+
+			seatMapStore.setSeatMap({ ...currentSeatMap, id: seatMapId });
+			toast.show({ type: 'success', message: 'Seat map saved successfully' });
+		} catch (error) {
+			console.error('[DEBUG] Error saving seat map:', error);
+			toast.show({ type: 'error', message: error.message || 'Failed to save seat map' });
+		}
+	}
+
+	async function handleTicketSubmit(event: SubmitEvent) {
+		console.log('[DEBUG] handleSaveLayout called');
+		event.preventDefault();
+		const form = event.target as HTMLFormElement;
+		const formData = new FormData(form);
+
+		console.log('Starting ticket submission...');
+
+		// Get seat map data from store
+		const seatMapData = get(seatMapStore);
+		console.log('Current seat map data in store:', seatMapData);
+
+		if (!seatMapData?.id) {
+			console.error('No valid seat map data found in store');
+			toast.show({
+				message: 'Please save the seat map before creating a ticket',
+				type: 'error',
+			});
+			return;
+		}
+
+		// Append seat map ID to form data
+		formData.append('seatMap', seatMapData.id.toString());
+		console.log('Added seat map ID to form submission:', seatMapData.id);
+
+		try {
+			const response = await fetch(form.action, {
+				method: 'POST',
+				body: formData,
+			});
+
+			const result = await response.json();
+			console.log('Ticket creation response:', result);
+
+			if (response.ok) {
+				toast.show({
+					message: 'Ticket created successfully',
+					type: 'success',
+				});
+
+				// Reset the seat map store
+				seatMapStore.reset();
+
+				// Optionally refresh the page or update the ticket list
+				window.location.reload();
+			} else {
+				console.error('Ticket creation failed:', result);
+				toast.show({
+					message: result.error || 'Failed to create ticket',
+					type: 'error',
+				});
+			}
+		} catch (error) {
+			console.error('Error submitting ticket:', error);
+			toast.show({
+				message: 'Failed to create ticket: Network error',
+				type: 'error',
+			});
+		}
+	}
+
+	console.log(data.currentEvent.title);
 </script>
 
 <div>
@@ -184,48 +480,336 @@
 				className="bg-gray-200 px-4 py-2 rounded-md"
 				onClick={() => handleTicketDrawer()}
 			/>
-			<Drawer
-				isOpen={TicketdrawerState}
-				contentBaseClass="bg-white p-4 space-y-4 shadow-xl w-full h-[90vh] rounded-t-xl overflow-y-auto"
-				alignment="items-end"
-				positionIn={{ y: 600, duration: 200 }}
-				positionOut={{ y: 600, duration: 200 }}
-				title="Add Ticket"
-			>
-				<div class="w-full">
-					<p class="mb-6 text-sm text-gray-500">Please fill up your ticket information</p>
-					<Tabs.Root
-						value={seatGeneratorStore.activeTab}
-						onValueChange={(value: string) =>
-							seatGeneratorStore.setActiveTab(value as 'ticket' | 'reserve-seating')}
-						class="mb-8"
-					>
-						<Tabs.List class="flex space-x-4 border-b border-gray-200">
-							<Tabs.Trigger
-								value="ticket"
-								class="border-b-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none data-[state=active]:border-[#DF4D60] data-[state=inactive]:border-transparent data-[state=active]:text-[#DF4D60] data-[state=inactive]:text-gray-500 data-[state=inactive]:hover:border-gray-300 data-[state=inactive]:hover:text-gray-700"
-								aria-label="Switch to Ticket tab"
-								tabindex={0}
-							>
-								<div class="flex items-center">
-									<i class="fa-solid fa-ticket-simple pe-2"></i>
-									Ticket
-								</div>
-							</Tabs.Trigger>
+		</div>
+	</div>
 
+	<Drawer
+		isOpen={TicketdrawerState}
+		contentBaseClass="bg-white p-4 space-y-4 shadow-xl w-full h-[90vh] rounded-t-xl overflow-y-auto"
+		alignment="items-end"
+		positionIn={{ y: 600, duration: 200 }}
+		positionOut={{ y: 600, duration: 200 }}
+		title="Add Ticket"
+	>
+		<div class="w-full">
+			<p class="mb-6 text-sm text-gray-500">Please fill up your ticket information</p>
+			<Tabs.Root value={activeTab} onValueChange={(value) => (activeTab = value)} class="mb-8">
+				<Tabs.List class="flex space-x-4 border-b border-gray-200">
+					<Tabs.Trigger
+						value="ticket"
+						class="border-b-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none data-[state=active]:border-[#DF4D60] data-[state=active]:text-[#DF4D60] data-[state=inactive]:border-transparent data-[state=inactive]:text-gray-500 data-[state=inactive]:hover:border-gray-300 data-[state=inactive]:hover:text-gray-700"
+						aria-label="Switch to Ticket tab"
+						tabindex={0}
+					>
+						<div class="flex items-center">
+							<i class="fa-solid fa-ticket-simple pe-2"></i>
+							Ticket
+						</div>
+					</Tabs.Trigger>
+
+					{#if reserveSeatingEnabled}
+						<Tabs.Trigger
+							value="reserve-seating"
+							class="border-b-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none data-[state=active]:border-[#DF4D60] data-[state=active]:text-[#DF4D60] data-[state=inactive]:border-transparent data-[state=inactive]:text-gray-500 data-[state=inactive]:hover:border-gray-300 data-[state=inactive]:hover:text-gray-700"
+							aria-label="Switch to Reserve Seating tab"
+							tabindex={0}
+						>
+							<div class="flex items-center">
+								<i class="fa-solid fa-chair pe-2"></i>
+								Reserve Seating
+							</div>
+						</Tabs.Trigger>
+					{/if}
+				</Tabs.List>
+
+				<Tabs.Content value="ticket">
+					<form method="POST" action="?/createTicket" use:enhance class="w-full space-y-8">
+						<input type="hidden" name="event" value={data.eventId} />
+						<div class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+							<div class="space-y-6">
+								<div>
+									<label for="name" class="mb-2 block text-sm">Ticket Name</label>
+									<input
+										type="text"
+										name="name"
+										value={$form.name}
+										placeholder="Enter ticket name"
+										class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
+									/>
+									{#if $errors.name}
+										<p class="text-primary text-sm">
+											{$errors.name}
+										</p>
+									{/if}
+								</div>
+								<div>
+									<label for="description" class="mb-2 block text-sm">Description (Optional)</label>
+									<textarea
+										name="description"
+										value={$form.description}
+										placeholder="Enter ticket description"
+										class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
+									/>
+								</div>
+								<div>
+									<label for="price" class="mb-2 block text-sm">Price</label>
+									<input
+										type="number"
+										name="price"
+										value={$form.price}
+										placeholder="Enter ticket price"
+										class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
+									/>
+									{#if $errors.price}
+										<p class="text-primary text-sm">
+											{$errors.price}
+										</p>
+									{/if}
+								</div>
+								<div>
+									<label for="salesStart" class="mb-2 block text-sm">Sales Start (DD/MM/YYYY)</label
+									>
+									<DatePicker
+										name="salesStart"
+										value={$form.salesStart}
+										className="h-input rounded-input flex w-full select-none items-center border px-2 py-4 text-gray-500"
+									/>
+									{#if $errors.salesStart}
+										<p class="text-primary text-sm">
+											{$errors.salesStart}
+										</p>
+									{/if}
+								</div>
+								<div>
+									<label for="salesEnd" class="mb-2 block text-sm">Sales End (DD/MM/YYYY)</label>
+									<DatePicker
+										name="salesEnd"
+										value={$form.salesEnd}
+										className="h-input rounded-input flex w-full select-none items-center border px-2 py-4 text-gray-500"
+									/>
+									{#if $errors.salesEnd}
+										<p class="text-primary text-sm">
+											{$errors.salesEnd}
+										</p>
+									{/if}
+								</div>
+							</div>
+							<div class="space-y-6">
+								<div>
+									<label for="quantityAvailable" class="mb-2 block text-sm"
+										>Available For Sale</label
+									>
+									<input
+										type="number"
+										name="quantityAvailable"
+										value={$form.quantityAvailable}
+										placeholder="Enter quantity"
+										class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
+									/>
+									{#if $errors.quantityAvailable}
+										<p class="text-primary text-sm">
+											{$errors.quantityAvailable}
+										</p>
+									{/if}
+								</div>
+								<div>
+									<label for="minOrderQuantity" class="mb-2 block text-sm">Min Order Quantity</label
+									>
+									<input
+										type="number"
+										name="minOrderQuantity"
+										value={$form.minOrderQuantity}
+										placeholder="Enter min quantity"
+										class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
+									/>
+									{#if $errors.minOrderQuantity}
+										<p class="text-primary text-sm">
+											{$errors.minOrderQuantity}
+										</p>
+									{/if}
+								</div>
+								<div>
+									<label for="maxOrderQuantity" class="mb-2 block text-sm">Max Order Quantity</label
+									>
+									<input
+										type="number"
+										name="maxOrderQuantity"
+										value={$form.maxOrderQuantity}
+										placeholder="Enter max quantity"
+										class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
+									/>
+									{#if $errors.maxOrderQuantity}
+										<p class="text-primary text-sm">
+											{$errors.maxOrderQuantity}
+										</p>
+									{/if}
+								</div>
+
+								<div>
+									<label for="currency" class="mb-2 block text-sm">Currency</label>
+									<select
+										name="currency"
+										value={$form.currency}
+										class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
+									>
+										<option value="PHP">PHP</option>
+										<option value="USD">USD</option>
+										<option value="EUR">EUR</option>
+									</select>
+								</div>
+
+								<div>
+									<label for="status" class="mb-2 block text-sm">Status</label>
+									<select
+										name="status"
+										value={$form.status}
+										class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
+									>
+										<option value="active">Active</option>
+										<option value="inactive">Inactive</option>
+									</select>
+								</div>
+
+								<div>
+									<label for="reserveSeating" class="mb-2 block text-sm"
+										>Enable Reserve Seating</label
+									>
+									<div class="relative inline-flex items-center">
+										<ReserveSeatToggle
+											value={isActiveReserveSeating}
+											OnChange={handleReserveSeatingToggle}
+										/>
+										<span class="ml-2 text-xs text-gray-500">
+											{#if isActiveReserveSeating && !isReserveSeatingConfigured}
+												Configure seating in the Reserve Seating tab
+											{:else if isActiveReserveSeating && isReserveSeatingConfigured}
+												✓ Seat map configured
+											{/if}
+										</span>
+									</div>
+									<p class="mt-1 text-xs text-gray-500">
+										Enable reserve seating to allow customers to select specific seats.
+									</p>
+								</div>
+							</div>
+						</div>
+
+						<div>
+							<label for="color" class="my-4 block text-sm">Label Color</label>
+							<div
+								class="mb-3 rounded-md p-3 text-center text-white"
+								style="background-color: {$form.color}"
+							>
+								{$form.color}
+							</div>
+							<div class="flex gap-2">
+								{#each colors as color}
+									<button
+										type="button"
+										class="h-8 w-8 rounded-full border-2 transition-all"
+										style="background-color: {color}; border-color: {$form.color === color
+											? 'black'
+											: 'transparent'}"
+										on:click={() => ($form.color = color)}
+										aria-label="Select color {color}"
+									></button>
+								{/each}
+
+								<label
+									class="relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-2 border-gray-500"
+								>
+									<input
+										class="absolute top-0 right-0 hidden"
+										type="color"
+										name="color"
+										value={$form.color}
+									/>
+									+
+								</label>
+							</div>
+
+							{#if $errors.color}
+								<p class="text-primary text-sm">
+									{$errors.color}
+								</p>
+							{/if}
+						</div>
+
+						<div class="mt-8 grid grid-cols-2 gap-4">
+							<Button
+								type="submit"
+								onClick={() => {}}
+								label="Save Ticket"
+								className="bg-[#DF4D60] text-white p-2 rounded-md"
+							/>
+							<Button
+								onClick={() => {
+									ticketDrawer.open = false;
+								}}
+								label="Cancel"
+								className="border border-gray-300 text-gray-700 p-2 rounded-md"
+							/>
+						</div>
+					</form>
+				</Tabs.Content>
+
+				<Tabs.Content value="reserve-seating">
+					<div class="space-y-4">
+						<SeatConfig />
+						<RenameControl />
+						<SaveLayout on:seatMapCreated={handleSeatMapCreated} on:tabChange={handleTabChange} eventName={data.currentEvent.title}/>
+						<ReserveToggle />
+						<QuantityWarning />
+						<VenueImageUpload />
+						<PanzoomContainer />
+						<StatusControls />
+						<SeatStats />
+					</div>
+				</Tabs.Content>
+			</Tabs.Root>
+		</div>
+	</Drawer>
+
+	<Drawer
+		isOpen={editTicketDrawer.open}
+		contentBaseClass="bg-white p-4 space-y-4 shadow-xl w-full h-[90vh] rounded-t-xl overflow-y-auto"
+		alignment="items-end"
+		positionIn={{ y: 600, duration: 200 }}
+		positionOut={{ y: 600, duration: 200 }}
+	>
+		{#if selectedTicket}
+			<div class="space-y-6">
+				<div class="border-gray-200 pb-4">
+					<h2 class="text-xl font-semibold">{selectedTicket.name}</h2>
+					<p class="text-sm text-gray-500">Edit Ticket Details</p>
+				</div>
+
+				<Tabs.Root value={activeTab} onValueChange={(value) => (activeTab = value)} class="mb-8">
+					<Tabs.List class="flex space-x-4 border-b border-gray-200">
+						<Tabs.Trigger
+							value="ticket"
+							class="border-b-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none data-[state=active]:border-[#DF4D60] data-[state=active]:text-[#DF4D60] data-[state=inactive]:border-transparent data-[state=inactive]:text-gray-500 data-[state=inactive]:hover:border-gray-300 data-[state=inactive]:hover:text-gray-700"
+						>
+							<div class="flex items-center">
+								<i class="fa-solid fa-ticket-simple pe-2"></i>
+								Ticket
+							</div>
+						</Tabs.Trigger>
+
+						{#if reserveSeatingEnabled}
 							<Tabs.Trigger
 								value="reserve-seating"
-								class="border-b-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none data-[state=active]:border-[#DF4D60] data-[state=inactive]:border-transparent data-[state=active]:text-[#DF4D60] data-[state=inactive]:text-gray-500 data-[state=inactive]:hover:border-gray-300 data-[state=inactive]:hover:text-gray-700"
-								aria-label="Switch to Reserve Seating tab"
-								tabindex={0}
+								class="border-b-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none data-[state=active]:border-[#DF4D60] data-[state=active]:text-[#DF4D60] data-[state=inactive]:border-transparent data-[state=inactive]:text-gray-500 data-[state=inactive]:hover:border-gray-300 data-[state=inactive]:hover:text-gray-700"
 							>
 								<div class="flex items-center">
 									<i class="fa-solid fa-chair pe-2"></i>
 									Reserve Seating
 								</div>
 							</Tabs.Trigger>
-						</Tabs.List>
+						{/if}
+					</Tabs.List>
 
+<<<<<<< HEAD
 						<Tabs.Content value="ticket">
 							<form action="?/createTicket" method="POST" use:ticketEnhance>
 								<div class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -701,22 +1285,186 @@
 													<SeatStats />
 												</div>
 											</div>
+=======
+					<Tabs.Content value="ticket">
+						<form action="?/updateTicket" method="POST" use:enhance>
+							<input type="hidden" name="id" value={selectedTicket.id} />
+							<div class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+								<div class="space-y-6">
+									<div>
+										<label for="name" class="mb-2 block text-sm">Ticket Name</label>
+										<input
+											type="text"
+											name="name"
+											value={selectedTicket.name}
+											placeholder="Enter ticket name"
+											class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
+										/>
+										{#if $errors.name}
+											<p class="text-primary text-sm">
+												{$errors.name}
+											</p>
+>>>>>>> 67511ce8 (initial backend integration of seat generator to sear selector)
 										{/if}
 									</div>
-								</Tabs.Content>
-							</Tabs.Root>
+									<div>
+										<label for="price" class="mb-2 block text-sm">Price</label>
+										<input
+											type="number"
+											name="price"
+											value={selectedTicket.price}
+											placeholder="Enter ticket price"
+											class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
+										/>
+										{#if $errors.price}
+											<p class="text-primary text-sm">
+												{$errors.price}
+											</p>
+										{/if}
+									</div>
+									<div>
+										<label for="salesStart" class="mb-2 block text-sm"
+											>Sales Start (DD/MM/YYYY)</label
+										>
+										<DatePicker
+											name="salesStart"
+											value={selectedTicket.salesStart}
+											className="h-input rounded-input flex w-full select-none items-center border px-2 py-4 text-gray-500"
+										/>
+										{#if $errors.salesStart}
+											<p class="text-primary text-sm">
+												{$errors.salesStart}
+											</p>
+										{/if}
+									</div>
+									<div>
+										<label for="salesEnd" class="mb-2 block text-sm">Sales End (DD/MM/YYYY)</label>
+										<DatePicker
+											name="salesEnd"
+											value={selectedTicket.salesEnd}
+											className="h-input rounded-input flex w-full select-none items-center border px-2 py-4 text-gray-500"
+										/>
+										{#if $errors.salesEnd}
+											<p class="text-primary text-sm">
+												{$errors.salesEnd}
+											</p>
+										{/if}
+									</div>
+								</div>
+								<div class="space-y-6">
+									<div>
+										<label for="quantityAvailable" class="mb-2 block text-sm"
+											>Available For Sale</label
+										>
+										<input
+											type="number"
+											name="quantityAvailable"
+											value={selectedTicket.quantityAvailable}
+											placeholder="Enter quantity"
+											class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
+										/>
+										{#if $errors.quantityAvailable}
+											<p class="text-primary text-sm">
+												{$errors.quantityAvailable}
+											</p>
+										{/if}
+									</div>
+									<div>
+										<label for="minOrderQuantity" class="mb-2 block text-sm"
+											>Min Order Quantity</label
+										>
+										<input
+											type="number"
+											name="minOrderQuantity"
+											value={selectedTicket.minOrderQuantity}
+											placeholder="Enter min quantity"
+											class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
+										/>
+										{#if $errors.minOrderQuantity}
+											<p class="text-primary text-sm">
+												{$errors.minOrderQuantity}
+											</p>
+										{/if}
+									</div>
+									<div>
+										<label for="maxOrderQuantity" class="mb-2 block text-sm"
+											>Max Order Quantity</label
+										>
+										<input
+											type="number"
+											name="maxOrderQuantity"
+											value={selectedTicket.maxOrderQuantity}
+											placeholder="Enter max quantity"
+											class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
+										/>
+										{#if $errors.maxOrderQuantity}
+											<p class="text-primary text-sm">
+												{$errors.maxOrderQuantity}
+											</p>
+										{/if}
+									</div>
+
+									<input
+										type="hidden"
+										name="reserveSeating"
+										value={isActiveReserveSeating.toString()}
+									/>
+
+									<div>
+										<label for="activePayment" class="mb-2 block text-sm">Active payment</label>
+										<PaymentToggle value={isActivePayment} OnChange={handleTogglePayment} />
+									</div>
+
+									<div>
+										<label for="reserveSeating" class="mb-2 block text-sm"
+											>Enable Reserve Seating</label
+										>
+										<div class="relative inline-flex items-center">
+											<ReserveSeatToggle
+												value={isActiveReserveSeating}
+												OnChange={handleReserveSeatingToggle}
+											/>
+											<span class="ml-2 text-xs text-gray-500">
+												{isActiveReserveSeating ? 'Enabled' : 'Disabled'}
+											</span>
+										</div>
+										<input
+											type="hidden"
+											name="reserveSeating"
+											value={isActiveReserveSeating.toString()}
+										/>
+										<p class="mt-1 text-xs text-gray-500">
+											Enable reserve seating to allow customers to select specific seats.
+										</p>
+									</div>
+								</div>
+							</div>
+						</form></Tabs.Content
+					>
+
+					<Tabs.Content value="reserve-seating">
+						<div class="space-y-4">
+							<SeatConfig />
+							<RenameControl />
+							<SaveLayout on:save={handleSaveLayout} />
+							<ReserveToggle />
+							<QuantityWarning />
+							<VenueImageUpload />
+							<PanzoomContainer />
+							<StatusControls />
+							<SeatStats />
 						</div>
-					{/if}
-				</div>
-			</Drawer>
-		</div>
-	</div>
+					</Tabs.Content>
+				</Tabs.Root>
+			</div>
+		{/if}
+	</Drawer>
 
 	<div class="flex gap-4 overflow-x-auto pb-4">
 		{#if ticketList && ticketList.length > 0}
 			{#each ticketList as ticket}
 				<div
-					class="border-l-10 min-w-[298px] flex-shrink-0 rounded-lg border border-gray-400"
+					class="min-w-[298px] flex-shrink-0 rounded-lg border border-l-10 border-gray-400"
 					style="border-left-color: {ticket.color};"
 				>
 					<div class="p-4">
@@ -745,7 +1493,7 @@
 								/>
 							</div>
 						</div>
-						<div class="mb-4 mt-2 text-lg font-bold">₱{ticket.price}</div>
+						<div class="mt-2 mb-4 text-lg font-bold">₱{ticket.price}</div>
 						<div class="space-y-1">
 							<div class="flex justify-between text-xs">
 								<p>0/{ticket.quantityAvailable} Sold</p>
@@ -772,7 +1520,7 @@
 	</div>
 
 	<!-- Voucher Toggle Section -->
-	<div class="mb-4 mt-4 flex items-center justify-between">
+	<div class="mt-4 mb-4 flex items-center justify-between">
 		<div class="flex items-center gap-4">
 			<h2 class="text-xl font-semibold">Vouchers</h2>
 			<VoucherToggle enabled={voucherEnabled} onChange={toggleVouchers} />
@@ -868,7 +1616,7 @@
 								{#if discountType === 'fixed_amount'}
 									<select
 										name="currency"
-										class="absolute left-2 top-1/2 -translate-y-1/2 rounded-md bg-gray-100 py-1 pl-1 pr-6 text-sm font-medium"
+										class="absolute top-1/2 left-2 -translate-y-1/2 rounded-md bg-gray-100 py-1 pr-6 pl-1 text-sm font-medium"
 									>
 										<option value="PHP">PHP</option>
 										<option value="USD">USD</option>
@@ -975,7 +1723,7 @@
 							{#if selectedTickets.includes('all')}
 								{#each ticketList as ticket}
 									<div
-										class="border-l-10 min-w-[298px] flex-shrink-0 rounded-lg border border-gray-400"
+										class="min-w-[298px] flex-shrink-0 rounded-lg border border-l-10 border-gray-400"
 										style="border-left-color: {ticket.color};"
 									>
 										<div class="p-4">
@@ -1004,7 +1752,7 @@
 													/>
 												</div>
 											</div>
-											<div class="mb-4 mt-2 text-lg font-bold">₱{ticket.price}</div>
+											<div class="mt-2 mb-4 text-lg font-bold">₱{ticket.price}</div>
 											<div class="space-y-1">
 												<div class="flex justify-between text-xs">
 													<p>0/{ticket.quantityAvailable} Sold</p>
@@ -1023,7 +1771,7 @@
 								<!-- Show only the selected ticket -->
 								{#each ticketList.filter( (ticket) => selectedTickets.includes(ticket.name) ) as ticket, index}
 									<div
-										class="border-l-10 min-w-[298px] flex-shrink-0 rounded-lg border border-gray-400"
+										class="min-w-[298px] flex-shrink-0 rounded-lg border border-l-10 border-gray-400"
 										style="border-left-color: {ticket.color};"
 									>
 										<div class="p-4">
@@ -1052,7 +1800,7 @@
 													/>
 												</div>
 											</div>
-											<div class="mb-4 mt-2 text-lg font-bold">₱{ticket.price}</div>
+											<div class="mt-2 mb-4 text-lg font-bold">₱{ticket.price}</div>
 											<div class="space-y-1">
 												<div class="flex justify-between text-xs">
 													<p>0/{ticket.quantityAvailable} Sold</p>
@@ -1087,10 +1835,10 @@
 									/>
 									<label
 										for="active-toggle"
-										class="peer h-6 w-11 cursor-pointer rounded-full bg-gray-200 transition-colors hover:bg-gray-300 peer-checked:bg-[#DF4D60] peer-checked:hover:bg-[#DF4D60]/90"
+										class="peer h-6 w-11 cursor-pointer rounded-full bg-gray-200 transition-colors peer-checked:bg-[#DF4D60] hover:bg-gray-300 peer-checked:hover:bg-[#DF4D60]/90"
 									>
 										<span
-											class="absolute left-[2px] top-[2px] h-5 w-5 rounded-full bg-white transition-all peer-checked:left-[22px]"
+											class="absolute top-[2px] left-[2px] h-5 w-5 rounded-full bg-white transition-all peer-checked:left-[22px]"
 										></span>
 									</label>
 								</div>
@@ -1108,10 +1856,10 @@
 									/>
 									<label
 										for="single-use-toggle"
-										class="peer h-6 w-11 cursor-pointer rounded-full bg-gray-200 transition-colors hover:bg-gray-300 peer-checked:bg-[#DF4D60] peer-checked:hover:bg-[#DF4D60]/90"
+										class="peer h-6 w-11 cursor-pointer rounded-full bg-gray-200 transition-colors peer-checked:bg-[#DF4D60] hover:bg-gray-300 peer-checked:hover:bg-[#DF4D60]/90"
 									>
 										<span
-											class="absolute left-[2px] top-[2px] h-5 w-5 rounded-full bg-white transition-all peer-checked:left-[22px]"
+											class="absolute top-[2px] left-[2px] h-5 w-5 rounded-full bg-white transition-all peer-checked:left-[22px]"
 										></span>
 									</label>
 								</div>
@@ -1165,7 +1913,7 @@
 						{#if selectedTickets.includes('all')}
 							{#each ticketList as ticket, index}
 								<div
-									class="border-l-10 min-w-[298px] flex-shrink-0 rounded-lg border border-gray-400"
+									class="min-w-[298px] flex-shrink-0 rounded-lg border border-l-10 border-gray-400"
 									style="border-left-color: {ticket.color};"
 								>
 									<div class="p-4">
@@ -1184,7 +1932,7 @@
 												</span>
 											</div>
 										</div>
-										<div class="mb-4 mt-2 text-lg font-bold">₱{ticket.price}</div>
+										<div class="mt-2 mb-4 text-lg font-bold">₱{ticket.price}</div>
 										<div class="space-y-1">
 											<div class="flex justify-between text-xs">
 												<p>0/{ticket.quantityAvailable} Sold</p>
@@ -1203,7 +1951,7 @@
 							<!-- Show only the selected ticket -->
 							{#each ticketList.filter( (ticket) => selectedTickets.includes(ticket.name) ) as ticket, index}
 								<div
-									class="border-l-10 min-w-[298px] flex-shrink-0 rounded-lg border border-gray-400"
+									class="min-w-[298px] flex-shrink-0 rounded-lg border border-l-10 border-gray-400"
 									style="border-left-color: {ticket.color};"
 								>
 									<div class="p-4">
@@ -1232,7 +1980,7 @@
 												/>
 											</div>
 										</div>
-										<div class="mb-4 mt-2 text-lg font-bold">₱{ticket.price}</div>
+										<div class="mt-2 mb-4 text-lg font-bold">₱{ticket.price}</div>
 										<div class="space-y-1">
 											<div class="flex justify-between text-xs">
 												<p>0/{ticket.quantityAvailable} Sold</p>

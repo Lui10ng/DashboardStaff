@@ -1,14 +1,14 @@
 import type { Dialog, DropdownMenu, WithoutChild } from 'bits-ui';
 import type { Snippet } from 'svelte';
 
-export type DropdownMenuProps = DropdownMenu.Props & {
+export type DropdownMenuProps = {
 	icon: string;
 	className?: string;
 	classMenu?: string;
 	buttonText: string;
 	alignContent?: string;
 	items: string[];
-	contentProps?: WithoutChild<DropdownMenu.Content.Props>;
+	contentProps?: any; // fallback to any if Content.Props is not available
 };
 
 export type ModalProps = Dialog.RootProps & {
@@ -125,6 +125,7 @@ export interface PayloadError {
 export type TicketProps = {
 	id: string;
 	name: string;
+	description?: string;
 	price: number;
 	currency: string;
 	quantityAvailable: number;
@@ -133,24 +134,34 @@ export type TicketProps = {
 	salesStart: string;
 	salesEnd: string;
 	color: string;
-	status: TicketStatus;
+	status: string;
+	event: {
+		relationTo: string;
+		value: string;
+	};
+	seatMap?: {
+		relationTo: string;
+		value: string;
+	};
+	paymentActive?: boolean;
 };
 
 export type TicketStatus = 'active' | 'inactive';
 export type VoucherStatus = 'active' | 'deactivated' | 'expired';
 
 export type PromotionProps = {
-	id: string;
+	id: number;
 	code: string;
 	description: string;
-	status: 'active' | 'inactive' | 'expired'; // Enum for the promotion status
-	discountType: 'percentage' | 'fixed_amount'; // Enum for the type of discount
+	status: 'active' | 'inactive' | 'expired';
+	discountType: 'percentage' | 'fixed_amount';
 	discountValue: number;
-	currency: 'PHP' | 'USD' | 'EUR' | null; // Enum for currency, empty string for null or undefined
+	currency: 'PHP' | 'USD' | 'EUR' | null;
 	usageLimit: number;
 	validFrom: string;
 	validUntil: string;
 	minimumOrderAmount: number;
 	appliesToAllEvents: boolean;
 	event: Event[];
+	applicableEvents: number[];
 };

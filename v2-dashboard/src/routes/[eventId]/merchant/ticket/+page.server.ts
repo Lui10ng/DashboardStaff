@@ -1,15 +1,19 @@
-import type { SeatLayoutData } from '$lib/types/seat-generator';
-import { fail, message, superValidate } from 'sveltekit-superforms';
 import type { PageServerLoad, Actions } from './$types';
+import type { SeatLayoutData } from '$lib/types/seat-generator';
+import type { RequestEvent } from '@sveltejs/kit';
+import { handleSvelteError } from '$lib/utils/errorHandler';
+import { error, fail } from '@sveltejs/kit';
+import { createApiClient } from '$lib/services/payload.server';
+import { seatLayoutDataSchema, seatMapSchema } from '$lib/schema/seat-map';
+import { ZodError } from 'zod';
+import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { ticketSchema } from '$lib/schema/ticket';
-import { voucherSchema } from '$lib/schema';
-import { createApiClient } from '$lib/services/payload.server';
-import type { RequestEvent } from './$types';
-import { handleSvelteError } from '$lib/utils/errorHandler';
-import { error } from '@sveltejs/kit';
-import type { TicketType, Promotion } from '$lib/types/payload-types';
+import { voucherSchema } from '$lib/schema/voucher';
+import { message } from 'sveltekit-superforms/server';
+import type { TicketType, Promotion, SeatMap, Event } from '$lib/types/payload-types';
 import type { PayloadPaginatedResponse } from '$lib/types/payloadResponse';
+import { ticketTypeSchema } from '$lib/schema';
 
 export const load: PageServerLoad = async (event: RequestEvent) => {
 	const {
@@ -31,13 +35,13 @@ export const load: PageServerLoad = async (event: RequestEvent) => {
 	};
 
 	const paramsTicket = new URLSearchParams({
-		'where[event][equals]': eventId!,
+		'where[event][equals]': eventId ?? '',
 		sort: 'date',
 		depth: '0'
 	});
 
 	const paramsVoucher = new URLSearchParams({
-		'where[event][equals]': eventId!,
+		'where[event][equals]': eventId ?? '',
 		sort: 'date',
 		depth: '0'
 	});
@@ -46,33 +50,45 @@ export const load: PageServerLoad = async (event: RequestEvent) => {
 	const voucherForm = await superValidate(zod(voucherSchema));
 
 	try {
-		const apiClient = createApiClient(event);
-		const response = await apiClient.get<PayloadPaginatedResponse<TicketType>>(
-			'/ticket-types',
-			paramsTicket
-		);
-		const ticketData = response.docs;
+		// Initialize the form with default values
+		const form = await superValidate(event, zod(ticketSchema));
 
-		const responseVoucher = await apiClient.get<PayloadPaginatedResponse<Promotion>>(
-			'/promotions',
-			paramsVoucher
-		);
-		const voucherData = responseVoucher.docs;
+		// Set default values
+		form.data = {
+			event: eventId ? parseInt(eventId, 10) : 0,
+			name: '',
+			description: '',
+			price: 0,
+			currency: 'PHP',
+			status: 'active',
+			quantityAvailable: 0,
+			minOrderQuantity: 1,
+			maxOrderQuantity: 1,
+			salesStart: new Date().toISOString().split('T')[0],
+			salesEnd: new Date().toISOString().split('T')[0],
+			color: '#0FBA81'
+		};
+
+		// Fetch existing tickets
+		const ticketResponse = await apiClient.get<PayloadPaginatedResponse<TicketType>>('/ticket-types', {
+			'where[event][equals]': eventId ?? ''
+		});
+
+		// Fetch existing vouchers
+		const voucherResponse = await apiClient.get<PayloadPaginatedResponse<Promotion>>('/promotions', {
+			'where[applicableEvents][contains]': eventId ?? ''
+		});
 
 		return {
-			ticketForm,
+			form,
 			voucherForm,
-			ticketData,
-			voucherData,
-			initialConfig
+			ticketData: ticketResponse?.docs || [],
+			voucherData: voucherResponse?.docs || [],
+			eventId
 		};
-	} catch (err: unknown) {
-		const { statusCode, errorMessage } = handleSvelteError(
-			err,
-			'Loading Merchant',
-			'Failed to Load Merchant'
-		);
-
+	} catch (err) {
+		console.error('Error loading data:', err);
+		const { statusCode, errorMessage } = handleSvelteError(err, 'Loading Merchant', 'Failed to Load Merchant');
 		throw error(statusCode, errorMessage);
 	}
 };
@@ -106,19 +122,121 @@ export const actions: Actions = {
 		};
 
 		try {
+			const formData = await event.request.formData();
+			const eventId = event.params.eventId;
+
+			if (!eventId) {
+				throw new Error('Event ID is required');
+			}
+
+			const form = await superValidate(formData, zod(ticketSchema));
+			
+			if (!form.valid) {
+				console.error('[DEBUG] Form validation failed:', form.errors);
+				return fail(400, { form });
+			}
+
 			const apiClient = createApiClient(event);
-			const response = await apiClient.post('/ticket-types', formData);
-			console.log('response: ', response);
 
-			return message(form, { success: true, message: 'Ticket created successfully' });
-		} catch (err: unknown) {
-			const { statusCode, errorMessage } = handleSvelteError(
-				err,
-				'Creating Ticket',
-				'Failed to Create Ticket'
-			);
+			// Step 1: Create the seat map first if we have seat map data
+			let seatMapId: number | null = null;
+			let totalSeats: number = 0; // Declare totalSeats at this scope
+			const seatMapStore = formData.get('seatMapStore');
+			
+			if (seatMapStore && typeof seatMapStore === 'string') {
+				try {
+					console.log('[DEBUG] Creating seat map...');
+					const seatMapData = JSON.parse(seatMapStore);
+					
+					// Calculate total seats from the configuration
+					totalSeats = (seatMapData.config?.seatConfig?.rows || 0) * (seatMapData.config?.seatConfig?.seatsPerRow || 0);
+					
+					// Ensure ticket quantity matches total seats
+					const seatMapPayload = {
+						...seatMapData,
+						config: {
+							...seatMapData.config,
+							ticketQuantity: totalSeats // Use total seats as ticket quantity
+						},
+						event: parseInt(eventId, 10)
+					};
+					
+					console.log('[DEBUG] Sending seat map payload:', seatMapPayload);
+					
+					// Create the seat map
+					const seatMapResponse = await apiClient.post('/seat-maps', seatMapPayload);
+					console.log('[DEBUG] Seat map creation response:', seatMapResponse);
+					
+					// Extract the seat map ID from the response
+					if (seatMapResponse?.doc?.id) {
+						seatMapId = seatMapResponse.doc.id;
+						console.log('[DEBUG] Created seat map with ID:', seatMapId);
+					} else {
+						console.error('[DEBUG] Failed to create seat map: Invalid response', seatMapResponse);
+						throw new Error('Failed to create seat map: Invalid response');
+					}
+				} catch (seatMapError) {
+					console.error('[DEBUG] Error creating seat map:', seatMapError);
+					return fail(400, { 
+						form,
+						error: seatMapError instanceof Error ? seatMapError.message : 'Failed to create seat map'
+					});
+				}
+			}
 
-			throw error(statusCode, errorMessage);
+			// Step 2: Create the ticket with the seat map reference
+			const ticketData = {
+				event: parseInt(eventId, 10),
+				name: form.data.name,
+				description: form.data.description || '',
+				price: form.data.price,
+				currency: form.data.currency,
+				status: form.data.status || 'active',
+				quantityAvailable: seatMapId ? totalSeats : form.data.quantityAvailable,
+				minOrderQuantity: form.data.minOrderQuantity || 1,
+				maxOrderQuantity: form.data.maxOrderQuantity || (seatMapId ? totalSeats : form.data.quantityAvailable),
+				salesStart: form.data.salesStart,
+				salesEnd: form.data.salesEnd,
+				color: form.data.color || '#000000',
+				seatMap: seatMapId // Pass the seatMapId here
+			};
+
+			console.log('[DEBUG] Creating ticket with data:', ticketData);
+			const ticketResponse = await apiClient.post('/ticket-types', ticketData);
+			console.log('[DEBUG] Ticket creation response:', ticketResponse);
+
+			if (!ticketResponse?.doc?.id) {
+				console.error('[DEBUG] Invalid ticket response:', ticketResponse);
+				// Don't delete the seat map, just report the error
+				throw new Error('Failed to create ticket type: Invalid response format');
+			}
+
+			// Step 3: Update the seat map with the ticket reference if needed
+			if (seatMapId) {
+				try {
+					await apiClient.patch(`/seat-maps/${seatMapId}`, {
+						ticketType: ticketResponse.doc.id
+					});
+					console.log('[DEBUG] Updated seat map with ticket reference');
+				} catch (updateError) {
+					console.error('[DEBUG] Failed to update seat map with ticket reference:', updateError);
+					// Continue since this is not critical
+				}
+			}
+
+			return { 
+				form,
+				success: true,
+				message: 'Ticket created successfully' + (seatMapId ? ' with seat map' : ''),
+				ticketId: ticketResponse.doc.id,
+				seatMapId
+			};
+		} catch (error) {
+			console.error('[DEBUG] Error in createTicket:', error);
+			return fail(500, {
+				form: null,
+				error: error instanceof Error ? error.message : 'Failed to create ticket type'
+			});
 		}
 	},
 
@@ -162,8 +280,11 @@ export const actions: Actions = {
 				status: form.data.status
 			};
 
+			console.log('Sending update with data:', formData);
+
 			const apiClient = createApiClient(event);
-			await apiClient.patch(`/ticket-types/${ticketId}`, formData);
+			const response = await apiClient.patch(`/ticket-types/${ticketId}`, formData);
+			console.log('Update response:', response);
 
 			return message(form, {
 				success: true,
@@ -171,6 +292,12 @@ export const actions: Actions = {
 			});
 		} catch (err) {
 			console.error('Error updating ticket:', err);
+			if (err instanceof Error) {
+				console.error('Error details:', {
+					message: err.message,
+					stack: err.stack
+				});
+			}
 			return message(form, {
 				success: false,
 				message: 'Failed to update ticket'
@@ -208,7 +335,7 @@ export const actions: Actions = {
 
 		try {
 			const apiClient = createApiClient(event);
-			const response = await apiClient.post('/promotions', formData);
+			const response = await apiClient.post('collections/promotions', formData);
 			console.log('response: ', response);
 
 			return message(form, { success: true, message: 'Voucher created successfully' });
@@ -222,27 +349,91 @@ export const actions: Actions = {
 		console.log(data);
 	},
 
-	saveLayout: async ({ request }) => {
+	saveLayout: async (event: RequestEvent) => {
+		console.log("Starting saveLayout action");
 		try {
+			const { request, params } = event;
 			const formData = await request.formData();
 			const layoutDataJson = formData.get('layoutData');
-
+			const eventId = params.eventId;
+			
+			if (!eventId) {
+				return fail(400, { success: false, error: 'Event ID is required' });
+			}
+			
 			if (!layoutDataJson || typeof layoutDataJson !== 'string') {
-				return { success: false, error: 'Invalid layout data' };
+				console.error("Invalid layout data:", layoutDataJson);
+				return fail(400, { success: false, error: 'Invalid layout data' });
+			}
+			
+			// Parse and validate the layout data
+			let layoutData;
+			try {
+				layoutData = JSON.parse(layoutDataJson);
+				console.log("Layout data parsed successfully:", layoutData);
+			} catch (error) {
+				console.error("JSON parsing error:", error);
+				return fail(400, { 
+					success: false, 
+					error: 'Invalid JSON format in layout data' 
+				});
 			}
 
-			JSON.parse(layoutDataJson) as SeatLayoutData;
+			try {
+				layoutData = seatLayoutDataSchema.parse(layoutData);
+				console.log("Layout data validated successfully");
+			} catch (error) {
+				console.error("Validation error:", error);
+				if (error instanceof ZodError) {
+					return fail(400, { 
+						success: false, 
+						error: `Validation error: ${error.errors.map(e => e.message).join(', ')}` 
+					});
+				}
+				return fail(400, { 
+					success: false, 
+					error: error instanceof Error ? error.message : 'Invalid layout data format' 
+				});
+			}
 
-			return {
-				success: true,
-				message: 'Layout saved successfully'
+			// Format data for SeatMaps collection
+			console.log("Formatting data for SeatMaps collection...");
+			const seatMapData = {
+				name: layoutData.name,
+				config: layoutData.config,
+				seats: layoutData.seats,
+				customSeatNames: layoutData.customSeatNames || null,
+				summary: layoutData.summary,
+				event: eventId // Direct ID reference, not a relationship object
 			};
+
+			try {
+				const apiClient = createApiClient(event);
+				console.log("Making API request to save seat map...");
+				
+				// First get the event to check if it has a seat map
+				type EventResponse = { seatMap?: string | { id: string } };
+				const eventResponse = await apiClient.get<EventResponse>(`/events/${eventId}`);
+				console.log("Event response:", eventResponse);
+				
+				// Remove the seat map creation logic from here since it should happen during ticket creation
+				return {
+					success: true,
+					message: 'Layout configuration saved to store'
+				};
+			} catch (apiError) {
+				console.error("API error:", apiError);
+				return fail(500, { 
+					success: false, 
+					error: apiError instanceof Error ? apiError.message : String(apiError)
+				});
+			}
 		} catch (err) {
-			console.error('Error saving layout:', err);
-			return {
+			console.error('Error in saveLayout:', err);
+			return fail(500, {
 				success: false,
 				error: err instanceof Error ? err.message : 'Unknown error'
-			};
+			});
 		}
 	},
 

@@ -127,6 +127,16 @@ const TicketTypes: CollectionConfig = {
     { name: 'maxOrderQuantity', type: 'number', min: 1 },
     { name: 'color', type: 'text', required: true },
     {
+      name: 'seatMap',
+      type: 'relationship',
+      relationTo: 'seat-maps',
+      hasMany: false,
+      required: false,
+      admin: {
+        description: 'Optional seat map for reserved seating tickets',
+      },
+    },
+    {
       name: 'promotion',
       type: 'join',
       collection: 'promotions',
