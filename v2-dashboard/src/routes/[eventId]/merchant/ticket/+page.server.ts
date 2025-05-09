@@ -12,7 +12,9 @@ import type { TicketType, Promotion } from '$lib/types/payload-types';
 import type { PayloadPaginatedResponse } from '$lib/types/payloadResponse';
 
 export const load: PageServerLoad = async (event: RequestEvent) => {
-	const { params: { eventId } } = event;
+	const {
+		params: { eventId }
+	} = event;
 
 	const initialConfig = {
 		ticketQuantity: 0,
@@ -77,7 +79,10 @@ export const load: PageServerLoad = async (event: RequestEvent) => {
 
 export const actions: Actions = {
 	createTicket: async (event: RequestEvent) => {
-		const { request, params: { eventId } } = event;
+		const {
+			request,
+			params: { eventId }
+		} = event;
 
 		const data = await request.formData();
 		const form = await superValidate(data, zod(ticketSchema));
@@ -95,8 +100,9 @@ export const actions: Actions = {
 			minOrderQuantity: form.data.minOrderQuantity,
 			maxOrderQuantity: form.data.maxOrderQuantity,
 			salesStart: new Date(`${form.data.validfrom}T00:00:00Z`).toISOString(),
-			salesEnd: new Date(`${form.data.validto}T23:59:00Z`).toISOString(),
-			color: form.data.color
+			salesEnd: new Date(`${form.data.validto}T00:00:00Z`).toISOString(),
+			color: form.data.color,
+			status: form.data.status // Add status field
 		};
 
 		try {
@@ -116,42 +122,48 @@ export const actions: Actions = {
 		}
 	},
 
-	disableTicket: async ({ request }) => {
-		const data = await request.formData();
-		console.log(data);
-	},
-
 	updateTicket: async (event: RequestEvent) => {
 		const { request } = event;
 		const data = await request.formData();
 		const ticketId = data.get('id');
 
-		console.log('Updating ticket with ID:', ticketId); // Add this log
+		console.log('Updating ticket with ID:', ticketId);
 
 		const form = await superValidate(data, zod(ticketSchema));
 
 		if (!form.valid) {
-			console.log('Form validation failed:', form.errors); // Add this log
+			console.log('Form validation failed:', form.errors);
 			return fail(400, { form });
 		}
 
 		try {
+			// Parse and validate dates
+			const validFrom = form.data.validfrom ? new Date(form.data.validfrom + 'T00:00:00Z') : null;
+			const validTo = form.data.validto ? new Date(form.data.validto + 'T00:00:00Z') : null;
+
+			// Validate dates
+			if (!validFrom || isNaN(validFrom.getTime()) || !validTo || isNaN(validTo.getTime())) {
+				console.error('Invalid date values:', { validFrom, validTo });
+				return message(form, {
+					success: false,
+					message: 'Invalid date format'
+				});
+			}
+
 			const formData = {
 				name: form.data.ticketName,
 				price: form.data.price,
 				quantityAvailable: form.data.quantity,
 				minOrderQuantity: form.data.minOrderQuantity,
 				maxOrderQuantity: form.data.maxOrderQuantity,
-				salesStart: new Date(`${form.data.validfrom}T00:00:00Z`).toISOString(),
-				salesEnd: new Date(`${form.data.validto}T23:59:00Z`).toISOString(),
-				color: form.data.color
+				salesStart: validFrom.toISOString(),
+				salesEnd: validTo.toISOString(),
+				color: form.data.color,
+				status: form.data.status
 			};
 
-			console.log('Sending update with data:', formData); // Add this log
-
 			const apiClient = createApiClient(event);
-			const response = await apiClient.patch(`/ticket-types/${ticketId}`, formData);
-			console.log('Update response:', response); // Add this log
+			await apiClient.patch(`/ticket-types/${ticketId}`, formData);
 
 			return message(form, {
 				success: true,
@@ -159,22 +171,18 @@ export const actions: Actions = {
 			});
 		} catch (err) {
 			console.error('Error updating ticket:', err);
-			// Add more detailed error logging
-			if (err instanceof Error) {
-				console.error('Error details:', {
-					message: err.message,
-					stack: err.stack
-				});
-			}
 			return message(form, {
 				success: false,
-				message: 'Error updating ticket'
+				message: 'Failed to update ticket'
 			});
 		}
 	},
 
 	createVoucher: async (event: RequestEvent) => {
-		const { request, params: { eventId } } = event;
+		const {
+			request,
+			params: { eventId }
+		} = event;
 
 		const data = await request.formData();
 		const form = await superValidate(data, zod(voucherSchema));
@@ -184,6 +192,7 @@ export const actions: Actions = {
 		}
 
 		const formData = {
+			event: parseInt(eventId),
 			code: form.data.code,
 			description: form.data.description,
 			status: 'active', // init
@@ -192,10 +201,9 @@ export const actions: Actions = {
 			currency: form.data.currency || null,
 			usageLimit: form.data.quantity,
 			validFrom: new Date(`${form.data.validFrom}T00:00:00Z`).toISOString(),
-			validUntil: new Date(`${form.data.validUntil}T23:59:00Z`).toISOString(),
+			validUntil: new Date(`${form.data.validUntil}T00:00:00Z`).toISOString(),
 			minimumOrderAmount: form.data.minOrderAmount,
-			appliesToAllEvents: false,
-			event: [eventId]
+			appliesToAllEvents: false
 		};
 
 		try {

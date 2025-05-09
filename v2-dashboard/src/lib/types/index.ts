@@ -123,6 +123,7 @@ export interface PayloadError {
 }
 
 export type TicketProps = {
+	id: string;
 	name: string;
 	price: number;
 	currency: string;
@@ -132,10 +133,10 @@ export type TicketProps = {
 	salesStart: string;
 	salesEnd: string;
 	color: string;
-	status: string;
+	status: TicketStatus;
 };
 
-export type TicketStatus = 'active' | 'disabled';
+export type TicketStatus = 'active' | 'inactive';
 export type VoucherStatus = 'active' | 'deactivated' | 'expired';
 
 export type PromotionProps = {

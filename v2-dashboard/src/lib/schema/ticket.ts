@@ -9,5 +9,6 @@ export const ticketSchema = z.object({
 	maxOrderQuantity: z.number().min(1, 'Maximum order quantity is required'),
 	validfrom: z.string().min(1, 'Valid from is required'),
 	validto: z.string().min(1, 'Valid to is required'),
-	color: z.string().min(1, 'Color is required')
+	color: z.string().min(1, 'Color is required'),
+	status: z.enum(['active', 'inactive']).default('active')
 });
