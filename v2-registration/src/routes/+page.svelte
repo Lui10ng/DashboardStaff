@@ -519,7 +519,6 @@
 																			class="mr-1 size-6 accent-white checked:bg-transparent"
 																			type="checkbox"
 																			name={field.name}
-																			value={ticket.id}
 																			bind:checked={$form.tabs[i][field.name]}
 																		/>
 																	{/if}

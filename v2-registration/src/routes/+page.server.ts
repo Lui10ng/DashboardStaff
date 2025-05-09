@@ -7,7 +7,7 @@ import { apiClient } from '$lib/services/payload.server';
 import type { Actions } from './$types';
 import { handleSvelteError } from '$lib/utils/errorHandler';
 import { error } from '@sveltejs/kit';
-import type { PayloadPaginatedResponse } from '$lib/types';
+import type { PayloadPaginatedResponse, TicketTypeResponse } from '$lib/types';
 
 let schema: any = null;
 let eventId = '';
@@ -33,9 +33,11 @@ export const load: PageServerLoad = async (event: RequestEvent) => {
 
 			if (formData.docs[0].ticketType.docs.length > 0) {
 				formBuilder.push({
-					name: 'paymentType',
+					id: 'ticketType',
+					name: 'ticketType',
 					fieldType: 'json',
 					label: 'Tickets',
+					required: true,
 					ticketData: formData.docs[0].ticketType.docs
 				});
 			}
@@ -82,7 +84,25 @@ export const actions: Actions = {
 				submittedAnswers: form.data.tabs
 			};
 
+			const ticketId = form.data.tabs[0].ticketType.value;
+
+			const params = new URLSearchParams({
+				'where[id][equals]': ticketId,
+				'select[quantityAvailable]': 'true'
+			});
+
+			const { quantityAvailable } = await apiClient.get<TicketTypeResponse>(
+				`/ticket-types/${ticketId}`,
+				params
+			);
+
+			const formData = {
+				quantityAvailable: quantityAvailable - 1
+			};
+
 			const response = await apiClient.post('/registrants', registrantData);
+			await apiClient.patch(`/ticket-types/${ticketId}`, formData); // update quantity
+
 			console.log('response: ', response);
 
 			return message(form, { success: true, message: 'Registration successful!' });

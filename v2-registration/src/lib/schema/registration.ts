@@ -8,9 +8,14 @@ export const registration = (fields: any): any => {
 			continue;
 		}
 
+		const type =
+			field.fieldType === 'json'
+				? z.number({ invalid_type_error: `${field.label} should not be empty!` })
+				: z.string();
+
 		field.required
-			? (z_object_fields[field.id] = z.string().min(1, `${field.label} should not be empty!`))
-			: (z_object_fields[field.id] = z.string());
+			? (z_object_fields[field.id] = type.min(1, `${field.label} should not be empty!`))
+			: (z_object_fields[field.id] = type);
 	}
 	z_object_fields['payment'] = z.any();
 
