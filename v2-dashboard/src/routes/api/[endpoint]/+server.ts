@@ -6,6 +6,8 @@ import { createApiClient } from '$lib/services/payload.server';
 import type { MediaUploadResponse } from '$lib/types/media';
 import { checkSubdomainExists } from '$lib/utils/checkSubdomainExists';
 import { eventSchema } from '$lib/schema';
+import { env } from '$env/dynamic/public';
+import crypto from 'crypto'
 
 /**
  * Error Guidelines:
@@ -29,41 +31,30 @@ export const POST: RequestHandler = async (event: RequestEvent) => {
 			try {
 				const formData = await request.formData();
 				const uploads: any[] = [];
-				const apiClient = createApiClient(event);
-
 				for (const [key, value] of formData.entries()) {
-					if (value instanceof File && value.size > 0) {
-						console.log('Uploading:', key, value.name);
-
-						// Create a new FormData for each file
+					if (value instanceof File) {
+						const newName = `${crypto.randomUUID()}.${value.name.split('.').pop()}`; // preserve original extension
+						const renamedFile = new File([value], newName, {
+							type: value.type,
+						});
 						const form = new FormData();
-						// const compressedBuffer = await value.arrayBuffer();
-						// const compressedBlob = new Blob([compressedBuffer], { type: value.type });
-						form.append('file', value);
-						form.append('alt', value.name);
+						form.append('file', renamedFile); // Send Base64
 						form.append('_payload', JSON.stringify({ alt: value.name }));
-
-						// Use the apiClient to post the FormData
 						try {
-							const temp = await apiClient.post<MediaUploadResponse>('/media', form);
-
-							uploads.push(temp);
+							const res = await fetch(env.PUBLIC_PAYLOAD_API_URL+'/api/media', {
+							method: 'POST',
+							credentials: 'include',
+							body: form,
+							});
+							uploads.push(res);
 						} catch (uploadError: any) {
-							// Use handleSvelteError to format the error message for logging
-							const { errorMessage } = handleSvelteError(
-								uploadError,
-								`Uploading ${value instanceof File ? value.name : 'file'}`, // Context
-								`Failed to upload ${value instanceof File ? value.name : 'file'}` // User-facing message (though not thrown here)
-							);
-							// Log the standardized error message
-							console.error(`Upload Error: ${errorMessage}`);
-
-							continue; // Skip this file and continue with the next
+							console.error('Upload Error:', uploadError);
 						}
 					}
 				}
 
 				return json({ uploads });
+
 			} catch (err) {
 				const { statusCode, errorMessage } = handleSvelteError(
 					err,
