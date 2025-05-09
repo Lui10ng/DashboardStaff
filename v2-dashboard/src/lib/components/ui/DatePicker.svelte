@@ -24,22 +24,25 @@
 
     let internalValue: DateValue | undefined = $state();
 
-    function convertToDateValue(dateInput: string | Date | DateValue | null | undefined): DateValue | undefined {
-        if (!dateInput) return undefined;
-        if (typeof (dateInput as any).calendar === 'object') return dateInput as DateValue;
-
-        try {
-            if (typeof dateInput === 'string') {
-                return parseAbsoluteToLocal(dateInput);
-            } else if (dateInput instanceof Date) {
-                return parseAbsoluteToLocal(dateInput.toISOString());
-            }
-        } catch (e) {
-            console.error("Failed to parse date input:", dateInput, e);
-            return undefined;
+  // In DatePicker.svelte
+function convertToDateValue(dateInput: string | Date | DateValue | null | undefined): DateValue | undefined {
+    if (!dateInput) return undefined;
+    
+    try {
+        if (typeof dateInput === 'string') {
+            // Handle ISO string format
+            return parseAbsoluteToLocal(dateInput);
+        } else if (dateInput instanceof Date) {
+            return parseAbsoluteToLocal(dateInput.toISOString());
+        } else if (typeof (dateInput as any).calendar === 'object') {
+            return dateInput as DateValue;
         }
+    } catch (e) {
+        console.error("Failed to parse date:", e);
         return undefined;
     }
+    return undefined;
+}
 
     function isDateInvalid(date: DateValue) {
         if (!disabledPastDates) return false;

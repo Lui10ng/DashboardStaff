@@ -24,8 +24,8 @@
 
 	let { data } = $props();
 
-	const ticketList: TicketProps[] = $state(data.ticketData);
-	const voucherList: PromotionProps[] = $state(data.voucherData);
+	const ticketList: TicketProps[] = $derived(data.ticketData);
+	const voucherList: PromotionProps[] = $derived(data.voucherData);
 
 	const {
 		form: ticketForm,
@@ -524,7 +524,8 @@
 													>
 													<DatePicker
 														name="validfrom"
-														className="h-input rounded-input  flex w-full select-none items-center border px-2 py-4 text-gray-500"
+														value={selectedTicket.salesStart}
+														className="h-input rounded-input flex w-full select-none items-center border px-2 py-4 text-gray-500"
 													/>
 													{#if $ticketErrors.validfrom}
 														<p class="text-primary text-sm">
@@ -535,10 +536,11 @@
 												<div>
 													<label for="valid-in" class="mb-2 block text-sm"
 														>Valid to (DD/MM/YYYY)</label
-													>
+													>						
 													<DatePicker
 														name="validto"
-														className="h-input rounded-input  flex w-full select-none items-center border px-2 py-4 text-gray-500"
+														value={selectedTicket.salesEnd}
+														className="h-input rounded-input flex w-full select-none items-center border px-2 py-4 text-gray-500"
 													/>
 													{#if $ticketErrors.validto}
 														<p class="text-primary text-sm">

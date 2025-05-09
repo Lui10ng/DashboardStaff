@@ -138,21 +138,15 @@ export const actions: Actions = {
 
 		try {
 			// Parse and validate dates
-			const salesStart = form.data.validfrom ? new Date(form.data.validfrom) : null;
-			const salesEnd = form.data.validto ? new Date(form.data.validto) : null;
+			const validFrom = form.data.validfrom ? new Date(form.data.validfrom + 'T00:00:00Z') : null;
+			const validTo = form.data.validto ? new Date(form.data.validto + 'T00:00:00Z') : null;
 
-			// Validate dates are valid
-			if (!salesStart || isNaN(salesStart.getTime())) {
+			// Validate dates
+			if (!validFrom || isNaN(validFrom.getTime()) || !validTo || isNaN(validTo.getTime())) {
+				console.error('Invalid date values:', { validFrom, validTo });
 				return message(form, {
 					success: false,
-					message: 'Invalid start date'
-				});
-			}
-
-			if (!salesEnd || isNaN(salesEnd.getTime())) {
-				return message(form, {
-					success: false,
-					message: 'Invalid end date'
+					message: 'Invalid date format'
 				});
 			}
 
@@ -162,17 +156,14 @@ export const actions: Actions = {
 				quantityAvailable: form.data.quantity,
 				minOrderQuantity: form.data.minOrderQuantity,
 				maxOrderQuantity: form.data.maxOrderQuantity,
-				salesStart: salesStart.toISOString(),
-				salesEnd: salesEnd.toISOString(),
+				salesStart: validFrom.toISOString(),
+				salesEnd: validTo.toISOString(),
 				color: form.data.color,
 				status: form.data.status
 			};
 
-			console.log('Sending update with data:', formData);
-
 			const apiClient = createApiClient(event);
-			const response = await apiClient.patch(`/ticket-types/${ticketId}`, formData);
-			console.log('Update response:', response);
+			await apiClient.patch(`/ticket-types/${ticketId}`, formData);
 
 			return message(form, {
 				success: true,
@@ -180,15 +171,9 @@ export const actions: Actions = {
 			});
 		} catch (err) {
 			console.error('Error updating ticket:', err);
-			if (err instanceof Error) {
-				console.error('Error details:', {
-					message: err.message,
-					stack: err.stack
-				});
-			}
 			return message(form, {
 				success: false,
-				message: 'Error updating ticket: Invalid date format'
+				message: 'Failed to update ticket'
 			});
 		}
 	},
