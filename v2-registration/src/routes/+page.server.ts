@@ -84,26 +84,14 @@ export const actions: Actions = {
 				submittedAnswers: form.data.tabs
 			};
 
-			const ticketId = form.data.tabs[0].ticketType.value;
+			const ticketId = form.data.tabs[0].ticketType?.value;
 
-			const params = new URLSearchParams({
-				'where[id][equals]': ticketId,
-				'select[quantityAvailable]': 'true'
-			});
-
-			const { quantityAvailable } = await apiClient.get<TicketTypeResponse>(
-				`/ticket-types/${ticketId}`,
-				params
-			);
-
-			const formData = {
-				quantityAvailable: quantityAvailable - 1
-			};
+			if (ticketId) {
+				updateTicketQuantity(ticketId);
+			}
 
 			const response = await apiClient.post('/registrants', registrantData);
-			await apiClient.patch(`/ticket-types/${ticketId}`, formData); // update quantity
-
-			console.log('response: ', response);
+			console.log('response', response);
 
 			return message(form, { success: true, message: 'Registration successful!' });
 		} catch (err: unknown) {
@@ -117,3 +105,35 @@ export const actions: Actions = {
 		}
 	}
 };
+
+async function updateTicketQuantity(ticketId: number) {
+	try {
+		const params = new URLSearchParams({
+			'where[id][equals]': `${ticketId}`,
+			'select[quantityAvailable]': 'true'
+		});
+
+		const { quantityAvailable } = await apiClient.get<TicketTypeResponse>(
+			`/ticket-types/${ticketId}`,
+			params
+		);
+
+		if (!quantityAvailable || quantityAvailable <= 0) {
+			return;
+		}
+
+		const formData = {
+			quantityAvailable: quantityAvailable - 1
+		};
+
+		await apiClient.patch(`/ticket-types/${ticketId}`, formData);
+	} catch (err: unknown) {
+		const { statusCode, errorMessage } = handleSvelteError(
+			err,
+			'Registering for Event',
+			'Failed to Register for Event'
+		);
+
+		throw error(statusCode, errorMessage);
+	}
+}
