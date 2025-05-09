@@ -51,3 +51,7 @@ export type TicketDetail = {
 	price: number;
 	color: string;
 };
+
+export interface TicketTypeResponse {
+	quantityAvailable: number;
+}

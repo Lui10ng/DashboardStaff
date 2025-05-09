@@ -19,7 +19,8 @@ const TicketTypes: CollectionConfig = {
   access: {
     read: () => true,
     create: isAdminOrEventRole([MANAGER, EDITOR]),
-    update: isAdminOrEventRole([MANAGER, EDITOR]),
+    // update: isAdminOrEventRole([MANAGER, EDITOR]), // init for v2-registration
+    update: () => true,
     delete: isAdminOrEventRole([MANAGER, EDITOR]),
   },
   fields: [
