@@ -15,7 +15,7 @@ const Promotions: CollectionConfig = {
   },
   access: {
     read: isAdminOrEventRole([MANAGER, EDITOR, VIEWER]),
-    create: isAdminOrEventRole([MANAGER, EDITOR]),
+    create: () => true,
     update: isAdminOrEventRole([MANAGER, EDITOR]),
     delete: isAdminOrEventRole([MANAGER, EDITOR]),
   },
