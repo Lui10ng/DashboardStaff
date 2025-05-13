@@ -811,6 +811,91 @@
 				</div>
 			</Tabs.Content>
 			<Tabs.Content class="pt-5" value="tab2">
+				{#if loading}
+			<!-- Loading Skeleton -->
+		<div class="space-y-8">
+            <!-- Title Skeleton -->
+            <div class="h-6 w-40 animate-pulse rounded-md bg-gray-200"></div>
+
+            <!-- Charts Section Skeleton -->
+            <div class="flex flex-col space-y-6 lg:flex-row lg:space-y-0 lg:space-x-6">
+                <!-- Revenue Chart Skeleton -->
+                <div class="w-full rounded-lg border border-gray-200 bg-white p-4 shadow-sm lg:w-2/3">
+                    <div class="mb-6 flex animate-pulse items-center justify-between">
+                        <div class="h-5 w-32 rounded bg-gray-200"></div>
+                        <div class="flex space-x-4">
+                            {#each ['Day', 'Week', 'Month', 'Year'] as _}
+                                <div class="h-8 w-16 rounded-lg bg-gray-200"></div>
+                            {/each}
+                        </div>
+                    </div>
+                    <div class="h-[300px] animate-pulse rounded bg-gray-200"></div>
+                </div>
+
+                <!-- Ticket Sales Chart Skeleton -->
+                <div class="w-full rounded-lg border border-gray-200 bg-white p-6 shadow-sm lg:w-1/3">
+                    <div class="h-5 w-40 animate-pulse rounded bg-gray-200"></div>
+                    <div class="mt-4 h-[300px] animate-pulse rounded bg-gray-200"></div>
+                </div>
+            </div>
+
+            <!-- Goals Section Skeleton -->
+            <div class="mt-6">
+                <!-- Goals Header Skeleton -->
+                <div class="mb-4 flex animate-pulse items-center justify-between">
+                    <div class="h-6 w-48 rounded bg-gray-200"></div>
+                    <div class="h-10 w-24 rounded-lg bg-gray-200"></div>
+                </div>
+
+                <!-- Goals Cards Skeleton -->
+                <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                    {#each Array(2) as _}
+                        <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+                            <div class="mb-4 flex animate-pulse items-center justify-between">
+                                <div class="h-5 w-40 rounded bg-gray-200"></div>
+                                <div class="h-8 w-24 rounded bg-gray-200"></div>
+                            </div>
+                            <div class="space-y-4">
+                                <div class="flex animate-pulse justify-between">
+                                    <div class="h-4 w-20 rounded bg-gray-200"></div>
+                                    <div class="h-4 w-12 rounded bg-gray-200"></div>
+                                </div>
+                                <div class="h-2 w-full rounded-full bg-gray-200"></div>
+                                <div class="flex animate-pulse items-center space-x-4">
+                                    <div class="h-4 w-24 rounded bg-gray-200"></div>
+                                    <div class="h-4 w-24 rounded bg-gray-200"></div>
+                                </div>
+                            </div>
+                        </div>
+                    {/each}
+                </div>
+            </div>
+
+            <!-- Table Skeleton -->
+            <div class="mt-3 w-full overflow-x-auto border border-gray-200 shadow-sm sm:rounded-lg">
+                <div class="animate-pulse">
+                    <!-- Table Header Skeleton -->
+                    <div class="h-12 bg-gray-200"></div>
+                    <!-- Table Rows Skeleton -->
+                    {#each Array(5) as _}
+                        <div class="h-16 border-b border-gray-200 bg-white px-4 py-3">
+                            <div class="flex items-center justify-between">
+                                {#each Array(6) as _}
+                                    <div class="h-4 w-24 rounded bg-gray-200"></div>
+                                {/each}
+                            </div>
+                        </div>
+                    {/each}
+                </div>
+            </div>
+
+            <!-- Pagination Skeleton -->
+            <div class="flex animate-pulse justify-between px-4 py-3">
+                <div class="h-8 w-32 rounded bg-gray-200"></div>
+                <div class="h-8 w-48 rounded bg-gray-200"></div>
+            </div>
+        </div>
+    {:else}
 				<div class="mb-5 flex items-center justify-between">
 					<div class="font-semibold">Reports & Analytics</div>
 					<div class="relative">
@@ -1468,6 +1553,9 @@
 										>Gross Sales</th
 									>
 
+									<th class="whitespace-nowrap px-4 py-3 text-left text-sm font-medium text-black"
+										>Total Ticket Sold</th
+									>
 									<th
 										class="prose whitespace-nowrap px-4 py-3 text-left text-sm font-medium text-black"
 										>Status</th
@@ -1518,6 +1606,7 @@
 						on:pageSizeChange={handlePageSizeChange}
 					/>
 				</div>
+				{/if}
 			</Tabs.Content>
 		</Tabs.Root>
 	</div>
