@@ -22,14 +22,14 @@
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import HomeSkeleton from '$lib/components/ui/HomeSkeleton.svelte';
 	import {
-        revenueGoal,
-        attendeesGoal,
-        statistics,
-        totalRevenueData,
-        totalEventData,
-        totalTicketSoldData,
-        totalAttendees
-    } from '$lib/services/analyticsData';
+		revenueGoal,
+		attendeesGoal,
+		statistics,
+		totalRevenueData,
+		totalEventData,
+		totalTicketSoldData,
+		totalAttendees
+	} from '$lib/services/analyticsData';
 	import {
 		Chart,
 		Svg,
@@ -44,6 +44,7 @@
 	import { scaleBand, scaleTime } from 'd3-scale';
 	import Modal from '$lib/components/ui/Modal.svelte';
 	import { format } from 'date-fns';
+	import ImageUploader from '$lib/components/ui/ImageUploader.svelte';
 
 	const ctx = useClerkContext();
 	const fullName = $derived(ctx.user?.fullName);
@@ -321,8 +322,9 @@
 		statistics.totalAttendees.goal.target = tempAttendeesGoal;
 		isEditModalOpen = false;
 	}
-
 </script>
+
+<ImageUploader />
 
 {#if !data.requiresRedirect}
 	<div class="space-y-5" in:fly={{ y: -50, duration: 200 }}>
@@ -809,20 +811,20 @@
 				</div>
 			</Tabs.Content>
 			<Tabs.Content class="pt-5" value="tab2">
-				<div class="flex items-center justify-between mb-5">
+				<div class="mb-5 flex items-center justify-between">
 					<div class="font-semibold">Reports & Analytics</div>
 					<div class="relative">
-						<i class="fa-solid fa-filter absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
-						<select
-							class="border rounded-lg pl-10 pr-5 px-3 py-2 text-sm text-gray-700 text-left"
-						>
+						<i
+							class="fa-solid fa-filter absolute left-3 top-1/2 -translate-y-1/2 transform text-gray-500"
+						></i>
+						<select class="rounded-lg border px-3 py-2 pl-10 pr-5 text-left text-sm text-gray-700">
 							<option value="Day">Day</option>
 							<option value="Month">Month</option>
 							<option value="Custom">Custom</option>
 						</select>
 					</div>
 				</div>
-				
+
 				<div class="space-y-8" in:fly={{ y: -50, duration: 200 }}>
 					<div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
 						<!-- Card 1 -->
@@ -838,11 +840,11 @@
 										<i class="fa-solid fa-chart-line text-[8px] md:text-[13px] lg:text-[13px]"></i>
 									</div>
 								</div>
-	
+
 								<div
 									class="grid w-full grid-cols-1 items-center justify-between space-x-4 md:grid-cols-2 md:gap-10 lg:grid-cols-2 lg:gap-10 2xl:gap-10"
 								>
-									<div class="order-2 md:order-1 w-full">
+									<div class="order-2 w-full md:order-1">
 										<span class="text-[10px] text-green-500 md:text-[12px] lg:text-[10px]"
 											>{statistics.totalRevenue.change}</span
 										>
@@ -850,8 +852,10 @@
 											{statistics.totalRevenue.value}
 										</p>
 									</div>
-	
-									<div class="order-1 md:order-2 md-h-full flex h-11 w-full justify-between py-2 md:w-full md:py-0">
+
+									<div
+										class="md-h-full order-1 flex h-11 w-full justify-between py-2 md:order-2 md:w-full md:py-0"
+									>
 										<Chart
 											height={40}
 											data={totalRevenueData}
@@ -869,23 +873,23 @@
 														<stop offset="50%" stop-color="#4F46E5" stop-opacity="1" />
 														<stop offset="100%" stop-color="#4F46E5" stop-opacity="0.0" />
 													</linearGradient>
-	
+
 													<!-- Area fill gradient -->
 													<linearGradient id="areaGradient1" x1="0" x2="0" y1="0" y2="1">
 														<stop offset="50%" stop-color="#4F46E5" stop-opacity="0.2" />
 														<stop offset="100%" stop-color="#4F46E5" stop-opacity="0" />
 													</linearGradient>
 												</defs>
-	
+
 												<!-- Area spline with smooth curve -->
 												<Area
 													spline
 													class="fill-[url(#areaGradient1)] stroke-[url(#lineGradient1)] stroke-2"
 												/>
-	
+
 												<Highlight points lines />
 											</Svg>
-	
+
 											<LayerchartTooltip.Root let:data>
 												<LayerchartTooltip.Header class="rounded-lg bg-[#f1f1f1] px-2 text-black">
 													{format(data.date, 'eee, MMMM do')}
@@ -903,7 +907,7 @@
 								</div>
 							</div>
 						</div>
-	
+
 						<!-- Card 2 -->
 						<div class="rounded-lg border border-gray-200 bg-white shadow-sm">
 							<div class="p-3 sm:p-4">
@@ -920,7 +924,7 @@
 								<div
 									class="grid w-full grid-cols-1 items-center justify-between space-x-4 md:grid-cols-2 md:gap-10 lg:grid-cols-2 lg:gap-10 2xl:gap-10"
 								>
-									<div class="order-2 md:order-1 w-full">
+									<div class="order-2 w-full md:order-1">
 										<span class="text-[10px] text-green-500 md:text-[12px] lg:text-[10px]"
 											>{statistics.totalTicketSold.change}</span
 										>
@@ -928,8 +932,10 @@
 											{statistics.totalTicketSold.value}
 										</p>
 									</div>
-	
-									<div class="order-1 md:order-2 md-h-full flex h-11 w-full justify-between py-2 md:w-full md:py-0">
+
+									<div
+										class="md-h-full order-1 flex h-11 w-full justify-between py-2 md:order-2 md:w-full md:py-0"
+									>
 										<Chart
 											height={40}
 											data={totalTicketSoldData}
@@ -947,23 +953,23 @@
 														<stop offset="50%" stop-color="#DC2626" stop-opacity="1" />
 														<stop offset="100%" stop-color="#DC2626" stop-opacity="0.0" />
 													</linearGradient>
-	
+
 													<!-- Area fill gradient -->
 													<linearGradient id="areaGradient2" x1="0" x2="0" y1="0" y2="1">
 														<stop offset="50%" stop-color="#DC2626" stop-opacity="0.2" />
 														<stop offset="100%" stop-color="#DC2626" stop-opacity="0" />
 													</linearGradient>
 												</defs>
-	
+
 												<!-- Area spline with smooth curve -->
 												<Area
 													spline
 													class="fill-[url(#areaGradient2)] stroke-[url(#lineGradient2)] stroke-2"
 												/>
-	
+
 												<Highlight points lines />
 											</Svg>
-	
+
 											<LayerchartTooltip.Root let:data>
 												<LayerchartTooltip.Header class="rounded-lg bg-[#f1f1f1] px-2 text-black">
 													{format(data.date, 'eee, MMMM do')}
@@ -981,7 +987,7 @@
 								</div>
 							</div>
 						</div>
-	
+
 						<!-- Card 3 -->
 						<div class="rounded-lg border border-gray-200 bg-white shadow-sm">
 							<div class="p-3 sm:p-4">
@@ -998,7 +1004,7 @@
 								<div
 									class="grid w-full grid-cols-1 items-center justify-between space-x-4 md:grid-cols-2 md:gap-10 lg:grid-cols-2 lg:gap-10 2xl:gap-10"
 								>
-									<div class="order-2 md:order-1 w-full">
+									<div class="order-2 w-full md:order-1">
 										<span class="text-[10px] text-green-500 md:text-[12px] lg:text-[10px]"
 											>{statistics.totalAttendees.change}</span
 										>
@@ -1006,8 +1012,10 @@
 											{statistics.totalAttendees.value}
 										</p>
 									</div>
-	
-									<div class="order-1 md:order-2 md-h-full flex h-11 w-full justify-between py-2 md:w-full md:py-0">
+
+									<div
+										class="md-h-full order-1 flex h-11 w-full justify-between py-2 md:order-2 md:w-full md:py-0"
+									>
 										<Chart
 											height={40}
 											data={totalAttendees}
@@ -1025,23 +1033,23 @@
 														<stop offset="50%" stop-color="#19A44C" stop-opacity="1" />
 														<stop offset="100%" stop-color="#19A44C" stop-opacity="0.0" />
 													</linearGradient>
-	
+
 													<!-- Area fill gradient -->
 													<linearGradient id="areaGradient3" x1="0" x2="0" y1="0" y2="1">
 														<stop offset="50%" stop-color="#19A44C" stop-opacity="0.2" />
 														<stop offset="100%" stop-color="#19A44C" stop-opacity="0" />
 													</linearGradient>
 												</defs>
-	
+
 												<!-- Area spline with smooth curve -->
 												<Area
 													spline
 													class="fill-[url(#areaGradient3)] stroke-[url(#lineGradient3)] stroke-2"
 												/>
-	
+
 												<Highlight points lines />
 											</Svg>
-	
+
 											<LayerchartTooltip.Root let:data>
 												<LayerchartTooltip.Header class="rounded-lg bg-[#f1f1f1] px-2 text-black">
 													{format(data.date, 'eee, MMMM do')}
@@ -1059,7 +1067,7 @@
 								</div>
 							</div>
 						</div>
-	
+
 						<!-- Card 4 -->
 						<div class="rounded-lg border border-gray-200 bg-white shadow-sm">
 							<div class="p-3 sm:p-4">
@@ -1073,23 +1081,23 @@
 										<i class="fa-regular fa-calendar text-[8px] md:text-[13px] lg:text-[13px]"></i>
 									</div>
 								</div>
-	
-								
+
 								<div
 									class="grid w-full grid-cols-1 items-center justify-between space-x-4 md:grid-cols-2 md:gap-10 lg:grid-cols-2 lg:gap-10 2xl:gap-10"
 								>
-								<div class="order-1 md:order-2 md-h-full flex h-11 w-full justify-between py-2 md:w-full md:py-0"></div>
-								<div class="order-2 md:order-1 w-full flex-inline">
-									<span class="text-[10px] text-green-500 md:text-[12px] lg:text-[10px]"
-										>{statistics.totalEvent.change}</span
-									>
-									<div class="flex items-end justify-between">
-										<p class="text-[16px] font-semibold md:text-[20px]">
-											{statistics.totalEvent.value.toLocaleString()}
-										</p>
+									<div
+										class="md-h-full order-1 flex h-11 w-full justify-between py-2 md:order-2 md:w-full md:py-0"
+									></div>
+									<div class="flex-inline order-2 w-full md:order-1">
+										<span class="text-[10px] text-green-500 md:text-[12px] lg:text-[10px]"
+											>{statistics.totalEvent.change}</span
+										>
+										<div class="flex items-end justify-between">
+											<p class="text-[16px] font-semibold md:text-[20px]">
+												{statistics.totalEvent.value.toLocaleString()}
+											</p>
+										</div>
 									</div>
-								</div>
-									
 								</div>
 							</div>
 						</div>

@@ -1,7 +1,13 @@
 import { isStructuredApiError } from '$lib/utils/errorHandler';
 import type { RequestEvent } from '@sveltejs/kit';
 import { error } from '@sveltejs/kit';
-import type { ApiClient, HttpMethod, RequestOptions, PayloadError, ClientOptions} from '$lib/types';
+import type {
+	ApiClient,
+	HttpMethod,
+	RequestOptions,
+	PayloadError,
+	ClientOptions
+} from '$lib/types';
 import { PUBLIC_PAYLOAD_API_URL } from '$env/static/public';
 
 /**
@@ -61,12 +67,23 @@ async function requestInternal<T = unknown>(
 		...customHeaders
 	});
 
+	// Check if body is FormData and avoid JSON processing if so
+	const isFormData = body instanceof FormData;
+
+	// If it's FormData, remove the Content-Type header to let browser set it
+	console.log('isFormData', isFormData);
+
+	if (isFormData) {
+		headers.delete('Content-Type');
+	}
+
 	let response;
 	try {
-		response = await event.fetch(url.toString(), { // Use event.fetch
+		response = await event.fetch(url.toString(), {
 			method: method.toUpperCase(),
 			headers,
-			body: body ? JSON.stringify(body) : undefined
+			// Don't stringify FormData, send it directly
+			body: body ? (isFormData ? body : JSON.stringify(body)) : undefined
 		});
 
 		// --- Centralized Response Checking ---
@@ -147,7 +164,6 @@ async function requestInternal<T = unknown>(
  *            API calls based on the provided `event`.
  */
 export function createApiClient(event: RequestEvent): ApiClient {
-
 	return {
 		/**
 		 * Fetches (gets) information from your API.
@@ -185,9 +201,12 @@ export function createApiClient(event: RequestEvent): ApiClient {
 		 *           doesn't exist, or there's a server error), this function will automatically
 		 *           show a SvelteKit error page instead of returning data.
 		 */
-		get: <T = unknown>(path: string, params?: Record<string, string> | URLSearchParams, options: ClientOptions = {}) =>
-			requestInternal<T>(event, 'GET', path, { ...options, params }),
-		
+		get: <T = unknown>(
+			path: string,
+			params?: Record<string, string> | URLSearchParams,
+			options: ClientOptions = {}
+		) => requestInternal<T>(event, 'GET', path, { ...options, params }),
+
 		/**
 		 * Sends new information to your API to create something.
 		 *
