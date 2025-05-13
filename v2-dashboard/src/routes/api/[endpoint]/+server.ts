@@ -2,12 +2,10 @@ import type { RequestHandler } from './$types';
 import { json, error } from '@sveltejs/kit';
 import type { RequestEvent } from '@sveltejs/kit';
 import { handleSvelteError } from '$lib/utils/errorHandler';
-import { createApiClient } from '$lib/services/payload.server';
-import type { MediaUploadResponse } from '$lib/types/media';
 import { checkSubdomainExists } from '$lib/utils/checkSubdomainExists';
 import { eventSchema } from '$lib/schema';
-import { env } from '$env/dynamic/public';
-import crypto from 'crypto'
+import crypto from 'crypto';
+import { createApiClient } from '$lib/services/payload.server';
 
 /**
  * Error Guidelines:
@@ -29,33 +27,83 @@ export const POST: RequestHandler = async (event: RequestEvent) => {
 	switch (endpoint) {
 		case 'uploadImage': {
 			try {
+				console.log('Received uploadImage request');
 				const formData = await request.formData();
-				const uploads: any[] = [];
-				for (const [key, value] of formData.entries()) {
-					if (value instanceof File) {
-						const newName = `${crypto.randomUUID()}.${value.name.split('.').pop()}`; // preserve original extension
-						const renamedFile = new File([value], newName, {
-							type: value.type,
+
+				const file = formData.get('file');
+
+				console.log('Sending to Payload CMS...');
+				console.log('File:', file);
+
+				try {
+					// Create a new FormData to send to Payload CMS
+					const payloadFormData = new FormData();
+
+					if (file instanceof File) {
+						console.log('File is a valid File object:', file);
+						/**
+						 File is a valid File object: File {
+							size: 32471,
+							type: 'image/jpeg',
+							name: 'TJD3EventPoster.jpg',
+							lastModified: 1747024251173,		
+							}					 
+						 */
+
+						// Generate a unique filename using crypto
+						const fileExtension = file.name.split('.').pop();
+						const uniqueFilename = `${crypto.randomUUID()}.${fileExtension}`;
+
+						// Create a new File with the unique filename
+						const uniqueFile = new File([file], uniqueFilename, {
+							type: file.type
 						});
-						const form = new FormData();
-						form.append('file', renamedFile); // Send Base64
-						form.append('_payload', JSON.stringify({ alt: value.name }));
-						try {
-							const res = await fetch(env.PUBLIC_PAYLOAD_API_URL+'/api/media', {
-							method: 'POST',
-							credentials: 'include',
-							body: form,
-							});
-							uploads.push(res);
-						} catch (uploadError: any) {
-							console.error('Upload Error:', uploadError);
-						}
+
+						payloadFormData.append('file', uniqueFile, uniqueFilename);
+					} else {
+						console.error('File is not a valid File object:', file);
+						return json({ error: 'Invalid file format' }, { status: 400 });
 					}
+					// Make direct fetch request to Payload CMS
+
+					// const response = await fetch(`${PUBLIC_PAYLOAD_API_URL}api/media`, {
+					// 	method: 'POST',
+					// 	body: payloadFormData
+					// });
+
+					// use the api client to upload the image
+					const apiClient = createApiClient(event);
+					const response = await apiClient.post('media', payloadFormData, {
+						headers: {
+							'Content-Type': undefined
+						}
+					});
+
+					if (!response) {
+						const errorText = await response;
+						console.error(`Payload CMS error (${response.status}):`, errorText);
+						return json(
+							{ error: `Payload CMS error: ${response.statusText}` },
+							{ status: response.status }
+						);
+					}
+
+					const data = await response;
+					console.log('Payload CMS wgrerdfredgf', data);
+
+					const mediaData = data.doc || data;
+
+					return json({
+						url: mediaData.url,
+						id: mediaData.id,
+						filename: mediaData.filename
+					});
+				} catch (uploadError) {
+					console.error('Upload Error:', uploadError);
+					return json({ error: 'Failed to upload to Payload CMS' }, { status: 500 });
 				}
-
-				return json({ uploads });
-
 			} catch (err) {
+				console.error('Image upload handler error:', err);
 				const { statusCode, errorMessage } = handleSvelteError(
 					err,
 					'Uploading Image',
