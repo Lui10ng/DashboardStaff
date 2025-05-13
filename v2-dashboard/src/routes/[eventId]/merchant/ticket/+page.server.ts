@@ -166,6 +166,7 @@ export const actions: Actions = {
 					console.error('[DEBUG] Failed to create seat map: Invalid response', seatMapResponse);
 					throw new Error('Failed to create seat map: Invalid response');
 				}
+				console.log('[DEBUG] Seat map created:', seatMapResponse);
 			} catch (seatMapError) {
 				console.error('[DEBUG] Error creating seat map:', seatMapError);
 				return fail(400, {
@@ -190,7 +191,7 @@ export const actions: Actions = {
 			salesStart: form.data.salesStart,
 			salesEnd: form.data.salesEnd,
 			color: form.data.color,
-			seatMap: form.data.seatMap
+			seatMap: seatMapId
 		};
 
 		console.log('[DEBUG] Creating ticket with data:', ticketData);

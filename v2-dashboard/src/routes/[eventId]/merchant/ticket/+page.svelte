@@ -2,7 +2,12 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Drawer from '$lib/components/ui/Drawer.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
-	import { ticketDrawer, voucherDrawer, editTicketDrawer, editVoucherDrawer} from '$lib/stores/state.svelte';
+	import {
+		ticketDrawer,
+		voucherDrawer,
+		editTicketDrawer,
+		editVoucherDrawer
+	} from '$lib/stores/state.svelte';
 	import type { TicketProps, TicketStatus, PromotionProps, VoucherStatus } from '$lib/types';
 	import { Tabs } from 'bits-ui';
 	import { seatGeneratorStore } from '$lib/stores/seat-generator.svelte';
@@ -166,10 +171,8 @@
 	// Update the selectedTickets state declaration
 	let selectedTickets: string[] = $state([]);
 
-	
 	$inspect('selectedTickets: , ', selectedTickets);
 
-	
 	// Add the arrays here
 	const ticketFilterItems = ['active', 'disabled'] as const;
 	const voucherFilterItems = ['active', 'deactivated', 'expired'] as const;
@@ -190,8 +193,8 @@
 	let selectedVoucher = $state<PromotionProps>();
 
 	const handleEditVoucher = (voucher: PromotionProps) => {
-	selectedVoucher = voucher;
-	editVoucherDrawer.open = true;
+		selectedVoucher = voucher;
+		editVoucherDrawer.open = true;
 	};
 	// Add voucher toggle state
 	let voucherEnabled = $state(true);
@@ -368,7 +371,7 @@
 			const response = await fetch('/api/seat-maps', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(currentSeatMap),
+				body: JSON.stringify(currentSeatMap)
 			});
 
 			console.log('[DEBUG] Seat map save response:', response);
@@ -409,7 +412,7 @@
 			console.error('No valid seat map data found in store');
 			toast.show({
 				message: 'Please save the seat map before creating a ticket',
-				type: 'error',
+				type: 'error'
 			});
 			return;
 		}
@@ -421,7 +424,7 @@
 		try {
 			const response = await fetch(form.action, {
 				method: 'POST',
-				body: formData,
+				body: formData
 			});
 
 			const result = await response.json();
@@ -430,7 +433,7 @@
 			if (response.ok) {
 				toast.show({
 					message: 'Ticket created successfully',
-					type: 'success',
+					type: 'success'
 				});
 
 				// Reset the seat map store
@@ -442,14 +445,14 @@
 				console.error('Ticket creation failed:', result);
 				toast.show({
 					message: result.error || 'Failed to create ticket',
-					type: 'error',
+					type: 'error'
 				});
 			}
 		} catch (error) {
 			console.error('Error submitting ticket:', error);
 			toast.show({
 				message: 'Failed to create ticket: Network error',
-				type: 'error',
+				type: 'error'
 			});
 		}
 	}
@@ -519,6 +522,9 @@
 				<Tabs.Content value="ticket">
 					<form method="POST" action="?/createTicket" use:enhance class="w-full space-y-8">
 						<input type="hidden" name="event" value={data.eventId} />
+						{#if isActiveReserveSeating}
+							<input type="hidden" name="seatMapStore" value={JSON.stringify($seatMapStore || {})} />
+						{/if}
 						<div class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
 							<div class="space-y-6">
 								<div>
@@ -654,14 +660,21 @@
 
 								<div>
 									<label for="status" class="mb-2 block text-sm">Status</label>
-									<select
-										name="status"
-										value={$form.status}
-										class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
-									>
-										<option value="active">Active</option>
-										<option value="inactive">Inactive</option>
-									</select>
+
+									<div>
+										<label for="activePayment" class="mb-2 block text-sm">Active payment</label>
+										<PaymentToggle
+											value={isActivePayment}
+											name="status"
+											OnChange={(value) => {
+												isActivePayment = value;
+												// If you want to update the status immediately
+												if (selectedTicket) {
+													selectedTicket.status = value ? 'active' : 'inactive';
+												}
+											}}
+										/>
+									</div>
 								</div>
 
 								<div>
@@ -751,7 +764,11 @@
 					<div class="space-y-4">
 						<SeatConfig />
 						<RenameControl />
-						<SaveLayout on:seatMapCreated={handleSeatMapCreated} on:tabChange={handleTabChange} eventName={data.currentEvent.title}/>
+						<SaveLayout
+							on:seatMapCreated={handleSeatMapCreated}
+							on:tabChange={handleTabChange}
+							eventName={data.currentEvent.title}
+						/>
 						<ReserveToggle />
 						<QuantityWarning />
 						<VenueImageUpload />
@@ -1024,14 +1041,14 @@
 					</div>
 				</div>
 			{/each}
-			{:else}
-        <div class="flex w-full flex-col items-center justify-center py-8">
-            <div class="mb-4 rounded-full bg-gray-100 p-4">
-                <i class="fa-solid fa-ticket text-2xl text-gray-400"></i>
-            </div>
-            <h3 class="mb-1 text-lg font-medium">No Tickets Available</h3>
-            <p class="text-sm text-gray-500">Create your first ticket to get started</p>
-        </div>
+		{:else}
+			<div class="flex w-full flex-col items-center justify-center py-8">
+				<div class="mb-4 rounded-full bg-gray-100 p-4">
+					<i class="fa-solid fa-ticket text-2xl text-gray-400"></i>
+				</div>
+				<h3 class="mb-1 text-lg font-medium">No Tickets Available</h3>
+				<p class="text-sm text-gray-500">Create your first ticket to get started</p>
+			</div>
 		{/if}
 	</div>
 
@@ -1219,7 +1236,7 @@
 						<DropdownMenu
 							buttonText={getTicketSelectionText(selectedTickets)}
 							className="w-full justify-between rounded-md border border-gray-200 bg-white px-4 py-2 text-sm hover:border-[#DF4D60]"
-							items={['all', ...ticketList.map((ticket) => ticket.name)]} 
+							items={['all', ...ticketList.map((ticket) => ticket.name)]}
 							multiple={true}
 							alignContent="start"
 							on:select={(event) => {
@@ -1228,7 +1245,7 @@
 								if (selected.includes('all')) {
 									selectedTickets = ['all'];
 								} else {
-									selectedTickets = selected.filter(ticket => ticket !== 'all');
+									selectedTickets = selected.filter((ticket) => ticket !== 'all');
 								}
 							}}
 						/>
@@ -1522,10 +1539,10 @@
 			<div class="flex gap-4 overflow-x-auto pb-4">
 				{#if voucherList && voucherList.length > 0}
 					{#each voucherList as voucher}
-					<div 
-					class="min-w-[298px] flex-shrink-0 rounded-lg border border-gray-400 shadow-sm cursor-pointer"
-					Onclick={() => handleEditVoucher(voucher)}
-				>
+						<div
+							class="min-w-[298px] flex-shrink-0 cursor-pointer rounded-lg border border-gray-400 shadow-sm"
+							Onclick={() => handleEditVoucher(voucher)}
+						>
 							<div class="space-y-2 p-4">
 								<div class="flex items-start justify-between">
 									<div class="font-medium">{voucher.code}</div>
@@ -1556,13 +1573,13 @@
 							</div>
 						</div>
 					{/each}
-					{:else}
+				{:else}
 					<div class="flex w-full flex-col items-center justify-center py-8">
-					<div class="mb-4 rounded-full bg-gray-100 p-4">
-						<i class="fa-solid fa-ticket-simple text-2xl text-gray-400"></i>
-					</div>
-					<h3 class="mb-1 text-lg font-medium">No Vouchers Available</h3>
-					<p class="text-sm text-gray-500">Create your first voucher to get started</p>
+						<div class="mb-4 rounded-full bg-gray-100 p-4">
+							<i class="fa-solid fa-ticket-simple text-2xl text-gray-400"></i>
+						</div>
+						<h3 class="mb-1 text-lg font-medium">No Vouchers Available</h3>
+						<p class="text-sm text-gray-500">Create your first voucher to get started</p>
 					</div>
 				{/if}
 			</div>
@@ -1574,152 +1591,153 @@
 		alignment="items-end"
 		positionIn={{ y: 600, duration: 200 }}
 		positionOut={{ y: 600, duration: 200 }}
-		>
+	>
 		{#if selectedVoucher}
-		<div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
-			<div class="space-y-6">
-				<div class="border-gray-200 pb-4">
-					<h2 class="text-xl font-semibold">{selectedVoucher.code}</h2>
-					<p class="text-sm text-gray-500">Edit voucher details</p>
-				</div>
-
-				<form action="?/updateVoucher" method="POST" use:voucherEnhance class="space-y-4">
-					<input type="hidden" name="id" value={selectedVoucher.id} />
-
-					<div>
-						<label for="code" class="mb-2 block text-sm">Voucher Code</label>
-						<input
-							type="text"
-							name="code"
-							value={selectedVoucher.code}
-							placeholder="Enter voucher code"
-							class="w-full rounded-md border-none bg-gray-100 p-3 uppercase"
-						/>
-						{#if $voucherErrors.code}
-							<p class="text-primary text-sm">{$voucherErrors.code}</p>
-						{/if}
+			<div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
+				<div class="space-y-6">
+					<div class="border-gray-200 pb-4">
+						<h2 class="text-xl font-semibold">{selectedVoucher.code}</h2>
+						<p class="text-sm text-gray-500">Edit voucher details</p>
 					</div>
 
-					<div>
-						<label for="description" class="mb-2 block text-sm">
-							Description <span class="text-gray-500">(optional)</span>
-						</label>
-						<input
-							type="text"
-							name="description"
-							value={selectedVoucher.description}
-							placeholder="Enter description"
-							class="w-full rounded-md border-none bg-gray-100 p-3"
-						/>
-					</div>
+					<form action="?/updateVoucher" method="POST" use:voucherEnhance class="space-y-4">
+						<input type="hidden" name="id" value={selectedVoucher.id} />
 
-					<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 						<div>
-							<label for="discountType" class="mb-2 block text-sm">Type</label>
-							<select
-								bind:value={discountType}
-								name="discountType"
-								class="w-full rounded-md border-none bg-gray-100 p-3"
-							>
-								<option value="percentage">Percentage Off (%)</option>
-								<option value="fixed_amount">Fixed Amount Off</option>
-							</select>
+							<label for="code" class="mb-2 block text-sm">Voucher Code</label>
+							<input
+								type="text"
+								name="code"
+								value={selectedVoucher.code}
+								placeholder="Enter voucher code"
+								class="w-full rounded-md border-none bg-gray-100 p-3 uppercase"
+							/>
+							{#if $voucherErrors.code}
+								<p class="text-primary text-sm">{$voucherErrors.code}</p>
+							{/if}
 						</div>
 
 						<div>
-							<label for="discountValue" class="mb-2 block text-sm">Discount amount</label>
-							<div class="relative w-full">
-								{#if discountType === 'fixed_amount'}
-									<select
-										name="currency"
-										class="absolute left-2 top-1/2 -translate-y-1/2 rounded-md bg-gray-100 py-1 pl-1 pr-6 text-sm font-medium"
-										value={selectedVoucher.currency}
-									>
-										<option value="PHP">PHP</option>
-										<option value="USD">USD</option>
-										<option value="EUR">EUR</option>
-									</select>
-								{/if}
-								<input
-									type="number"
-									name="discountValue"
-									value={selectedVoucher.discountValue}
-									placeholder="e.g., 50 or 10%"
-									class="w-full rounded-md border-none bg-gray-100 p-3 {discountType === 'fixed_amount' ? 'pl-24' : ''}"
+							<label for="description" class="mb-2 block text-sm">
+								Description <span class="text-gray-500">(optional)</span>
+							</label>
+							<input
+								type="text"
+								name="description"
+								value={selectedVoucher.description}
+								placeholder="Enter description"
+								class="w-full rounded-md border-none bg-gray-100 p-3"
+							/>
+						</div>
+
+						<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+							<div>
+								<label for="discountType" class="mb-2 block text-sm">Type</label>
+								<select
+									bind:value={discountType}
+									name="discountType"
+									class="w-full rounded-md border-none bg-gray-100 p-3"
+								>
+									<option value="percentage">Percentage Off (%)</option>
+									<option value="fixed_amount">Fixed Amount Off</option>
+								</select>
+							</div>
+
+							<div>
+								<label for="discountValue" class="mb-2 block text-sm">Discount amount</label>
+								<div class="relative w-full">
+									{#if discountType === 'fixed_amount'}
+										<select
+											name="currency"
+											class="absolute top-1/2 left-2 -translate-y-1/2 rounded-md bg-gray-100 py-1 pr-6 pl-1 text-sm font-medium"
+											value={selectedVoucher.currency}
+										>
+											<option value="PHP">PHP</option>
+											<option value="USD">USD</option>
+											<option value="EUR">EUR</option>
+										</select>
+									{/if}
+									<input
+										type="number"
+										name="discountValue"
+										value={selectedVoucher.discountValue}
+										placeholder="e.g., 50 or 10%"
+										class="w-full rounded-md border-none bg-gray-100 p-3 {discountType ===
+										'fixed_amount'
+											? 'pl-24'
+											: ''}"
+									/>
+								</div>
+							</div>
+						</div>
+
+						<!-- Add date pickers -->
+						<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+							<div>
+								<label for="validFrom" class="mb-2 block text-sm">Valid From</label>
+								<DatePicker
+									name="validFrom"
+									value={selectedVoucher.validFrom}
+									className="h-input rounded-input flex w-full select-none items-center border px-2 py-4 text-gray-500"
+								/>
+							</div>
+							<div>
+								<label for="validUntil" class="mb-2 block text-sm">Valid Until</label>
+								<DatePicker
+									name="validUntil"
+									value={selectedVoucher.validUntil}
+									className="h-input rounded-input flex w-full select-none items-center border px-2 py-4 text-gray-500"
 								/>
 							</div>
 						</div>
-					</div>
 
-					<!-- Add date pickers -->
-					<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+						<!-- Add quantity field -->
 						<div>
-							<label for="validFrom" class="mb-2 block text-sm">Valid From</label>
-							<DatePicker
-								name="validFrom"
-								value={selectedVoucher.validFrom}
-								className="h-input rounded-input flex w-full select-none items-center border px-2 py-4 text-gray-500"
-							/>
-						</div>
-						<div>
-							<label for="validUntil" class="mb-2 block text-sm">Valid Until</label>
-							<DatePicker
-								name="validUntil"
-								value={selectedVoucher.validUntil}
-								className="h-input rounded-input flex w-full select-none items-center border px-2 py-4 text-gray-500"
-							/>
-						</div>
-					</div>
-				
-					<!-- Add quantity field -->
-					<div>
-						<label for="quantity" class="mb-2 block text-sm">Quantity</label>
-						<input
-							type="number"
-							name="quantity"
-							value={selectedVoucher.usageLimit}
-							placeholder="Enter quantity"
-							class="w-full rounded-md border-none bg-gray-100 p-3"
-						/>
-					</div>
-					<div>
-						<label for="code" class="mb-2 block text-sm">Minimum Order Amount</label>
-						<div class="relative w-full">
+							<label for="quantity" class="mb-2 block text-sm">Quantity</label>
 							<input
 								type="number"
-								name="minOrderAmount"
-								value={selectedVoucher.minimumOrderAmount}
-								placeholder="Enter minimum order"
+								name="quantity"
+								value={selectedVoucher.usageLimit}
+								placeholder="Enter quantity"
 								class="w-full rounded-md border-none bg-gray-100 p-3"
 							/>
 						</div>
-						{#if $voucherErrors.minOrderAmount}
-							<p class="text-primary text-sm">
-								{$voucherErrors.minOrderAmount}
-							</p>
-						{/if}
-					</div>
-					
-					
-					<div class="mt-8 grid grid-cols-2 gap-4">
-						<Button
-							type="submit"
-							onClick={() => {}}
-							label="Save Changes"
-							className="bg-[#DF4D60] text-white p-2 rounded-md"
-						/>
-						<Button
-							onClick={() => {
-								editVoucherDrawer.open = false;
-							}}
-							label="Cancel"
-							className="border border-gray-300 text-gray-700 p-2 rounded-md"
-						/>
-					</div>
+						<div>
+							<label for="code" class="mb-2 block text-sm">Minimum Order Amount</label>
+							<div class="relative w-full">
+								<input
+									type="number"
+									name="minOrderAmount"
+									value={selectedVoucher.minimumOrderAmount}
+									placeholder="Enter minimum order"
+									class="w-full rounded-md border-none bg-gray-100 p-3"
+								/>
+							</div>
+							{#if $voucherErrors.minOrderAmount}
+								<p class="text-primary text-sm">
+									{$voucherErrors.minOrderAmount}
+								</p>
+							{/if}
+						</div>
 
-				</form>
+						<div class="mt-8 grid grid-cols-2 gap-4">
+							<Button
+								type="submit"
+								onClick={() => {}}
+								label="Save Changes"
+								className="bg-[#DF4D60] text-white p-2 rounded-md"
+							/>
+							<Button
+								onClick={() => {
+									editVoucherDrawer.open = false;
+								}}
+								label="Cancel"
+								className="border border-gray-300 text-gray-700 p-2 rounded-md"
+							/>
+						</div>
+					</form>
+				</div>
 			</div>
-		</div>       
-			{/if}
-		</Drawer>
+		{/if}
+	</Drawer>
 </div>

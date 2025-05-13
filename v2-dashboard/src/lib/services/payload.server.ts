@@ -70,8 +70,6 @@ async function requestInternal<T = unknown>(
 	// Check if body is FormData and avoid JSON processing if so
 	const isFormData = body instanceof FormData;
 
-	// If it's FormData, remove the Content-Type header to let browser set it
-	console.log('isFormData', isFormData);
 
 	if (isFormData) {
 		headers.delete('Content-Type');
