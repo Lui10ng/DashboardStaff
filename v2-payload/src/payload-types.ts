@@ -342,7 +342,7 @@ export interface Media {
   focalY?: number | null;
 }
 /**
- * Define reusable seating chart layout templates (sections, rows, seats).
+ * Define seating layouts for events with reserved seating.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "seat-maps".
@@ -350,103 +350,49 @@ export interface Media {
 export interface SeatMap {
   id: number;
   /**
-   * Unique name for this layout (e.g., "Standard Theater Setup", "Workshop Room B Layout").
+   * Name for this seating layout
    */
   name: string;
-  /**
-   * Optionally associate this layout primarily with one venue for easier filtering.
-   */
-  venue?: (number | null) | Venue;
-  description?: string | null;
-  /**
-   * Define distinct seating areas (e.g., Orchestra, Balcony, Floor).
-   */
-  sections?:
-    | {
-        /**
-         * e.g., ORCH, MEZZ, GAFLR, A, B
-         */
-        sectionName: string;
-        rows?:
-          | {
-              /**
-               * e.g., A, B, AA, 1, 2, GA1
-               */
-              rowLabel: string;
-              seats?:
-                | {
-                    seatNumber: string;
-                    seatType:
-                      | 'standard'
-                      | 'wheelchair'
-                      | 'companion'
-                      | 'restricted_view'
-                      | 'premium'
-                      | 'aisle_marker'
-                      | 'unavailable';
-                    /**
-                     * Can this seat type generally be sold?
-                     */
-                    isPurchasable?: boolean | null;
-                    id?: string | null;
-                  }[]
-                | null;
-              id?: string | null;
-            }[]
-          | null;
-        id?: string | null;
-      }[]
-    | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Physical locations where events can be held.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "venues".
- */
-export interface Venue {
-  id: number;
-  name: string;
-  address?: {
-    street?: string | null;
-    city?: string | null;
-    stateProvince?: string | null;
-    postalCode?: string | null;
-    country?: string | null;
-  };
-  /**
-   * General maximum attendee capacity (may differ from event-specific limits).
-   */
-  capacity?: number | null;
-  contactEmail?: string | null;
-  contactPhone?: string | null;
-  website?: string | null;
-  description?: {
-    root: {
-      type: string;
-      children: {
-        type: string;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
+  config: {
+    ticketQuantity: number;
+    seatConfig: {
+      rows: number;
+      seatsPerRow: number;
+      rowStartChar: string;
+      seatStartNum: number;
+      rowOrder: 'down' | 'up';
+      seatOrder: 'left' | 'right';
+      rowLabel: string;
     };
-    [k: string]: unknown;
-  } | null;
-  images?: (number | Media)[] | null;
+  };
+  venueImage?: (number | null) | Media;
+  customSeatNames?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   /**
-   * Internal notes about typical seating arrangements or venue specifics.
+   * JSON object containing seat configurations
    */
-  seatingChartNotes?: string | null;
-  /**
-   * Optional: Select a default seat map layout commonly used at this venue.
-   */
-  defaultSeatMap?: (number | null) | SeatMap;
+  seats:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  summary: {
+    totalSeats: number;
+    availableSeats: number;
+    unavailableSeats: number;
+    soldSeats: number;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -566,6 +512,10 @@ export interface TicketType {
   minOrderQuantity?: number | null;
   maxOrderQuantity?: number | null;
   color: string;
+  /**
+   * Optional seat map for reserved seating tickets
+   */
+  seatMap?: (number | null) | SeatMap;
   promotion?: {
     docs?: (number | Promotion)[];
     hasNextPage?: boolean;
@@ -837,6 +787,56 @@ export interface Transaction {
     | number
     | boolean
     | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Physical locations where events can be held.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "venues".
+ */
+export interface Venue {
+  id: number;
+  name: string;
+  address?: {
+    street?: string | null;
+    city?: string | null;
+    stateProvince?: string | null;
+    postalCode?: string | null;
+    country?: string | null;
+  };
+  /**
+   * General maximum attendee capacity (may differ from event-specific limits).
+   */
+  capacity?: number | null;
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+  website?: string | null;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  images?: (number | Media)[] | null;
+  /**
+   * Internal notes about typical seating arrangements or venue specifics.
+   */
+  seatingChartNotes?: string | null;
+  /**
+   * Optional: Select a default seat map layout commonly used at this venue.
+   */
+  defaultSeatMap?: (number | null) | SeatMap;
   updatedAt: string;
   createdAt: string;
 }
@@ -1195,27 +1195,32 @@ export interface RegistrationFormTemplatesSelect<T extends boolean = true> {
  */
 export interface SeatMapsSelect<T extends boolean = true> {
   name?: T;
-  venue?: T;
-  description?: T;
-  sections?:
+  config?:
     | T
     | {
-        sectionName?: T;
-        rows?:
+        ticketQuantity?: T;
+        seatConfig?:
           | T
           | {
+              rows?: T;
+              seatsPerRow?: T;
+              rowStartChar?: T;
+              seatStartNum?: T;
+              rowOrder?: T;
+              seatOrder?: T;
               rowLabel?: T;
-              seats?:
-                | T
-                | {
-                    seatNumber?: T;
-                    seatType?: T;
-                    isPurchasable?: T;
-                    id?: T;
-                  };
-              id?: T;
             };
-        id?: T;
+      };
+  venueImage?: T;
+  customSeatNames?: T;
+  seats?: T;
+  summary?:
+    | T
+    | {
+        totalSeats?: T;
+        availableSeats?: T;
+        unavailableSeats?: T;
+        soldSeats?: T;
       };
   updatedAt?: T;
   createdAt?: T;
@@ -1260,6 +1265,7 @@ export interface TicketTypesSelect<T extends boolean = true> {
   minOrderQuantity?: T;
   maxOrderQuantity?: T;
   color?: T;
+  seatMap?: T;
   promotion?: T;
   updatedAt?: T;
   createdAt?: T;

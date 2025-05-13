@@ -1,6 +1,9 @@
 <script lang="ts">
     import { seatGeneratorStore } from '$lib/stores/seat-generator.svelte';
     
+    // Subscribe to the store
+    const seatGeneratorState = $derived($seatGeneratorStore);
+    
     // Handle quantity change
     const handleQuantityChange = (event: Event) => {
         const input = event.target as HTMLInputElement;
@@ -10,12 +13,6 @@
         
         // Update ticket quantity
         seatGeneratorStore.setTicketQuantity(newValue);
-        
-        // Log the current state after update
-        setTimeout(() => {
-            console.log('Current ticket quantity:', seatGeneratorStore.ticketQuantity);
-            console.log('Warning state:', seatGeneratorStore.showWarning);
-        }, 0);
     };
 
     // Handle dimension change
@@ -34,18 +31,8 @@
             seatGeneratorStore.setSectionConfig({ seatsPerRow: newValue });
         }
         
-        // Adding a small delay to ensure the state updates before regenerating
-        setTimeout(() => {
-            // Force regenerate seats
-            seatGeneratorStore.regenerateSeats();
-            
-            // Log the current configuration
-            console.log('Updated config:', {
-                rows: seatGeneratorStore.section.seatConfig.rows,
-                seatsPerRow: seatGeneratorStore.section.seatConfig.seatsPerRow,
-                seatArray: seatGeneratorStore.section.seats.length
-            });
-        }, 0);
+        // Force regenerate seats
+        seatGeneratorStore.regenerateSeats();
     };
     
     // Update the row order
@@ -82,11 +69,11 @@
     };
 </script>
 
-<div class="space-y-2 ">
+<div class="space-y-2">
     <label for="ticket-quantity" class="block font-medium">Ticket Quantity</label>
     <input
         type="number"
-        value={seatGeneratorStore.ticketQuantity}
+        value={$seatGeneratorStore?.ticketQuantity ?? 0}
         on:change={handleQuantityChange}
         class="w-full rounded border border-gray-200 bg-gray-100 p-2"
         min="1"
@@ -96,15 +83,13 @@
     />
 </div>
 
-<div class="space-y-3 rounded-lg bg-white ">
-   
-    
+<div class="space-y-3 rounded-lg bg-white">
     <div class="grid grid-cols-2 gap-4">
         <div>
             <label for="number-of-rows" class="block font-medium">Number of rows</label>
             <input
                 type="number"
-                value={seatGeneratorStore.section.seatConfig.rows}
+                value={$seatGeneratorStore?.section?.seatConfig?.rows ?? 0}
                 on:change={(e) => handleDimensionChange('rows', e)}
                 class="w-full rounded border border-gray-200 bg-gray-100 p-2"
                 min="0"
@@ -118,7 +103,7 @@
             <label for="seats-per-row" class="block font-medium">Seats per row</label>
             <input
                 type="number"
-                value={seatGeneratorStore.section.seatConfig.seatsPerRow}
+                value={$seatGeneratorStore?.section?.seatConfig?.seatsPerRow ?? 0}
                 on:change={(e) => handleDimensionChange('seatsPerRow', e)}
                 class="w-full rounded border border-gray-200 bg-gray-100 p-2"
                 min="0"
@@ -134,7 +119,7 @@
             <label for="rows-starts-with" class="block font-medium">Rows starts with</label>
             <input
                 type="text"
-                value={seatGeneratorStore.section.seatConfig.rowStartChar}
+                value={$seatGeneratorStore?.section?.seatConfig?.rowStartChar ?? 'A'}
                 class="w-full rounded border border-gray-200 bg-gray-100 p-2"
                 maxlength="1"
                 aria-label="Row starting character"
@@ -151,8 +136,8 @@
             <div class="flex rounded border border-gray-200 bg-gray-100">
                 <button
                     class="flex-1 p-2 text-center"
-                    class:bg-[#DF4D60]={seatGeneratorStore.section.seatConfig.rowOrder === 'down'}
-                    class:text-white={seatGeneratorStore.section.seatConfig.rowOrder === 'down'}
+                    class:bg-[#DF4D60]={$seatGeneratorStore?.section?.seatConfig?.rowOrder === 'down'}
+                    class:text-white={$seatGeneratorStore?.section?.seatConfig?.rowOrder === 'down'}
                     on:click={() => handleRowOrderChange('down')}
                     aria-label="Set row order to down"
                     tabindex="0"
@@ -163,8 +148,8 @@
 
                 <button
                     class="flex-1 p-2 text-center"
-                    class:bg-[#DF4D60]={seatGeneratorStore.section.seatConfig.rowOrder === 'up'}
-                    class:text-white={seatGeneratorStore.section.seatConfig.rowOrder === 'up'}
+                    class:bg-[#DF4D60]={$seatGeneratorStore?.section?.seatConfig?.rowOrder === 'up'}
+                    class:text-white={$seatGeneratorStore?.section?.seatConfig?.rowOrder === 'up'}
                     on:click={() => handleRowOrderChange('up')}
                     aria-label="Set row order to up"
                     tabindex="0"
@@ -181,7 +166,7 @@
             <label for="seats-starts-with" class="block font-medium">Seats starts with</label>
             <input
                 type="number"
-                value={seatGeneratorStore.section.seatConfig.seatStartNum}
+                value={$seatGeneratorStore?.section?.seatConfig?.seatStartNum ?? 1}
                 class="w-full rounded border border-gray-200 bg-gray-100 p-2"
                 min="1"
                 aria-label="Seat starting number"
@@ -198,8 +183,8 @@
             <div class="flex rounded border border-gray-200 bg-gray-100">
                 <button
                     class="flex-1 p-2 text-center"
-                    class:bg-[#DF4D60]={seatGeneratorStore.section.seatConfig.seatOrder === 'left'}
-                    class:text-white={seatGeneratorStore.section.seatConfig.seatOrder === 'left'}
+                    class:bg-[#DF4D60]={$seatGeneratorStore?.section?.seatConfig?.seatOrder === 'left'}
+                    class:text-white={$seatGeneratorStore?.section?.seatConfig?.seatOrder === 'left'}
                     on:click={() => handleSeatOrderChange('left')}
                     aria-label="Set seat order to left"
                     tabindex="0" 
@@ -210,8 +195,8 @@
 
                 <button
                     class="flex-1 p-2 text-center"
-                    class:bg-[#DF4D60]={seatGeneratorStore.section.seatConfig.seatOrder === 'right'}
-                    class:text-white={seatGeneratorStore.section.seatConfig.seatOrder === 'right'}
+                    class:bg-[#DF4D60]={$seatGeneratorStore?.section?.seatConfig?.seatOrder === 'right'}
+                    class:text-white={$seatGeneratorStore?.section?.seatConfig?.seatOrder === 'right'}
                     on:click={() => handleSeatOrderChange('right')}
                     aria-label="Set seat order to right"
                     tabindex="0"
@@ -226,7 +211,7 @@
     <div class="mt-4">
         <label for="row-label" class="block font-medium">Row label</label>
         <select 
-            value={seatGeneratorStore.section.seatConfig.rowLabel}
+            value={$seatGeneratorStore?.section?.seatConfig?.rowLabel ?? 'Show All'}
             on:change={(e) => handleRowLabelChange((e.target as HTMLSelectElement).value)}
             class="w-full rounded border border-gray-200 bg-gray-100 p-2"
             aria-label="Row label display option"

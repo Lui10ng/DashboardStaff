@@ -1,193 +1,146 @@
-import type { Section, CustomSeatNames, SelectedSeat, TabType } from '$lib/types/seat-generator';
+import { writable, derived } from 'svelte/store';
+import type { Section, SeatConfig, SelectedSeat } from '$lib/types/seat-generator';
 
-// Initial seat configuration
-const createInitialSection = (): Section => ({
-	seatConfig: {
-		rows: 0,
-		seatsPerRow: 0,
-		rowStartChar: 'A',
-		seatStartNum: 1,
-		rowOrder: 'down',
-		seatOrder: 'left',
-		rowLabel: 'Show All'
-	},
-	seats: [],
-	seatData: []
-});
+interface SeatGeneratorState {
+	name: string;
+	ticketQuantity: number;
+	section: Section;
+	selectedSeat: SelectedSeat | null;
+	selectedSeats: SelectedSeat[];
+	multipleSeatSelection: boolean;
+	customSeatNames: Record<string, string>;
+	activeTab: 'ticket' | 'reserve-seating';
+	reserveSeatingEnabled: boolean;
+	currentZoom: number;
+}
 
-/**
- * state variables:
- *
- * We use let for all state variables since their properties might change or they might be directly reassigned
- */
-const sectionStore = $state(createInitialSection());
-const customSeatNamesStore = $state<CustomSeatNames>({});
-let venueImageStore = $state<string | null>(null);
-let currentZoomStore = $state(1);
-let isDraggingOverStore = $state(false);
+function createSeatGeneratorStore() {
+	const defaultState: SeatGeneratorState = {
+		name: '',
+		ticketQuantity: 0,
+		section: {
+			name: 'Default Section',
+			seatConfig: {
+				rows: 5,
+				seatsPerRow: 5,
+				rowStartChar: 'A',
+				seatStartNum: 1,
+				rowOrder: 'down',
+				seatOrder: 'left',
+				rowLabel: 'Show All'
+			},
+			seats: [],
+			seatData: {},
+			customSeatNames: {}
+		},
+		selectedSeat: null,
+		selectedSeats: [],
+		multipleSeatSelection: false,
+		customSeatNames: {},
+		activeTab: 'ticket',
+		reserveSeatingEnabled: false,
+		currentZoom: 1
+	};
 
-let ticketQuantityStore = $state(1000);
-let activeTabStore = $state<TabType>('ticket');
-let reserveSeatingEnabledStore = $state(false);
-let showWarningStore = $state(false);
-let selectedSeatStore = $state<SelectedSeat>(null);
-let selectedSeatsStore = $state<SelectedSeat[]>([]);
-let multipleSeatSelectionStore = $state(false);
+	const store = writable<SeatGeneratorState>(defaultState);
 
-// Functions to update state
-const setTicketQuantity = (value: number) => {
-	ticketQuantityStore = value;
-	checkQuantityExceeded();
-};
+	const { subscribe, set, update } = store;
 
-const setReserveSeatingEnabled = (value: boolean) => {
-	reserveSeatingEnabledStore = value;
-};
-
-const setActiveTab = (value: TabType) => {
-	activeTabStore = value;
-};
-
-const setSelectedSeat = (seat: SelectedSeat) => {
-	selectedSeatStore = seat;
-};
-
-const setMultipleSeatSelection = (value: boolean) => {
-	multipleSeatSelectionStore = value;
-};
-
-const setSelectedSeats = (seats: SelectedSeat[]) => {
-	selectedSeatsStore = seats;
-};
-
-const setSectionConfig = (config: Partial<Section['seatConfig']>) => {
-	sectionStore.seatConfig = { ...sectionStore.seatConfig, ...config };
-};
-
-const setVenueImage = (url: string | null) => {
-	venueImageStore = url;
-};
-
-const setCurrentZoom = (zoom: number) => {
-	currentZoomStore = zoom;
-};
-
-const setIsDraggingOver = (isDragging: boolean) => {
-	isDraggingOverStore = isDragging;
-};
-
-const regenerateSeats = () => {
-	const rows = Math.max(0, sectionStore.seatConfig.rows || 0);
-	const seatsPerRow = Math.max(0, sectionStore.seatConfig.seatsPerRow || 0);
-
-	console.log(`Regenerating seats: ${rows} rows × ${seatsPerRow} seats per row`);
-
-	if (rows === 0 || seatsPerRow === 0) {
-		console.log('Zero dimensions, creating empty arrays');
-		sectionStore.seats = [];
-		sectionStore.seatData = [];
-	} else {
-		// Direct property modification with $state
-		console.log('Creating seat arrays with dimensions:', rows, 'x', seatsPerRow);
-
-		try {
-			sectionStore.seats = Array(rows)
-				.fill(null)
-				.map(() => Array(seatsPerRow).fill('available'));
-
-			sectionStore.seatData = Array(rows)
-				.fill(null)
-				.map(() =>
-					Array(seatsPerRow)
-						.fill(null)
-						.map(() => ({ customName: null }))
-				);
-
-			console.log(
-				'Seats array created successfully:',
-				sectionStore.seats.length,
-				'rows,',
-				sectionStore.seats.length > 0 ? sectionStore.seats[0].length : 0,
-				'seats per row'
-			);
-		} catch (error) {
-			console.error('Error creating seat arrays:', error);
-		}
-	}
-
-	// Check if total seats exceed ticket quantity
-	checkQuantityExceeded();
-
-	// Log seat array size for debugging
-	console.log('Total seats:', rows * seatsPerRow);
-	console.log(
-		'Actual seats array size:',
-		sectionStore.seats.length > 0 ? sectionStore.seats.length * sectionStore.seats[0].length : 0
+	const totalSeats = derived(
+		store,
+		$store => ($store.section.seatConfig.rows ?? 0) * ($store.section.seatConfig.seatsPerRow ?? 0)
 	);
 
-	// Return the total number of seats for convenience
-	return rows * seatsPerRow;
-};
+	return {
+		subscribe,
+		setName: (name: string) => update(store => ({ ...store, name })),
+		setTicketQuantity: (quantity: number) => update(store => ({ ...store, ticketQuantity: quantity })),
+		setSectionConfig: (config: Partial<SeatConfig>) => {
+			update(store => {
+				const updatedConfig = {
+					...store.section.seatConfig,
+					...config
+				};
+				return {
+					...store,
+					section: {
+						...store.section,
+						seatConfig: updatedConfig
+					}
+				};
+			});
+		},
+		setSeats: (seats: string[][]) => 
+			update(store => ({
+				...store,
+				section: { ...store.section, seats }
+			})),
+		setCustomSeatNames: (names: Record<string, string>) => 
+			update(store => ({ ...store, customSeatNames: names })),
+		setActiveTab: (tab: 'ticket' | 'reserve-seating') => 
+			update(store => ({ ...store, activeTab: tab })),
+		setReserveSeatingEnabled: (enabled: boolean) =>
+			update(store => {
+				console.log('Setting reserve seating enabled:', enabled);
+				const newState = { ...store, reserveSeatingEnabled: enabled };
+				
+				if (enabled) {
+					// Initialize with default config when enabling if not already set
+					if (!store.section.seatConfig || store.section.seatConfig.rows === 0) {
+						newState.section = {
+							...store.section,
+							seatConfig: defaultState.section.seatConfig,
+							seats: [], // Ensure seats array exists but is empty
+							seatData: {} // Initialize empty seat data
+						};
+					}
+				}
+				
+				return newState;
+			}),
+		setSelectedSeat: (seat: SelectedSeat | null) =>
+			update(store => ({ ...store, selectedSeat: seat })),
+		setSelectedSeats: (seats: SelectedSeat[]) =>
+			update(store => ({ ...store, selectedSeats: seats })),
+		setMultipleSeatSelection: (enabled: boolean) =>
+			update(store => ({ ...store, multipleSeatSelection: enabled })),
+		setCurrentZoom: (zoom: number) =>
+			update(store => ({ ...store, currentZoom: zoom })),
+		regenerateSeats: () => {
+			update(store => {
+				const { rows = 0, seatsPerRow = 0 } = store.section.seatConfig || {};
+				console.log('Regenerating seats:', rows, 'rows ×', seatsPerRow, 'seats per row');
 
-const checkQuantityExceeded = () => {
-	const totalSeats = sectionStore.seatConfig.rows * sectionStore.seatConfig.seatsPerRow;
-	const showWarning = totalSeats > ticketQuantityStore;
+				if (rows === 0 || seatsPerRow === 0) {
+					console.log('Zero dimensions, creating empty arrays');
+					return {
+						...store,
+						section: {
+							...store.section,
+							seats: [],
+							seatData: {}
+						}
+					};
+				}
 
-	showWarningStore = showWarning;
-	return showWarning;
-};
+				console.log('Creating seat arrays with dimensions:', rows, 'x', seatsPerRow);
+				const newSeats = Array(rows)
+					.fill(null)
+					.map(() => Array(seatsPerRow).fill('available'));
 
-// Export store object with values and methods
-export const seatGeneratorStore = {
-	// State values
-	get section() {
-		return sectionStore;
-	},
-	get selectedSeat() {
-		return selectedSeatStore;
-	},
-	get selectedSeats() {
-		return selectedSeatsStore;
-	},
-	get multipleSeatSelection() {
-		return multipleSeatSelectionStore;
-	},
-	get customSeatNames() {
-		return customSeatNamesStore;
-	},
-	get ticketQuantity() {
-		return ticketQuantityStore;
-	},
-	get activeTab() {
-		return activeTabStore;
-	},
-	get reserveSeatingEnabled() {
-		return reserveSeatingEnabledStore;
-	},
-	get showWarning() {
-		return showWarningStore;
-	},
-	get currentZoom() {
-		return currentZoomStore;
-	},
-	get venueImage() {
-		return venueImageStore;
-	},
-	get isDraggingOver() {
-		return isDraggingOverStore;
-	},
+				console.log('Generated seats array:', newSeats);
+				return {
+					...store,
+					section: {
+						...store.section,
+						seats: newSeats,
+						seatData: {} // Reset seat data when regenerating
+					}
+				};
+			});
+		},
+		reset: () => set(defaultState)
+	};
+}
 
-	// Functions to update state
-	setTicketQuantity,
-	setReserveSeatingEnabled,
-	setActiveTab,
-	setSectionConfig,
-	setSelectedSeat,
-	setMultipleSeatSelection,
-	setSelectedSeats,
-	setVenueImage,
-	setCurrentZoom,
-	setIsDraggingOver,
-	regenerateSeats,
-	checkQuantityExceeded
-};
+export const seatGeneratorStore = createSeatGeneratorStore();

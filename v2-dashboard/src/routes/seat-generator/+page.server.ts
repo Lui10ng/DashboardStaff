@@ -5,6 +5,31 @@ import { handleSvelteError } from '$lib/utils/errorHandler';
 import { error, fail } from '@sveltejs/kit';
 import { createApiClient } from '$lib/services/payload.server';
 
+interface SeatMapResponse {
+	id: string;
+	name: string;
+	config: {
+		ticketQuantity: number;
+		seatConfig: {
+			rows: number;
+			seatsPerRow: number;
+			rowStartChar: string;
+			seatStartNum: number;
+			rowOrder: 'down' | 'up';
+			seatOrder: 'left' | 'right';
+			rowLabel: string;
+		};
+	};
+	seats: Record<string, any>;
+	customSeatNames?: Record<string, string>;
+	summary: {
+		totalSeats: number;
+		availableSeats: number;
+		unavailableSeats: number;
+		soldSeats: number;
+	};
+}
+
 export const load: PageServerLoad = async (event: RequestEvent) => {
 	const { params: { eventId } } = event;
 
@@ -56,26 +81,55 @@ export const actions: Actions = {
 			const layoutDataJson = formData.get('layoutData');
 
 			if (!layoutDataJson || typeof layoutDataJson !== 'string') {
-				return { success: false, error: 'Invalid layout data' };
+				return fail(400, { 
+					success: false, 
+					error: 'Invalid layout data' 
+				});
 			}
 
-			JSON.parse(layoutDataJson) as SeatLayoutData;
+			const layoutData = JSON.parse(layoutDataJson);
 
-			// TODO: Save seat generator layout
-			// await apiClient.post('/seat-generator', { layoutData: layoutDataJson });
+			// Validate the layout data
+			if (!layoutData.config?.ticketQuantity || !layoutData.config?.seatConfig || !layoutData.seats) {
+				return fail(400, { 
+					success: false, 
+					error: 'Missing required layout data' 
+				});
+			}
+
+			// Create the seat map in Payload CMS
+			const response = await apiClient.post<SeatMapResponse>('/seat-maps', {
+				name: layoutData.name,
+				config: layoutData.config,
+				seats: layoutData.seats,
+				customSeatNames: layoutData.customSeatNames || null,
+				summary: layoutData.summary
+			});
+
+			if (!response || !response.id) {
+				return fail(500, { 
+					success: false, 
+					error: 'Failed to save seat map' 
+				});
+			}
 
 			return {
 				success: true,
-				message: 'Layout saved successfully'
+				message: 'Layout saved successfully',
+				seatMapId: response.id
 			};
 		} catch (err) {
+			console.error('Error saving layout:', err);
 			const { statusCode, errorMessage } = handleSvelteError(
 				err,
 				'Saving Seat Layout',
 				'Failed to save seat layout'
 			);
 
-			return fail(statusCode, { error: errorMessage });
+			return fail(statusCode, { 
+				success: false, 
+				error: errorMessage 
+			});
 		}
 	},
 

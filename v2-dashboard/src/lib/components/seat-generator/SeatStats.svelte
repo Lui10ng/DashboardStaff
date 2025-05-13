@@ -2,10 +2,13 @@
     import { seatGeneratorStore } from '$lib/stores/seat-generator.svelte';
     import type { SeatStatus } from '$lib/types/seat-generator';
     
-    // Create local reactive variables that track the store
-    const rows = $derived(seatGeneratorStore.section.seatConfig.rows);
-    const seatsPerRow = $derived(seatGeneratorStore.section.seatConfig.seatsPerRow);
-    const seatMatrix = $derived(seatGeneratorStore.section.seats);
+    // Subscribe to the store
+    const seatGeneratorState = $derived($seatGeneratorStore);
+    
+    // Create local reactive variables that track the store with safe access
+    const rows = $derived(seatGeneratorState?.section?.seatConfig?.rows ?? 0);
+    const seatsPerRow = $derived(seatGeneratorState?.section?.seatConfig?.seatsPerRow ?? 0);
+    const seatMatrix = $derived(seatGeneratorState?.section?.seats ?? []);
     
     // Computed values for different seat statuses
     const totalSeats = $derived(rows * seatsPerRow);

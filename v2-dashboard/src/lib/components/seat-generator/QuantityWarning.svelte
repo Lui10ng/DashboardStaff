@@ -1,11 +1,22 @@
 <script lang="ts">
     import { seatGeneratorStore } from '$lib/stores/seat-generator.svelte';
     
-    // Computed total seats
-    $: totalSeats = seatGeneratorStore.section.seatConfig.rows * seatGeneratorStore.section.seatConfig.seatsPerRow;
+    // Subscribe to the store
+    const seatGeneratorState = $derived($seatGeneratorStore);
+    
+    // Computed total seats with safe access
+    const totalSeats = $derived(
+        (seatGeneratorState?.section?.seatConfig?.rows ?? 0) * 
+        (seatGeneratorState?.section?.seatConfig?.seatsPerRow ?? 0)
+    );
+    
+    // Computed warning state
+    const showWarning = $derived(
+        totalSeats > (seatGeneratorState?.ticketQuantity ?? 0) && totalSeats > 0
+    );
 </script>
 
-{#if seatGeneratorStore.showWarning}
+{#if showWarning}
     <div class="rounded-md bg-yellow-50 p-4">
         <div class="flex">
             <div class="flex-shrink-0">
@@ -25,7 +36,7 @@
 
                 <div class="mt-2 text-sm text-yellow-700">
                     <p>
-                        Current configuration creates {totalSeats} seats, but ticket quantity is {seatGeneratorStore.ticketQuantity}.
+                        Current configuration creates {totalSeats} seats, but ticket quantity is {seatGeneratorState?.ticketQuantity ?? 0}.
                         This may cause issues with ticket allocation.
                     </p>
                 </div>
