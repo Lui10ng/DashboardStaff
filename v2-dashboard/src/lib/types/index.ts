@@ -123,7 +123,7 @@ export interface PayloadError {
 }
 
 export type TicketProps = {
-	id: string;
+	id: number;
 	name: string;
 	description?: string;
 	price: number;

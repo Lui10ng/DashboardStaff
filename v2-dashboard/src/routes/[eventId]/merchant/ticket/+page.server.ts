@@ -86,10 +86,16 @@ export const load: PageServerLoad = async (event: RequestEvent) => {
 		};
 
 		// Fetch existing tickets
-		const ticketResponse = await apiClient.get<PayloadPaginatedResponse<TicketType>>('/ticket-types', paramsTicket);
+		const ticketResponse = await apiClient.get<PayloadPaginatedResponse<TicketType>>(
+			'/ticket-types',
+			paramsTicket
+		);
 
 		// Fetch existing vouchers
-		const voucherResponse = await apiClient.get<PayloadPaginatedResponse<Promotion>>('/promotions', paramsVoucher);
+		const voucherResponse = await apiClient.get<PayloadPaginatedResponse<Promotion>>(
+			'/promotions',
+			paramsVoucher
+		);
 
 		return {
 			form,
@@ -171,8 +177,7 @@ export const actions: Actions = {
 				console.error('[DEBUG] Error creating seat map:', seatMapError);
 				return fail(400, {
 					form,
-					error:
-						seatMapError instanceof Error ? seatMapError.message : 'Failed to create seat map'
+					error: seatMapError instanceof Error ? seatMapError.message : 'Failed to create seat map'
 				});
 			}
 		}
@@ -230,6 +235,15 @@ export const actions: Actions = {
 
 		console.log('Updating ticket with ID:', ticketId);
 
+		// Extract date only from ISO string
+		const extractDateOnly = (isoString: string) => {
+			if (!isoString) return null;
+			return isoString.split('T')[0];
+		};
+
+		// Log the incoming form data
+		console.log('Form data:', Object.fromEntries(data.entries()));
+
 		const form = await superValidate(data, zod(ticketSchema));
 
 		if (!form.valid) {
@@ -238,36 +252,41 @@ export const actions: Actions = {
 		}
 
 		try {
-			// Parse and validate dates
-			const validFrom = form.data.validfrom ? new Date(form.data.validfrom + 'T00:00:00Z') : null;
-			const validTo = form.data.validto ? new Date(form.data.validto + 'T00:00:00Z') : null;
+			// Prepare the dates
+			const validFromDate = form.data.salesStart ? extractDateOnly(form.data.salesStart) : null;
+			const validToDate = form.data.salesEnd ? extractDateOnly(form.data.salesEnd) : null;
 
-			// Validate dates
-			if (!validFrom || isNaN(validFrom.getTime()) || !validTo || isNaN(validTo.getTime())) {
-				console.error('Invalid date values:', { validFrom, validTo });
-				return message(form, {
-					success: false,
-					message: 'Invalid date format'
-				});
-			}
+			// Create ISO datetime strings with default time (00:00:00)
+			const salesStart = validFromDate
+				? new Date(`${validFromDate}T00:00:00Z`).toISOString()
+				: null;
+			const salesEnd = validToDate ? new Date(`${validToDate}T00:00:00Z`).toISOString() : null;
 
-			const formData = {
+			// Log the processed dates for debugging
+			console.log('Processed dates:', {
+				validFromDate,
+				validToDate,
+				salesStart,
+				salesEnd
+			});
+
+			// Prepare update data
+			const formData: Record<string, any> = {
 				name: form.data.name,
 				price: form.data.price,
 				quantityAvailable: form.data.quantityAvailable,
 				minOrderQuantity: form.data.minOrderQuantity,
 				maxOrderQuantity: form.data.maxOrderQuantity,
-				salesStart: validFrom.toISOString(),
-				salesEnd: validTo.toISOString(),
 				color: form.data.color,
 				status: form.data.status
 			};
 
-			console.log('Sending update with data:', formData);
+			// Only add dates if they are valid
+			if (salesStart) formData.salesStart = salesStart;
+			if (salesEnd) formData.salesEnd = salesEnd;
 
 			const apiClient = createApiClient(event);
-			const response = await apiClient.patch(`/ticket-types/${ticketId}`, formData);
-			console.log('Update response:', response);
+			await apiClient.patch(`/ticket-types/${ticketId}`, formData);
 
 			return message(form, {
 				success: true,
@@ -275,19 +294,12 @@ export const actions: Actions = {
 			});
 		} catch (err) {
 			console.error('Error updating ticket:', err);
-			if (err instanceof Error) {
-				console.error('Error details:', {
-					message: err.message,
-					stack: err.stack
-				});
-			}
 			return message(form, {
 				success: false,
 				message: 'Failed to update ticket'
 			});
 		}
 	},
-
 	createVoucher: async (event: RequestEvent) => {
 		const {
 			request,
@@ -318,7 +330,7 @@ export const actions: Actions = {
 
 		try {
 			const apiClient = createApiClient(event);
-			const response = await apiClient.post('collections/promotions', formData);
+			const response = await apiClient.post('/promotions', formData);
 			console.log('response: ', response);
 
 			return message(form, { success: true, message: 'Voucher created successfully' });
