@@ -13,7 +13,6 @@
 	import { seatGeneratorStore } from '$lib/stores/seat-generator.svelte';
 	import type { SeatConfig as SeatConfigType } from '$lib/types/seat-generator';
 	import { superForm } from 'sveltekit-superforms/client';
-	import { ticketSchema } from '$lib/schema/ticket';
 	import DatePicker from '$lib/components/ui/DatePicker.svelte';
 	import PaymentToggle from '$lib/components/ui/PaymentToggle.svelte';
 	import SeatConfig from '$lib/components/seat-generator/SeatConfig.svelte';
@@ -35,6 +34,8 @@
 	import type { SeatMap } from '$lib/types/seatMap';
 	import type { SeatMap as StoreSeatMap } from '$lib/stores/seat-map';
 	import type { PageData } from './$types';
+	import { ticketListStore } from '$lib/stores/ticketList.svelte';
+
 
 	const { data } = $props<{ data: PageData }>();
 
@@ -69,7 +70,7 @@
 	// Add proper typing for the ticket mapping
 	function mapTicketTypeToProps(ticket: any): TicketProps {
 		return {
-			id: String(ticket.id),
+			id: Number(ticket.id),
 			name: ticket.name,
 			description: ticket.description || '',
 			price: ticket.price,
@@ -149,9 +150,23 @@
 		message: voucherMessage
 	} = superForm(data.voucherForm);
 
+	$effect(() => {
+		if (data.ticketData !== undefined) {
+			ticketListStore.setTickets(data.ticketData);
+		}
+	});
+	
+	// After successful update
 	ticketMessage.subscribe(async (msg) => {
 		if (msg && msg.success) {
-			ticketDrawer.open = false;
+			// Update the store if the ticket was updated successfully
+			if (selectedTicket) {
+				ticketListStore.updateTicket(selectedTicket.id, {
+					...selectedTicket,
+					status: isActivePayment ? 'active' : 'inactive',
+					color: selectedColor
+				});
+			}
 			editTicketDrawer.open = false;
 		}
 	});
@@ -549,7 +564,7 @@
 										value={$form.description}
 										placeholder="Enter ticket description"
 										class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
-									/>
+									></textarea>
 								</div>
 								<div>
 									<label for="price" class="mb-2 block text-sm">Price</label>
@@ -658,8 +673,6 @@
 									</select>
 								</div>
 
-								<div>
-									<label for="status" class="mb-2 block text-sm">Status</label>
 
 									<div>
 										<label for="activePayment" class="mb-2 block text-sm">Active payment</label>
@@ -675,7 +688,6 @@
 											}}
 										/>
 									</div>
-								</div>
 
 								<div>
 									<label for="reserveSeating" class="mb-2 block text-sm"
@@ -717,7 +729,7 @@
 										style="background-color: {color}; border-color: {$form.color === color
 											? 'black'
 											: 'transparent'}"
-										on:click={() => ($form.color = color)}
+										Onclick={() => ($form.color = color)}
 										aria-label="Select color {color}"
 									></button>
 								{/each}
@@ -782,7 +794,7 @@
 	</Drawer>
 
 	<Drawer
-		isOpen={editTicketDrawer.open}
+		isOpen={EditTicketdrawerState}
 		contentBaseClass="bg-white p-4 space-y-4 shadow-xl w-full h-[90vh] rounded-t-xl overflow-y-auto"
 		alignment="items-end"
 		positionIn={{ y: 600, duration: 200 }}
@@ -837,6 +849,21 @@
 										{#if $errors.name}
 											<p class="text-primary text-sm">
 												{$errors.name}
+											</p>
+										{/if}
+									</div>
+									<!-- Add this after the ticket name input in the edit ticket form -->
+									<div>
+										<label for="description" class="mb-2 block text-sm">Description</label>
+										<textarea
+											name="description"
+											value={selectedTicket.description}
+											placeholder="Enter ticket description"
+											class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
+										></textarea>
+										{#if $errors.description}
+											<p class="text-primary text-sm">
+												{$errors.description}
 											</p>
 										{/if}
 									</div>
@@ -942,7 +969,23 @@
 										name="reserveSeating"
 										value={isActiveReserveSeating.toString()}
 									/>
-
+									<div>
+											<label for="currency" class="mb-2 block text-sm">Currency</label>
+											<select
+												name="currency"
+												value={selectedTicket.currency}
+												class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
+											>
+												<option value="PHP">PHP</option>
+												<option value="USD">USD</option>
+												<option value="EUR">EUR</option>
+											</select>
+											{#if $errors.currency}
+												<p class="text-primary text-sm">
+													{$errors.currency}
+												</p>
+											{/if}
+										</div>
 									<div>
 										<label for="activePayment" class="mb-2 block text-sm">Active payment</label>
 										<PaymentToggle value={isActivePayment} OnChange={handleTogglePayment} />
@@ -972,7 +1015,75 @@
 									</div>
 								</div>
 							</div>
-						</form></Tabs.Content
+                        <div>
+                            <label for="color" class="my-4 block text-sm">Label Color</label>
+                            <div
+                                class="mb-3 rounded-md p-3 text-center text-white"
+                                style="background-color: {selectedColor}"
+                            >
+                                {selectedColor}
+                            </div>
+                            <div class="flex gap-2">
+                                {#each colors as color}
+                                    <button
+                                        type="button"
+                                        class="h-8 w-8 rounded-full border-2 transition-all"
+                                        style="background-color: {color}; border-color: {selectedColor === color
+                                            ? 'black'
+                                            : 'transparent'}"
+                                        Onclick={() => {
+                                            selectedColor = color;
+                                            if (selectedTicket) {
+                                                selectedTicket.color = color;
+                                            }
+                                        }}
+                                        aria-label="Select color {color}"
+                                    ></button>
+                                {/each}
+
+                                <label
+                                    class="relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-2 border-gray-500"
+                                >
+                                    <input
+                                        class="absolute top-0 right-0 hidden"
+                                        type="color"
+                                        name="color"
+                                        value={selectedColor}
+                                        Oninput={(e) => {
+                                            selectedColor = e.currentTarget.value;
+                                            if (selectedTicket) {
+                                                selectedTicket.color = e.currentTarget.value;
+                                            }
+                                        }}
+                                    />
+                                    +
+                                </label>
+                            </div>
+
+                            <input type="hidden" name="color" value={selectedColor} />
+						{#if $errors.color}
+							<p class="text-primary text-sm">
+								{$errors.color}
+							</p>
+						{/if}
+                        </div>
+						<div class="mt-8 grid grid-cols-2 gap-4">
+											<Button
+												onClick={() => {}}
+												type="submit"
+												label="Save Ticket"
+												className="bg-[#DF4D60] text-white p-2 rounded-md"
+											/>
+											<Button
+												onClick={() => {
+													editTicketDrawer.open = false;
+												}}
+												label="Cancel"
+												className="border border-gray-300 text-gray-700 p-2 rounded-md"
+											/>
+										</div>
+						</form>
+						</Tabs.Content
 					>
 
 					<Tabs.Content value="reserve-seating">
