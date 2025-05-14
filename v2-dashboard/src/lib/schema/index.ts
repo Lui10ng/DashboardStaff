@@ -59,3 +59,8 @@ export const eventSchema = z.object({
 		.refine((image) => image.size < 10 * 1024 * 1024, 'Max 10MB upload size.')
 		.optional()
 });
+
+export const themeSchema = z.object({
+	theme: z.string().min(1, 'Theme is required'),
+	modeTheme: z.string().min(1, 'Mode theme is required')
+});

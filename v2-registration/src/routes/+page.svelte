@@ -39,6 +39,11 @@
 
 	$effect(() => {
 		document.title = event.title;
+		document.documentElement.setAttribute('data-theme', data.theme ?? event.theme);
+		document.documentElement.setAttribute(
+			'data-mode',
+			data.mode || (event.light === 'false' ? 'dark' : 'light')
+		);
 	});
 
 	message.subscribe(async (msg) => {
@@ -195,7 +200,7 @@
 						class="animated-poster order-last col-span-12 flex flex-col justify-between transition-transform
 								delay-100 duration-500 ease-in-out lg:order-first lg:col-span-6"
 					>
-						<div>
+						<div class="text-surface-100">
 							<h2 class="h2 mb-8 text-3xl capitalize 2xl:text-4xl">
 								{event.title}
 							</h2>

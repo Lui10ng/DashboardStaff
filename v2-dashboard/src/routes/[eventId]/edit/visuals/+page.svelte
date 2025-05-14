@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
-
 	import Button from '$lib/components/ui/Button.svelte';
 	import Drawer from '$lib/components/ui/Drawer.svelte';
+	import { themes } from '$lib/static/constant.js';
 	import { themeDrawer } from '$lib/stores/state.svelte';
+	import { Switch } from '@skeletonlabs/skeleton-svelte';
+	import { superForm } from 'sveltekit-superforms';
 
 	let { data } = $props();
 
@@ -13,6 +14,16 @@
 	let posterImgSrc: string | null = $state(null);
 	let backgroundImgSrc: string | null = $state(null);
 	const themeDrawerState = $derived(themeDrawer.open);
+	let theme = $derived(data.eventTheme.theme);
+	let themeMode = $state(data.eventTheme.light ?? false);
+
+	const { form, errors, enhance, delayed, message } = superForm(data.form);
+
+	message.subscribe(async (msg) => {
+		if (msg && msg.success) {
+			themeDrawer.open = false;
+		}
+	});
 
 	function handleClick(inputClick: string) {
 		document.getElementById(inputClick)?.click();
@@ -45,6 +56,14 @@
 			reader.readAsDataURL(input.files[0]);
 		}
 	}
+
+	const handleThemeSelection = (selectedTheme: string) => {
+		theme = selectedTheme;
+	};
+
+	const handleCloseThemeDrawer = () => {
+		themeDrawer.open = false;
+	};
 </script>
 
 <form action="/?/updateVisuals" method="POST" use:enhance enctype="multipart/form-data">
@@ -73,7 +92,51 @@
 					positionOut={{ y: 600, duration: 200 }}
 				>
 					<div>
-						<iframe id="myIframe" title="themeSelector" src={data.siteUrl} class="h-[70svh] w-full"
+						<div class="flex justify-between">
+							<div class="flex items-center gap-3">
+								<h2 class="text-sm">{themeMode ? 'Light' : 'Dark'} Mode</h2>
+								<Switch
+									name="example"
+									checked={themeMode}
+									onCheckedChange={(e) => (themeMode = e.checked)}
+								/>
+							</div>
+							<form action="?/saveTheme" method="POST" use:enhance>
+								<input type="text" name="theme" value={theme} hidden />
+								<input type="text" name="modeTheme" value={themeMode} hidden />
+								<div class="flex gap-3">
+									<button
+										type="button"
+										onclick={() => handleCloseThemeDrawer()}
+										class="min-w-32 rounded-lg border p-2">Cancel</button
+									>
+									<button type="submit" class="bg-primary min-w-32 rounded-lg p-2 text-white"
+										>Save Theme</button
+									>
+								</div>
+							</form>
+						</div>
+						<div
+							class="flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto scroll-smooth sm:gap-5"
+						>
+							{#each themes as themeOption}
+								<div class="my-5 shrink-0 snap-start px-1 text-center">
+									<button
+										onclick={() => handleThemeSelection(themeOption)}
+										class="flex min-w-24 flex-col rounded-md border p-2 {themeOption == theme
+											? 'border-primary'
+											: ''}"
+									>
+										<p class="mt-1 capitalize">{themeOption}</p>
+									</button>
+								</div>
+							{/each}
+						</div>
+						<iframe
+							id="myIframe"
+							title="themeSelector"
+							src={`${data.siteUrl}/?theme=${theme}&mode=${themeMode ? 'light' : 'dark'}`}
+							class="h-[70svh] w-full"
 						></iframe>
 					</div>
 				</Drawer>
@@ -240,7 +303,7 @@
 			Cancel
 		</button>
 		<button
-			class="w-full rounded-md bg-primary px-5 py-2 text-sm font-medium text-white hover:bg-red-700 sm:w-auto sm:text-base"
+			class="bg-primary w-full rounded-md px-5 py-2 text-sm font-medium text-white hover:bg-red-700 sm:w-auto sm:text-base"
 		>
 			Save changes
 		</button>

@@ -274,6 +274,8 @@ export interface Event {
     hasNextPage?: boolean;
     totalDocs?: number;
   };
+  theme?: string | null;
+  light?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1029,6 +1031,8 @@ export interface EventsSelect<T extends boolean = true> {
       };
   form?: T;
   ticketType?: T;
+  theme?: T;
+  light?: T;
   updatedAt?: T;
   createdAt?: T;
 }

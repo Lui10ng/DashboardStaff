@@ -23,6 +23,8 @@
 @import '@skeletonlabs/skeleton/themes/seafoam';
 @import '@skeletonlabs/skeleton/themes/vintage';
 @import '@skeletonlabs/skeleton/themes/wintry';
+@import '@skeletonlabs/skeleton/themes/crimson';
+@import '@skeletonlabs/skeleton/themes/wintry';
 
 @source '../node_modules/@skeletonlabs/skeleton-svelte/dist';
 

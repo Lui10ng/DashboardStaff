@@ -402,6 +402,30 @@ const Events: CollectionConfig = {
       collection: 'ticket-types',
       on: 'event',
     },
+    {
+      name: 'theme',
+      label: 'Theme',
+      type: 'text',
+      required: false,
+      unique: true,
+      index: true,
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+      },
+    },
+    {
+      name: 'light',
+      label: 'Light Theme',
+      type: 'text',
+      required: false,
+      unique: true,
+      index: true,
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+      },
+    },
   ],
   timestamps: true,
 }
