@@ -1,3 +1,5 @@
+import type { RegistrantProps, themeProps } from '$lib/types';
+
 export const stateDrawer = $state({
 	open: false
 });
@@ -28,3 +30,29 @@ export const themeDrawer = $state({
 export const stateEditEvent = $state({
 	open: false
 });
+
+export const registrantList = () => {
+	let registrantData = $state<RegistrantProps[]>();
+
+	return {
+		get registrantData() {
+			return registrantData;
+		},
+		set registrantData(value) {
+			registrantData = value;
+		}
+	};
+};
+
+export const themeState = () => {
+	let themes = $state<themeProps[]>();
+
+	return {
+		get themes() {
+			return themes;
+		},
+		set themes(value) {
+			themes = value;
+		}
+	};
+};

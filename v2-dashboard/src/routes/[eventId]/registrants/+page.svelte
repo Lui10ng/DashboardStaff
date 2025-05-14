@@ -6,7 +6,6 @@
 	import EmailBlastForm from '$lib/components/ui/EmailBlastForm.svelte';
 	import { downloadCSV } from '$lib/utils/csv';
 	import {
-		registrantStore,
 		guestStatusFilter,
 		searchQuery,
 		filteredGuests,
@@ -15,11 +14,18 @@
 	} from '$lib/stores/registrantList.svelte';
 	import { fly } from 'svelte/transition';
 	import { formatRegisteredDate } from '$lib/utils/datetime';
+	import { registrantList } from '$lib/stores/state.svelte.ts';
 
 	// Get the data from props
 	let { data } = $props();
 
-	let registrants = $derived(data.registrants);
+	const registrantStore = registrantList();
+
+	$effect(() => {
+		registrantStore.registrantData = data.registrants;
+	});
+
+	let registrants = $derived(registrantStore.registrantData || []);
 
 	// Handler functions
 	const handleResendQR = (guestId: string) => {
