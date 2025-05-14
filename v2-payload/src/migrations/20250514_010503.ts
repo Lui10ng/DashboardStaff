@@ -8,11 +8,14 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE TYPE "public"."PromotionStatus" AS ENUM('active', 'inactive', 'expired');
   CREATE TYPE "public"."DiscountType" AS ENUM('percentage', 'fixed_amount');
   CREATE TYPE "public"."CurrencyType" AS ENUM('USD', 'PHP', 'EUR');
-  CREATE TYPE "public"."enum_seat_maps_sections_rows_seats_seat_type" AS ENUM('standard', 'wheelchair', 'companion', 'restricted_view', 'premium', 'aisle_marker', 'unavailable');
+  CREATE TYPE "public"."enum_seat_maps_config_seat_config_row_order" AS ENUM('down', 'up');
+  CREATE TYPE "public"."enum_seat_maps_config_seat_config_seat_order" AS ENUM('left', 'right');
   CREATE TYPE "public"."CheckInStatus" AS ENUM('pending', 'checked_in', 'invalid');
   CREATE TYPE "public"."TicketStatus" AS ENUM('active', 'inactive');
   CREATE TYPE "public"."TransactionType" AS ENUM('ticket_sale', 'donation', 'refund_sale', 'refund_donation', 'platform_fee', 'payment_fee', 'payout', 'payout_fee', 'adj_credit', 'adj_debit');
-  CREATE TYPE "public"."UserRole" AS ENUM('admin', 'organizer', 'attendee', 'check-in-staff');
+  CREATE TYPE "public"."enum_users_clerk_roles" AS ENUM('admin', 'organizer', 'attendee', 'check-in-staff');
+  CREATE TYPE "public"."enum_forms_form_builder_field_type" AS ENUM('text', 'email', 'phone', 'number', 'date', 'time', 'multipleChoice', 'checkbox', 'dropdown', 'file', 'shortText', 'longText', 'region', 'city');
+  CREATE TYPE "public"."enum_event_user_roles_role" AS ENUM('manager', 'editor', 'viewer');
   CREATE TABLE IF NOT EXISTS "event_announcements" (
   	"id" serial PRIMARY KEY NOT NULL,
   	"event_id" integer NOT NULL,
@@ -46,17 +49,17 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"id" serial PRIMARY KEY NOT NULL,
   	"title" varchar NOT NULL,
   	"slug" varchar NOT NULL,
+  	"location" varchar DEFAULT '' NOT NULL,
   	"status" "EventStatus" DEFAULT 'Published' NOT NULL,
   	"start_time" timestamp(3) with time zone NOT NULL,
   	"end_time" timestamp(3) with time zone NOT NULL,
   	"description" jsonb,
-  	"organizer_id" integer NOT NULL,
-  	"venue_id" integer NOT NULL,
+  	"user_id" integer NOT NULL,
   	"category_id" integer,
-  	"seating_type" "SeatingType" DEFAULT 'general_admission' NOT NULL,
+  	"seating_type" "SeatingType" DEFAULT 'general_admission',
   	"seat_map_id" integer,
   	"total_capacity" numeric,
-  	"registration_form_id" integer NOT NULL,
+  	"registration_form_id" integer,
   	"registration_notes" jsonb,
   	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
   	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
@@ -72,7 +75,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   
   CREATE TABLE IF NOT EXISTS "media" (
   	"id" serial PRIMARY KEY NOT NULL,
-  	"alt" varchar NOT NULL,
+  	"alt" varchar,
   	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
   	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
   	"url" varchar,
@@ -166,8 +169,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"order" integer,
   	"parent_id" integer NOT NULL,
   	"path" varchar NOT NULL,
-  	"organizer_photos_id" integer,
-  	"users_id" integer
+  	"organizer_photos_id" integer
   );
   
   CREATE TABLE IF NOT EXISTS "promotions" (
@@ -192,17 +194,13 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"order" integer,
   	"parent_id" integer NOT NULL,
   	"path" varchar NOT NULL,
-  	"events_id" integer
+  	"events_id" integer,
+  	"ticket_types_id" integer
   );
   
   CREATE TABLE IF NOT EXISTS "registrants" (
   	"id" serial PRIMARY KEY NOT NULL,
-  	"ticket_id" integer NOT NULL,
   	"event_id" integer NOT NULL,
-  	"registered_user_id" integer,
-  	"guest_details_guest_email" varchar,
-  	"guest_details_guest_first_name" varchar,
-  	"guest_details_guest_last_name" varchar,
   	"submitted_answers" jsonb NOT NULL,
   	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
   	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
@@ -217,34 +215,24 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
   );
   
-  CREATE TABLE IF NOT EXISTS "seat_maps_sections_rows_seats" (
-  	"_order" integer NOT NULL,
-  	"_parent_id" varchar NOT NULL,
-  	"id" varchar PRIMARY KEY NOT NULL,
-  	"seat_number" varchar NOT NULL,
-  	"seat_type" "enum_seat_maps_sections_rows_seats_seat_type" DEFAULT 'standard' NOT NULL,
-  	"is_purchasable" boolean DEFAULT true
-  );
-  
-  CREATE TABLE IF NOT EXISTS "seat_maps_sections_rows" (
-  	"_order" integer NOT NULL,
-  	"_parent_id" varchar NOT NULL,
-  	"id" varchar PRIMARY KEY NOT NULL,
-  	"row_label" varchar NOT NULL
-  );
-  
-  CREATE TABLE IF NOT EXISTS "seat_maps_sections" (
-  	"_order" integer NOT NULL,
-  	"_parent_id" integer NOT NULL,
-  	"id" varchar PRIMARY KEY NOT NULL,
-  	"section_name" varchar NOT NULL
-  );
-  
   CREATE TABLE IF NOT EXISTS "seat_maps" (
   	"id" serial PRIMARY KEY NOT NULL,
   	"name" varchar NOT NULL,
-  	"venue_id" integer,
-  	"description" varchar,
+  	"config_ticket_quantity" numeric NOT NULL,
+  	"config_seat_config_rows" numeric NOT NULL,
+  	"config_seat_config_seats_per_row" numeric NOT NULL,
+  	"config_seat_config_row_start_char" varchar NOT NULL,
+  	"config_seat_config_seat_start_num" numeric NOT NULL,
+  	"config_seat_config_row_order" "enum_seat_maps_config_seat_config_row_order" NOT NULL,
+  	"config_seat_config_seat_order" "enum_seat_maps_config_seat_config_seat_order" NOT NULL,
+  	"config_seat_config_row_label" varchar NOT NULL,
+  	"venue_image_id" integer,
+  	"custom_seat_names" jsonb,
+  	"seats" jsonb NOT NULL,
+  	"summary_total_seats" numeric NOT NULL,
+  	"summary_available_seats" numeric NOT NULL,
+  	"summary_unavailable_seats" numeric NOT NULL,
+  	"summary_sold_seats" numeric NOT NULL,
   	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
   	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
   );
@@ -279,13 +267,14 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"status" "TicketStatus" DEFAULT 'active' NOT NULL,
   	"min_order_quantity" numeric DEFAULT 1,
   	"max_order_quantity" numeric,
+  	"color" varchar NOT NULL,
+  	"seat_map_id" integer,
   	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
   	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
   );
   
   CREATE TABLE IF NOT EXISTS "transactions" (
   	"id" serial PRIMARY KEY NOT NULL,
-  	"organizer_id" integer NOT NULL,
   	"transaction_date" timestamp(3) with time zone NOT NULL,
   	"type" "TransactionType" NOT NULL,
   	"amount" numeric NOT NULL,
@@ -293,16 +282,17 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"description" varchar NOT NULL,
   	"related_order_id" integer,
   	"related_user_id" integer,
+  	"event_id" integer,
   	"related_payment_intent_id" varchar,
   	"metadata" jsonb,
   	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
   	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
   );
   
-  CREATE TABLE IF NOT EXISTS "users_roles" (
+  CREATE TABLE IF NOT EXISTS "users_clerk_roles" (
   	"order" integer NOT NULL,
   	"parent_id" integer NOT NULL,
-  	"value" "UserRole",
+  	"value" "enum_users_clerk_roles",
   	"id" serial PRIMARY KEY NOT NULL
   );
   
@@ -348,6 +338,51 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"media_id" integer
   );
   
+  CREATE TABLE IF NOT EXISTS "forms_form_builder_options" (
+  	"_order" integer NOT NULL,
+  	"_parent_id" varchar NOT NULL,
+  	"id" varchar PRIMARY KEY NOT NULL,
+  	"value" varchar
+  );
+  
+  CREATE TABLE IF NOT EXISTS "forms_form_builder" (
+  	"_order" integer NOT NULL,
+  	"_parent_id" integer NOT NULL,
+  	"id" varchar PRIMARY KEY NOT NULL,
+  	"name" varchar NOT NULL,
+  	"label" varchar NOT NULL,
+  	"required" boolean DEFAULT false,
+  	"field_type" "enum_forms_form_builder_field_type" NOT NULL,
+  	"description" varchar
+  );
+  
+  CREATE TABLE IF NOT EXISTS "forms_responses" (
+  	"_order" integer NOT NULL,
+  	"_parent_id" integer NOT NULL,
+  	"id" varchar PRIMARY KEY NOT NULL,
+  	"field_id" varchar NOT NULL,
+  	"value" varchar,
+  	"submitted_at" timestamp(3) with time zone
+  );
+  
+  CREATE TABLE IF NOT EXISTS "forms" (
+  	"id" serial PRIMARY KEY NOT NULL,
+  	"event_id" integer,
+  	"title" varchar DEFAULT 'Registration Form' NOT NULL,
+  	"description" varchar DEFAULT 'Please fill out this registration form',
+  	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
+  	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
+  );
+  
+  CREATE TABLE IF NOT EXISTS "event_user_roles" (
+  	"id" serial PRIMARY KEY NOT NULL,
+  	"event_id" integer NOT NULL,
+  	"user_id" integer NOT NULL,
+  	"role" "enum_event_user_roles_role" DEFAULT 'viewer' NOT NULL,
+  	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
+  	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
+  );
+  
   CREATE TABLE IF NOT EXISTS "payload_locked_documents" (
   	"id" serial PRIMARY KEY NOT NULL,
   	"global_slug" varchar,
@@ -375,7 +410,9 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"ticket_types_id" integer,
   	"transactions_id" integer,
   	"users_id" integer,
-  	"venues_id" integer
+  	"venues_id" integer,
+  	"forms_id" integer,
+  	"event_user_roles_id" integer
   );
   
   CREATE TABLE IF NOT EXISTS "payload_preferences" (
@@ -415,13 +452,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   END $$;
   
   DO $$ BEGIN
-   ALTER TABLE "events" ADD CONSTRAINT "events_organizer_id_organizers_id_fk" FOREIGN KEY ("organizer_id") REFERENCES "public"."organizers"("id") ON DELETE set null ON UPDATE no action;
-  EXCEPTION
-   WHEN duplicate_object THEN null;
-  END $$;
-  
-  DO $$ BEGIN
-   ALTER TABLE "events" ADD CONSTRAINT "events_venue_id_venues_id_fk" FOREIGN KEY ("venue_id") REFERENCES "public"."venues"("id") ON DELETE set null ON UPDATE no action;
+   ALTER TABLE "events" ADD CONSTRAINT "events_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;
   EXCEPTION
    WHEN duplicate_object THEN null;
   END $$;
@@ -511,12 +542,6 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   END $$;
   
   DO $$ BEGIN
-   ALTER TABLE "organizers_rels" ADD CONSTRAINT "organizers_rels_users_fk" FOREIGN KEY ("users_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;
-  EXCEPTION
-   WHEN duplicate_object THEN null;
-  END $$;
-  
-  DO $$ BEGIN
    ALTER TABLE "promotions_rels" ADD CONSTRAINT "promotions_rels_parent_fk" FOREIGN KEY ("parent_id") REFERENCES "public"."promotions"("id") ON DELETE cascade ON UPDATE no action;
   EXCEPTION
    WHEN duplicate_object THEN null;
@@ -529,7 +554,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   END $$;
   
   DO $$ BEGIN
-   ALTER TABLE "registrants" ADD CONSTRAINT "registrants_ticket_id_tickets_id_fk" FOREIGN KEY ("ticket_id") REFERENCES "public"."tickets"("id") ON DELETE set null ON UPDATE no action;
+   ALTER TABLE "promotions_rels" ADD CONSTRAINT "promotions_rels_ticket_types_fk" FOREIGN KEY ("ticket_types_id") REFERENCES "public"."ticket_types"("id") ON DELETE cascade ON UPDATE no action;
   EXCEPTION
    WHEN duplicate_object THEN null;
   END $$;
@@ -541,31 +566,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   END $$;
   
   DO $$ BEGIN
-   ALTER TABLE "registrants" ADD CONSTRAINT "registrants_registered_user_id_users_id_fk" FOREIGN KEY ("registered_user_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;
-  EXCEPTION
-   WHEN duplicate_object THEN null;
-  END $$;
-  
-  DO $$ BEGIN
-   ALTER TABLE "seat_maps_sections_rows_seats" ADD CONSTRAINT "seat_maps_sections_rows_seats_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."seat_maps_sections_rows"("id") ON DELETE cascade ON UPDATE no action;
-  EXCEPTION
-   WHEN duplicate_object THEN null;
-  END $$;
-  
-  DO $$ BEGIN
-   ALTER TABLE "seat_maps_sections_rows" ADD CONSTRAINT "seat_maps_sections_rows_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."seat_maps_sections"("id") ON DELETE cascade ON UPDATE no action;
-  EXCEPTION
-   WHEN duplicate_object THEN null;
-  END $$;
-  
-  DO $$ BEGIN
-   ALTER TABLE "seat_maps_sections" ADD CONSTRAINT "seat_maps_sections_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."seat_maps"("id") ON DELETE cascade ON UPDATE no action;
-  EXCEPTION
-   WHEN duplicate_object THEN null;
-  END $$;
-  
-  DO $$ BEGIN
-   ALTER TABLE "seat_maps" ADD CONSTRAINT "seat_maps_venue_id_venues_id_fk" FOREIGN KEY ("venue_id") REFERENCES "public"."venues"("id") ON DELETE set null ON UPDATE no action;
+   ALTER TABLE "seat_maps" ADD CONSTRAINT "seat_maps_venue_image_id_media_id_fk" FOREIGN KEY ("venue_image_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action;
   EXCEPTION
    WHEN duplicate_object THEN null;
   END $$;
@@ -607,7 +608,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   END $$;
   
   DO $$ BEGIN
-   ALTER TABLE "transactions" ADD CONSTRAINT "transactions_organizer_id_organizers_id_fk" FOREIGN KEY ("organizer_id") REFERENCES "public"."organizers"("id") ON DELETE set null ON UPDATE no action;
+   ALTER TABLE "ticket_types" ADD CONSTRAINT "ticket_types_seat_map_id_seat_maps_id_fk" FOREIGN KEY ("seat_map_id") REFERENCES "public"."seat_maps"("id") ON DELETE set null ON UPDATE no action;
   EXCEPTION
    WHEN duplicate_object THEN null;
   END $$;
@@ -625,7 +626,13 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   END $$;
   
   DO $$ BEGIN
-   ALTER TABLE "users_roles" ADD CONSTRAINT "users_roles_parent_fk" FOREIGN KEY ("parent_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;
+   ALTER TABLE "transactions" ADD CONSTRAINT "transactions_event_id_events_id_fk" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE set null ON UPDATE no action;
+  EXCEPTION
+   WHEN duplicate_object THEN null;
+  END $$;
+  
+  DO $$ BEGIN
+   ALTER TABLE "users_clerk_roles" ADD CONSTRAINT "users_clerk_roles_parent_fk" FOREIGN KEY ("parent_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;
   EXCEPTION
    WHEN duplicate_object THEN null;
   END $$;
@@ -644,6 +651,42 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   
   DO $$ BEGIN
    ALTER TABLE "venues_rels" ADD CONSTRAINT "venues_rels_media_fk" FOREIGN KEY ("media_id") REFERENCES "public"."media"("id") ON DELETE cascade ON UPDATE no action;
+  EXCEPTION
+   WHEN duplicate_object THEN null;
+  END $$;
+  
+  DO $$ BEGIN
+   ALTER TABLE "forms_form_builder_options" ADD CONSTRAINT "forms_form_builder_options_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."forms_form_builder"("id") ON DELETE cascade ON UPDATE no action;
+  EXCEPTION
+   WHEN duplicate_object THEN null;
+  END $$;
+  
+  DO $$ BEGIN
+   ALTER TABLE "forms_form_builder" ADD CONSTRAINT "forms_form_builder_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."forms"("id") ON DELETE cascade ON UPDATE no action;
+  EXCEPTION
+   WHEN duplicate_object THEN null;
+  END $$;
+  
+  DO $$ BEGIN
+   ALTER TABLE "forms_responses" ADD CONSTRAINT "forms_responses_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."forms"("id") ON DELETE cascade ON UPDATE no action;
+  EXCEPTION
+   WHEN duplicate_object THEN null;
+  END $$;
+  
+  DO $$ BEGIN
+   ALTER TABLE "forms" ADD CONSTRAINT "forms_event_id_events_id_fk" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE set null ON UPDATE no action;
+  EXCEPTION
+   WHEN duplicate_object THEN null;
+  END $$;
+  
+  DO $$ BEGIN
+   ALTER TABLE "event_user_roles" ADD CONSTRAINT "event_user_roles_event_id_events_id_fk" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE set null ON UPDATE no action;
+  EXCEPTION
+   WHEN duplicate_object THEN null;
+  END $$;
+  
+  DO $$ BEGIN
+   ALTER TABLE "event_user_roles" ADD CONSTRAINT "event_user_roles_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;
   EXCEPTION
    WHEN duplicate_object THEN null;
   END $$;
@@ -751,6 +794,18 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   END $$;
   
   DO $$ BEGIN
+   ALTER TABLE "payload_locked_documents_rels" ADD CONSTRAINT "payload_locked_documents_rels_forms_fk" FOREIGN KEY ("forms_id") REFERENCES "public"."forms"("id") ON DELETE cascade ON UPDATE no action;
+  EXCEPTION
+   WHEN duplicate_object THEN null;
+  END $$;
+  
+  DO $$ BEGIN
+   ALTER TABLE "payload_locked_documents_rels" ADD CONSTRAINT "payload_locked_documents_rels_event_user_roles_fk" FOREIGN KEY ("event_user_roles_id") REFERENCES "public"."event_user_roles"("id") ON DELETE cascade ON UPDATE no action;
+  EXCEPTION
+   WHEN duplicate_object THEN null;
+  END $$;
+  
+  DO $$ BEGIN
    ALTER TABLE "payload_preferences_rels" ADD CONSTRAINT "payload_preferences_rels_parent_fk" FOREIGN KEY ("parent_id") REFERENCES "public"."payload_preferences"("id") ON DELETE cascade ON UPDATE no action;
   EXCEPTION
    WHEN duplicate_object THEN null;
@@ -774,8 +829,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX IF NOT EXISTS "events_title_idx" ON "events" USING btree ("title");
   CREATE UNIQUE INDEX IF NOT EXISTS "events_slug_idx" ON "events" USING btree ("slug");
   CREATE INDEX IF NOT EXISTS "events_status_idx" ON "events" USING btree ("status");
-  CREATE INDEX IF NOT EXISTS "events_organizer_idx" ON "events" USING btree ("organizer_id");
-  CREATE INDEX IF NOT EXISTS "events_venue_idx" ON "events" USING btree ("venue_id");
+  CREATE INDEX IF NOT EXISTS "events_user_idx" ON "events" USING btree ("user_id");
   CREATE INDEX IF NOT EXISTS "events_category_idx" ON "events" USING btree ("category_id");
   CREATE INDEX IF NOT EXISTS "events_seat_map_idx" ON "events" USING btree ("seat_map_id");
   CREATE INDEX IF NOT EXISTS "events_registration_form_idx" ON "events" USING btree ("registration_form_id");
@@ -813,7 +867,6 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX IF NOT EXISTS "organizers_rels_parent_idx" ON "organizers_rels" USING btree ("parent_id");
   CREATE INDEX IF NOT EXISTS "organizers_rels_path_idx" ON "organizers_rels" USING btree ("path");
   CREATE INDEX IF NOT EXISTS "organizers_rels_organizer_photos_id_idx" ON "organizers_rels" USING btree ("organizer_photos_id");
-  CREATE INDEX IF NOT EXISTS "organizers_rels_users_id_idx" ON "organizers_rels" USING btree ("users_id");
   CREATE UNIQUE INDEX IF NOT EXISTS "promotions_code_idx" ON "promotions" USING btree ("code");
   CREATE INDEX IF NOT EXISTS "promotions_status_idx" ON "promotions" USING btree ("status");
   CREATE INDEX IF NOT EXISTS "promotions_updated_at_idx" ON "promotions" USING btree ("updated_at");
@@ -822,23 +875,14 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX IF NOT EXISTS "promotions_rels_parent_idx" ON "promotions_rels" USING btree ("parent_id");
   CREATE INDEX IF NOT EXISTS "promotions_rels_path_idx" ON "promotions_rels" USING btree ("path");
   CREATE INDEX IF NOT EXISTS "promotions_rels_events_id_idx" ON "promotions_rels" USING btree ("events_id");
-  CREATE UNIQUE INDEX IF NOT EXISTS "registrants_ticket_idx" ON "registrants" USING btree ("ticket_id");
+  CREATE INDEX IF NOT EXISTS "promotions_rels_ticket_types_id_idx" ON "promotions_rels" USING btree ("ticket_types_id");
   CREATE INDEX IF NOT EXISTS "registrants_event_idx" ON "registrants" USING btree ("event_id");
-  CREATE INDEX IF NOT EXISTS "registrants_registered_user_idx" ON "registrants" USING btree ("registered_user_id");
-  CREATE INDEX IF NOT EXISTS "registrants_guest_details_guest_details_guest_email_idx" ON "registrants" USING btree ("guest_details_guest_email");
   CREATE INDEX IF NOT EXISTS "registrants_updated_at_idx" ON "registrants" USING btree ("updated_at");
   CREATE INDEX IF NOT EXISTS "registrants_created_at_idx" ON "registrants" USING btree ("created_at");
   CREATE UNIQUE INDEX IF NOT EXISTS "registration_form_templates_name_idx" ON "registration_form_templates" USING btree ("name");
   CREATE INDEX IF NOT EXISTS "registration_form_templates_updated_at_idx" ON "registration_form_templates" USING btree ("updated_at");
   CREATE INDEX IF NOT EXISTS "registration_form_templates_created_at_idx" ON "registration_form_templates" USING btree ("created_at");
-  CREATE INDEX IF NOT EXISTS "seat_maps_sections_rows_seats_order_idx" ON "seat_maps_sections_rows_seats" USING btree ("_order");
-  CREATE INDEX IF NOT EXISTS "seat_maps_sections_rows_seats_parent_id_idx" ON "seat_maps_sections_rows_seats" USING btree ("_parent_id");
-  CREATE INDEX IF NOT EXISTS "seat_maps_sections_rows_order_idx" ON "seat_maps_sections_rows" USING btree ("_order");
-  CREATE INDEX IF NOT EXISTS "seat_maps_sections_rows_parent_id_idx" ON "seat_maps_sections_rows" USING btree ("_parent_id");
-  CREATE INDEX IF NOT EXISTS "seat_maps_sections_order_idx" ON "seat_maps_sections" USING btree ("_order");
-  CREATE INDEX IF NOT EXISTS "seat_maps_sections_parent_id_idx" ON "seat_maps_sections" USING btree ("_parent_id");
-  CREATE UNIQUE INDEX IF NOT EXISTS "seat_maps_name_idx" ON "seat_maps" USING btree ("name");
-  CREATE INDEX IF NOT EXISTS "seat_maps_venue_idx" ON "seat_maps" USING btree ("venue_id");
+  CREATE INDEX IF NOT EXISTS "seat_maps_venue_image_idx" ON "seat_maps" USING btree ("venue_image_id");
   CREATE INDEX IF NOT EXISTS "seat_maps_updated_at_idx" ON "seat_maps" USING btree ("updated_at");
   CREATE INDEX IF NOT EXISTS "seat_maps_created_at_idx" ON "seat_maps" USING btree ("created_at");
   CREATE INDEX IF NOT EXISTS "tickets_order_idx" ON "tickets" USING btree ("order_id");
@@ -851,18 +895,19 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX IF NOT EXISTS "tickets_updated_at_idx" ON "tickets" USING btree ("updated_at");
   CREATE INDEX IF NOT EXISTS "tickets_created_at_idx" ON "tickets" USING btree ("created_at");
   CREATE INDEX IF NOT EXISTS "ticket_types_event_idx" ON "ticket_types" USING btree ("event_id");
+  CREATE INDEX IF NOT EXISTS "ticket_types_seat_map_idx" ON "ticket_types" USING btree ("seat_map_id");
   CREATE INDEX IF NOT EXISTS "ticket_types_updated_at_idx" ON "ticket_types" USING btree ("updated_at");
   CREATE INDEX IF NOT EXISTS "ticket_types_created_at_idx" ON "ticket_types" USING btree ("created_at");
-  CREATE INDEX IF NOT EXISTS "transactions_organizer_idx" ON "transactions" USING btree ("organizer_id");
   CREATE INDEX IF NOT EXISTS "transactions_transaction_date_idx" ON "transactions" USING btree ("transaction_date");
   CREATE INDEX IF NOT EXISTS "transactions_type_idx" ON "transactions" USING btree ("type");
   CREATE INDEX IF NOT EXISTS "transactions_related_order_idx" ON "transactions" USING btree ("related_order_id");
   CREATE INDEX IF NOT EXISTS "transactions_related_user_idx" ON "transactions" USING btree ("related_user_id");
+  CREATE INDEX IF NOT EXISTS "transactions_event_idx" ON "transactions" USING btree ("event_id");
   CREATE INDEX IF NOT EXISTS "transactions_related_payment_intent_id_idx" ON "transactions" USING btree ("related_payment_intent_id");
   CREATE INDEX IF NOT EXISTS "transactions_updated_at_idx" ON "transactions" USING btree ("updated_at");
   CREATE INDEX IF NOT EXISTS "transactions_created_at_idx" ON "transactions" USING btree ("created_at");
-  CREATE INDEX IF NOT EXISTS "users_roles_order_idx" ON "users_roles" USING btree ("order");
-  CREATE INDEX IF NOT EXISTS "users_roles_parent_idx" ON "users_roles" USING btree ("parent_id");
+  CREATE INDEX IF NOT EXISTS "users_clerk_roles_order_idx" ON "users_clerk_roles" USING btree ("order");
+  CREATE INDEX IF NOT EXISTS "users_clerk_roles_parent_idx" ON "users_clerk_roles" USING btree ("parent_id");
   CREATE UNIQUE INDEX IF NOT EXISTS "users_clerk_id_idx" ON "users" USING btree ("clerk_id");
   CREATE INDEX IF NOT EXISTS "users_updated_at_idx" ON "users" USING btree ("updated_at");
   CREATE INDEX IF NOT EXISTS "users_created_at_idx" ON "users" USING btree ("created_at");
@@ -875,6 +920,19 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX IF NOT EXISTS "venues_rels_parent_idx" ON "venues_rels" USING btree ("parent_id");
   CREATE INDEX IF NOT EXISTS "venues_rels_path_idx" ON "venues_rels" USING btree ("path");
   CREATE INDEX IF NOT EXISTS "venues_rels_media_id_idx" ON "venues_rels" USING btree ("media_id");
+  CREATE INDEX IF NOT EXISTS "forms_form_builder_options_order_idx" ON "forms_form_builder_options" USING btree ("_order");
+  CREATE INDEX IF NOT EXISTS "forms_form_builder_options_parent_id_idx" ON "forms_form_builder_options" USING btree ("_parent_id");
+  CREATE INDEX IF NOT EXISTS "forms_form_builder_order_idx" ON "forms_form_builder" USING btree ("_order");
+  CREATE INDEX IF NOT EXISTS "forms_form_builder_parent_id_idx" ON "forms_form_builder" USING btree ("_parent_id");
+  CREATE INDEX IF NOT EXISTS "forms_responses_order_idx" ON "forms_responses" USING btree ("_order");
+  CREATE INDEX IF NOT EXISTS "forms_responses_parent_id_idx" ON "forms_responses" USING btree ("_parent_id");
+  CREATE INDEX IF NOT EXISTS "forms_event_idx" ON "forms" USING btree ("event_id");
+  CREATE INDEX IF NOT EXISTS "forms_updated_at_idx" ON "forms" USING btree ("updated_at");
+  CREATE INDEX IF NOT EXISTS "forms_created_at_idx" ON "forms" USING btree ("created_at");
+  CREATE INDEX IF NOT EXISTS "event_user_roles_event_idx" ON "event_user_roles" USING btree ("event_id");
+  CREATE INDEX IF NOT EXISTS "event_user_roles_user_idx" ON "event_user_roles" USING btree ("user_id");
+  CREATE INDEX IF NOT EXISTS "event_user_roles_updated_at_idx" ON "event_user_roles" USING btree ("updated_at");
+  CREATE INDEX IF NOT EXISTS "event_user_roles_created_at_idx" ON "event_user_roles" USING btree ("created_at");
   CREATE INDEX IF NOT EXISTS "payload_locked_documents_global_slug_idx" ON "payload_locked_documents" USING btree ("global_slug");
   CREATE INDEX IF NOT EXISTS "payload_locked_documents_updated_at_idx" ON "payload_locked_documents" USING btree ("updated_at");
   CREATE INDEX IF NOT EXISTS "payload_locked_documents_created_at_idx" ON "payload_locked_documents" USING btree ("created_at");
@@ -897,6 +955,8 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_transactions_id_idx" ON "payload_locked_documents_rels" USING btree ("transactions_id");
   CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_users_id_idx" ON "payload_locked_documents_rels" USING btree ("users_id");
   CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_venues_id_idx" ON "payload_locked_documents_rels" USING btree ("venues_id");
+  CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_forms_id_idx" ON "payload_locked_documents_rels" USING btree ("forms_id");
+  CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_event_user_roles_id_idx" ON "payload_locked_documents_rels" USING btree ("event_user_roles_id");
   CREATE INDEX IF NOT EXISTS "payload_preferences_key_idx" ON "payload_preferences" USING btree ("key");
   CREATE INDEX IF NOT EXISTS "payload_preferences_updated_at_idx" ON "payload_preferences" USING btree ("updated_at");
   CREATE INDEX IF NOT EXISTS "payload_preferences_created_at_idx" ON "payload_preferences" USING btree ("created_at");
@@ -925,17 +985,19 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   DROP TABLE "promotions_rels" CASCADE;
   DROP TABLE "registrants" CASCADE;
   DROP TABLE "registration_form_templates" CASCADE;
-  DROP TABLE "seat_maps_sections_rows_seats" CASCADE;
-  DROP TABLE "seat_maps_sections_rows" CASCADE;
-  DROP TABLE "seat_maps_sections" CASCADE;
   DROP TABLE "seat_maps" CASCADE;
   DROP TABLE "tickets" CASCADE;
   DROP TABLE "ticket_types" CASCADE;
   DROP TABLE "transactions" CASCADE;
-  DROP TABLE "users_roles" CASCADE;
+  DROP TABLE "users_clerk_roles" CASCADE;
   DROP TABLE "users" CASCADE;
   DROP TABLE "venues" CASCADE;
   DROP TABLE "venues_rels" CASCADE;
+  DROP TABLE "forms_form_builder_options" CASCADE;
+  DROP TABLE "forms_form_builder" CASCADE;
+  DROP TABLE "forms_responses" CASCADE;
+  DROP TABLE "forms" CASCADE;
+  DROP TABLE "event_user_roles" CASCADE;
   DROP TABLE "payload_locked_documents" CASCADE;
   DROP TABLE "payload_locked_documents_rels" CASCADE;
   DROP TABLE "payload_preferences" CASCADE;
@@ -947,9 +1009,12 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   DROP TYPE "public"."PromotionStatus";
   DROP TYPE "public"."DiscountType";
   DROP TYPE "public"."CurrencyType";
-  DROP TYPE "public"."enum_seat_maps_sections_rows_seats_seat_type";
+  DROP TYPE "public"."enum_seat_maps_config_seat_config_row_order";
+  DROP TYPE "public"."enum_seat_maps_config_seat_config_seat_order";
   DROP TYPE "public"."CheckInStatus";
   DROP TYPE "public"."TicketStatus";
   DROP TYPE "public"."TransactionType";
-  DROP TYPE "public"."UserRole";`)
+  DROP TYPE "public"."enum_users_clerk_roles";
+  DROP TYPE "public"."enum_forms_form_builder_field_type";
+  DROP TYPE "public"."enum_event_user_roles_role";`)
 }

@@ -1,5 +1,5 @@
 {
-  "id": "b7729970-05a9-4696-a6cf-432d5a61073e",
+  "id": "c4a67e0b-34c8-431e-b50d-4cb963b2e102",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -390,14 +390,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "organizer_id": {
-          "name": "organizer_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "venue_id": {
-          "name": "venue_id",
+        "user_id": {
+          "name": "user_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true
@@ -413,7 +407,7 @@
           "type": "SeatingType",
           "typeSchema": "public",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "default": "'general_admission'"
         },
         "seat_map_id": {
@@ -432,7 +426,7 @@
           "name": "registration_form_id",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "registration_notes": {
           "name": "registration_notes",
@@ -501,26 +495,11 @@
           "method": "btree",
           "with": {}
         },
-        "events_organizer_idx": {
-          "name": "events_organizer_idx",
+        "events_user_idx": {
+          "name": "events_user_idx",
           "columns": [
             {
-              "expression": "organizer_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "events_venue_idx": {
-          "name": "events_venue_idx",
-          "columns": [
-            {
-              "expression": "venue_id",
+              "expression": "user_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -608,25 +587,12 @@
         }
       },
       "foreignKeys": {
-        "events_organizer_id_organizers_id_fk": {
-          "name": "events_organizer_id_organizers_id_fk",
+        "events_user_id_users_id_fk": {
+          "name": "events_user_id_users_id_fk",
           "tableFrom": "events",
-          "tableTo": "organizers",
+          "tableTo": "users",
           "columnsFrom": [
-            "organizer_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        },
-        "events_venue_id_venues_id_fk": {
-          "name": "events_venue_id_venues_id_fk",
-          "tableFrom": "events",
-          "tableTo": "venues",
-          "columnsFrom": [
-            "venue_id"
+            "user_id"
           ],
           "columnsTo": [
             "id"
@@ -825,7 +791,7 @@
           "name": "alt",
           "type": "varchar",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "updated_at": {
           "name": "updated_at",
@@ -1834,12 +1800,6 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": false
-        },
-        "users_id": {
-          "name": "users_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {
@@ -1902,21 +1862,6 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
-        },
-        "organizers_rels_users_id_idx": {
-          "name": "organizers_rels_users_id_idx",
-          "columns": [
-            {
-              "expression": "users_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
         }
       },
       "foreignKeys": {
@@ -1939,19 +1884,6 @@
           "tableTo": "organizer_photos",
           "columnsFrom": [
             "organizer_photos_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "organizers_rels_users_fk": {
-          "name": "organizers_rels_users_fk",
-          "tableFrom": "organizers_rels",
-          "tableTo": "users",
-          "columnsFrom": [
-            "users_id"
           ],
           "columnsTo": [
             "id"
@@ -2164,6 +2096,12 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": false
+        },
+        "ticket_types_id": {
+          "name": "ticket_types_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {
@@ -2226,6 +2164,21 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "promotions_rels_ticket_types_id_idx": {
+          "name": "promotions_rels_ticket_types_id_idx",
+          "columns": [
+            {
+              "expression": "ticket_types_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -2254,6 +2207,19 @@
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
+        },
+        "promotions_rels_ticket_types_fk": {
+          "name": "promotions_rels_ticket_types_fk",
+          "tableFrom": "promotions_rels",
+          "tableTo": "ticket_types",
+          "columnsFrom": [
+            "ticket_types_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -2272,41 +2238,11 @@
           "primaryKey": true,
           "notNull": true
         },
-        "ticket_id": {
-          "name": "ticket_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
         "event_id": {
           "name": "event_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true
-        },
-        "registered_user_id": {
-          "name": "registered_user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "guest_details_guest_email": {
-          "name": "guest_details_guest_email",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "guest_details_guest_first_name": {
-          "name": "guest_details_guest_first_name",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "guest_details_guest_last_name": {
-          "name": "guest_details_guest_last_name",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
         },
         "submitted_answers": {
           "name": "submitted_answers",
@@ -2330,56 +2266,11 @@
         }
       },
       "indexes": {
-        "registrants_ticket_idx": {
-          "name": "registrants_ticket_idx",
-          "columns": [
-            {
-              "expression": "ticket_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
         "registrants_event_idx": {
           "name": "registrants_event_idx",
           "columns": [
             {
               "expression": "event_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "registrants_registered_user_idx": {
-          "name": "registrants_registered_user_idx",
-          "columns": [
-            {
-              "expression": "registered_user_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "registrants_guest_details_guest_details_guest_email_idx": {
-          "name": "registrants_guest_details_guest_details_guest_email_idx",
-          "columns": [
-            {
-              "expression": "guest_details_guest_email",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -2422,38 +2313,12 @@
         }
       },
       "foreignKeys": {
-        "registrants_ticket_id_tickets_id_fk": {
-          "name": "registrants_ticket_id_tickets_id_fk",
-          "tableFrom": "registrants",
-          "tableTo": "tickets",
-          "columnsFrom": [
-            "ticket_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        },
         "registrants_event_id_events_id_fk": {
           "name": "registrants_event_id_events_id_fk",
           "tableFrom": "registrants",
           "tableTo": "events",
           "columnsFrom": [
             "event_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        },
-        "registrants_registered_user_id_users_id_fk": {
-          "name": "registrants_registered_user_id_users_id_fk",
-          "tableFrom": "registrants",
-          "tableTo": "users",
-          "columnsFrom": [
-            "registered_user_id"
           ],
           "columnsTo": [
             "id"
@@ -2565,267 +2430,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.seat_maps_sections_rows_seats": {
-      "name": "seat_maps_sections_rows_seats",
-      "schema": "",
-      "columns": {
-        "_order": {
-          "name": "_order",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "_parent_id": {
-          "name": "_parent_id",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "id": {
-          "name": "id",
-          "type": "varchar",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "seat_number": {
-          "name": "seat_number",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "seat_type": {
-          "name": "seat_type",
-          "type": "enum_seat_maps_sections_rows_seats_seat_type",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'standard'"
-        },
-        "is_purchasable": {
-          "name": "is_purchasable",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": true
-        }
-      },
-      "indexes": {
-        "seat_maps_sections_rows_seats_order_idx": {
-          "name": "seat_maps_sections_rows_seats_order_idx",
-          "columns": [
-            {
-              "expression": "_order",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "seat_maps_sections_rows_seats_parent_id_idx": {
-          "name": "seat_maps_sections_rows_seats_parent_id_idx",
-          "columns": [
-            {
-              "expression": "_parent_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "seat_maps_sections_rows_seats_parent_id_fk": {
-          "name": "seat_maps_sections_rows_seats_parent_id_fk",
-          "tableFrom": "seat_maps_sections_rows_seats",
-          "tableTo": "seat_maps_sections_rows",
-          "columnsFrom": [
-            "_parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.seat_maps_sections_rows": {
-      "name": "seat_maps_sections_rows",
-      "schema": "",
-      "columns": {
-        "_order": {
-          "name": "_order",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "_parent_id": {
-          "name": "_parent_id",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "id": {
-          "name": "id",
-          "type": "varchar",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "row_label": {
-          "name": "row_label",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "seat_maps_sections_rows_order_idx": {
-          "name": "seat_maps_sections_rows_order_idx",
-          "columns": [
-            {
-              "expression": "_order",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "seat_maps_sections_rows_parent_id_idx": {
-          "name": "seat_maps_sections_rows_parent_id_idx",
-          "columns": [
-            {
-              "expression": "_parent_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "seat_maps_sections_rows_parent_id_fk": {
-          "name": "seat_maps_sections_rows_parent_id_fk",
-          "tableFrom": "seat_maps_sections_rows",
-          "tableTo": "seat_maps_sections",
-          "columnsFrom": [
-            "_parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.seat_maps_sections": {
-      "name": "seat_maps_sections",
-      "schema": "",
-      "columns": {
-        "_order": {
-          "name": "_order",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "_parent_id": {
-          "name": "_parent_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "id": {
-          "name": "id",
-          "type": "varchar",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "section_name": {
-          "name": "section_name",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "seat_maps_sections_order_idx": {
-          "name": "seat_maps_sections_order_idx",
-          "columns": [
-            {
-              "expression": "_order",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "seat_maps_sections_parent_id_idx": {
-          "name": "seat_maps_sections_parent_id_idx",
-          "columns": [
-            {
-              "expression": "_parent_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "seat_maps_sections_parent_id_fk": {
-          "name": "seat_maps_sections_parent_id_fk",
-          "tableFrom": "seat_maps_sections",
-          "tableTo": "seat_maps",
-          "columnsFrom": [
-            "_parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.seat_maps": {
       "name": "seat_maps",
       "schema": "",
@@ -2842,17 +2446,97 @@
           "primaryKey": false,
           "notNull": true
         },
-        "venue_id": {
-          "name": "venue_id",
+        "config_ticket_quantity": {
+          "name": "config_ticket_quantity",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "config_seat_config_rows": {
+          "name": "config_seat_config_rows",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "config_seat_config_seats_per_row": {
+          "name": "config_seat_config_seats_per_row",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "config_seat_config_row_start_char": {
+          "name": "config_seat_config_row_start_char",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "config_seat_config_seat_start_num": {
+          "name": "config_seat_config_seat_start_num",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "config_seat_config_row_order": {
+          "name": "config_seat_config_row_order",
+          "type": "enum_seat_maps_config_seat_config_row_order",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "config_seat_config_seat_order": {
+          "name": "config_seat_config_seat_order",
+          "type": "enum_seat_maps_config_seat_config_seat_order",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "config_seat_config_row_label": {
+          "name": "config_seat_config_row_label",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "venue_image_id": {
+          "name": "venue_image_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
-        "description": {
-          "name": "description",
-          "type": "varchar",
+        "custom_seat_names": {
+          "name": "custom_seat_names",
+          "type": "jsonb",
           "primaryKey": false,
           "notNull": false
+        },
+        "seats": {
+          "name": "seats",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "summary_total_seats": {
+          "name": "summary_total_seats",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "summary_available_seats": {
+          "name": "summary_available_seats",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "summary_unavailable_seats": {
+          "name": "summary_unavailable_seats",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "summary_sold_seats": {
+          "name": "summary_sold_seats",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
         },
         "updated_at": {
           "name": "updated_at",
@@ -2870,26 +2554,11 @@
         }
       },
       "indexes": {
-        "seat_maps_name_idx": {
-          "name": "seat_maps_name_idx",
+        "seat_maps_venue_image_idx": {
+          "name": "seat_maps_venue_image_idx",
           "columns": [
             {
-              "expression": "name",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "seat_maps_venue_idx": {
-          "name": "seat_maps_venue_idx",
-          "columns": [
-            {
-              "expression": "venue_id",
+              "expression": "venue_image_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -2932,12 +2601,12 @@
         }
       },
       "foreignKeys": {
-        "seat_maps_venue_id_venues_id_fk": {
-          "name": "seat_maps_venue_id_venues_id_fk",
+        "seat_maps_venue_image_id_media_id_fk": {
+          "name": "seat_maps_venue_image_id_media_id_fk",
           "tableFrom": "seat_maps",
-          "tableTo": "venues",
+          "tableTo": "media",
           "columnsFrom": [
-            "venue_id"
+            "venue_image_id"
           ],
           "columnsTo": [
             "id"
@@ -3336,6 +3005,18 @@
           "primaryKey": false,
           "notNull": false
         },
+        "color": {
+          "name": "color",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "seat_map_id": {
+          "name": "seat_map_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
         "updated_at": {
           "name": "updated_at",
           "type": "timestamp(3) with time zone",
@@ -3357,6 +3038,21 @@
           "columns": [
             {
               "expression": "event_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "ticket_types_seat_map_idx": {
+          "name": "ticket_types_seat_map_idx",
+          "columns": [
+            {
+              "expression": "seat_map_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -3411,6 +3107,19 @@
           ],
           "onDelete": "set null",
           "onUpdate": "no action"
+        },
+        "ticket_types_seat_map_id_seat_maps_id_fk": {
+          "name": "ticket_types_seat_map_id_seat_maps_id_fk",
+          "tableFrom": "ticket_types",
+          "tableTo": "seat_maps",
+          "columnsFrom": [
+            "seat_map_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -3427,12 +3136,6 @@
           "name": "id",
           "type": "serial",
           "primaryKey": true,
-          "notNull": true
-        },
-        "organizer_id": {
-          "name": "organizer_id",
-          "type": "integer",
-          "primaryKey": false,
           "notNull": true
         },
         "transaction_date": {
@@ -3478,6 +3181,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "event_id": {
+          "name": "event_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
         "related_payment_intent_id": {
           "name": "related_payment_intent_id",
           "type": "varchar",
@@ -3506,21 +3215,6 @@
         }
       },
       "indexes": {
-        "transactions_organizer_idx": {
-          "name": "transactions_organizer_idx",
-          "columns": [
-            {
-              "expression": "organizer_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
         "transactions_transaction_date_idx": {
           "name": "transactions_transaction_date_idx",
           "columns": [
@@ -3581,6 +3275,21 @@
           "method": "btree",
           "with": {}
         },
+        "transactions_event_idx": {
+          "name": "transactions_event_idx",
+          "columns": [
+            {
+              "expression": "event_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
         "transactions_related_payment_intent_id_idx": {
           "name": "transactions_related_payment_intent_id_idx",
           "columns": [
@@ -3628,19 +3337,6 @@
         }
       },
       "foreignKeys": {
-        "transactions_organizer_id_organizers_id_fk": {
-          "name": "transactions_organizer_id_organizers_id_fk",
-          "tableFrom": "transactions",
-          "tableTo": "organizers",
-          "columnsFrom": [
-            "organizer_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        },
         "transactions_related_order_id_orders_id_fk": {
           "name": "transactions_related_order_id_orders_id_fk",
           "tableFrom": "transactions",
@@ -3666,6 +3362,19 @@
           ],
           "onDelete": "set null",
           "onUpdate": "no action"
+        },
+        "transactions_event_id_events_id_fk": {
+          "name": "transactions_event_id_events_id_fk",
+          "tableFrom": "transactions",
+          "tableTo": "events",
+          "columnsFrom": [
+            "event_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -3674,8 +3383,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.users_roles": {
-      "name": "users_roles",
+    "public.users_clerk_roles": {
+      "name": "users_clerk_roles",
       "schema": "",
       "columns": {
         "order": {
@@ -3692,7 +3401,7 @@
         },
         "value": {
           "name": "value",
-          "type": "UserRole",
+          "type": "enum_users_clerk_roles",
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": false
@@ -3705,8 +3414,8 @@
         }
       },
       "indexes": {
-        "users_roles_order_idx": {
-          "name": "users_roles_order_idx",
+        "users_clerk_roles_order_idx": {
+          "name": "users_clerk_roles_order_idx",
           "columns": [
             {
               "expression": "order",
@@ -3720,8 +3429,8 @@
           "method": "btree",
           "with": {}
         },
-        "users_roles_parent_idx": {
-          "name": "users_roles_parent_idx",
+        "users_clerk_roles_parent_idx": {
+          "name": "users_clerk_roles_parent_idx",
           "columns": [
             {
               "expression": "parent_id",
@@ -3737,9 +3446,9 @@
         }
       },
       "foreignKeys": {
-        "users_roles_parent_fk": {
-          "name": "users_roles_parent_fk",
-          "tableFrom": "users_roles",
+        "users_clerk_roles_parent_fk": {
+          "name": "users_clerk_roles_parent_fk",
+          "tableFrom": "users_clerk_roles",
           "tableTo": "users",
           "columnsFrom": [
             "parent_id"
@@ -4223,6 +3932,544 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.forms_form_builder_options": {
+      "name": "forms_form_builder_options",
+      "schema": "",
+      "columns": {
+        "_order": {
+          "name": "_order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "_parent_id": {
+          "name": "_parent_id",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "id": {
+          "name": "id",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "value": {
+          "name": "value",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "forms_form_builder_options_order_idx": {
+          "name": "forms_form_builder_options_order_idx",
+          "columns": [
+            {
+              "expression": "_order",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "forms_form_builder_options_parent_id_idx": {
+          "name": "forms_form_builder_options_parent_id_idx",
+          "columns": [
+            {
+              "expression": "_parent_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "forms_form_builder_options_parent_id_fk": {
+          "name": "forms_form_builder_options_parent_id_fk",
+          "tableFrom": "forms_form_builder_options",
+          "tableTo": "forms_form_builder",
+          "columnsFrom": [
+            "_parent_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.forms_form_builder": {
+      "name": "forms_form_builder",
+      "schema": "",
+      "columns": {
+        "_order": {
+          "name": "_order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "_parent_id": {
+          "name": "_parent_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "id": {
+          "name": "id",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "label": {
+          "name": "label",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "required": {
+          "name": "required",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "field_type": {
+          "name": "field_type",
+          "type": "enum_forms_form_builder_field_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "forms_form_builder_order_idx": {
+          "name": "forms_form_builder_order_idx",
+          "columns": [
+            {
+              "expression": "_order",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "forms_form_builder_parent_id_idx": {
+          "name": "forms_form_builder_parent_id_idx",
+          "columns": [
+            {
+              "expression": "_parent_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "forms_form_builder_parent_id_fk": {
+          "name": "forms_form_builder_parent_id_fk",
+          "tableFrom": "forms_form_builder",
+          "tableTo": "forms",
+          "columnsFrom": [
+            "_parent_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.forms_responses": {
+      "name": "forms_responses",
+      "schema": "",
+      "columns": {
+        "_order": {
+          "name": "_order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "_parent_id": {
+          "name": "_parent_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "id": {
+          "name": "id",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "field_id": {
+          "name": "field_id",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "value": {
+          "name": "value",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "submitted_at": {
+          "name": "submitted_at",
+          "type": "timestamp(3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "forms_responses_order_idx": {
+          "name": "forms_responses_order_idx",
+          "columns": [
+            {
+              "expression": "_order",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "forms_responses_parent_id_idx": {
+          "name": "forms_responses_parent_id_idx",
+          "columns": [
+            {
+              "expression": "_parent_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "forms_responses_parent_id_fk": {
+          "name": "forms_responses_parent_id_fk",
+          "tableFrom": "forms_responses",
+          "tableTo": "forms",
+          "columnsFrom": [
+            "_parent_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.forms": {
+      "name": "forms",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "event_id": {
+          "name": "event_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'Registration Form'"
+        },
+        "description": {
+          "name": "description",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'Please fill out this registration form'"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp(3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp(3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "forms_event_idx": {
+          "name": "forms_event_idx",
+          "columns": [
+            {
+              "expression": "event_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "forms_updated_at_idx": {
+          "name": "forms_updated_at_idx",
+          "columns": [
+            {
+              "expression": "updated_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "forms_created_at_idx": {
+          "name": "forms_created_at_idx",
+          "columns": [
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "forms_event_id_events_id_fk": {
+          "name": "forms_event_id_events_id_fk",
+          "tableFrom": "forms",
+          "tableTo": "events",
+          "columnsFrom": [
+            "event_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.event_user_roles": {
+      "name": "event_user_roles",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "event_id": {
+          "name": "event_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "role": {
+          "name": "role",
+          "type": "enum_event_user_roles_role",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'viewer'"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp(3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp(3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "event_user_roles_event_idx": {
+          "name": "event_user_roles_event_idx",
+          "columns": [
+            {
+              "expression": "event_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "event_user_roles_user_idx": {
+          "name": "event_user_roles_user_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "event_user_roles_updated_at_idx": {
+          "name": "event_user_roles_updated_at_idx",
+          "columns": [
+            {
+              "expression": "updated_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "event_user_roles_created_at_idx": {
+          "name": "event_user_roles_created_at_idx",
+          "columns": [
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "event_user_roles_event_id_events_id_fk": {
+          "name": "event_user_roles_event_id_events_id_fk",
+          "tableFrom": "event_user_roles",
+          "tableTo": "events",
+          "columnsFrom": [
+            "event_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "event_user_roles_user_id_users_id_fk": {
+          "name": "event_user_roles_user_id_users_id_fk",
+          "tableFrom": "event_user_roles",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.payload_locked_documents": {
       "name": "payload_locked_documents",
       "schema": "",
@@ -4428,6 +4675,18 @@
         },
         "venues_id": {
           "name": "venues_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "forms_id": {
+          "name": "forms_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "event_user_roles_id": {
+          "name": "event_user_roles_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": false
@@ -4718,6 +4977,36 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "payload_locked_documents_rels_forms_id_idx": {
+          "name": "payload_locked_documents_rels_forms_id_idx",
+          "columns": [
+            {
+              "expression": "forms_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "payload_locked_documents_rels_event_user_roles_id_idx": {
+          "name": "payload_locked_documents_rels_event_user_roles_id_idx",
+          "columns": [
+            {
+              "expression": "event_user_roles_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -4935,6 +5224,32 @@
           "tableTo": "venues",
           "columnsFrom": [
             "venues_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "payload_locked_documents_rels_forms_fk": {
+          "name": "payload_locked_documents_rels_forms_fk",
+          "tableFrom": "payload_locked_documents_rels",
+          "tableTo": "forms",
+          "columnsFrom": [
+            "forms_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "payload_locked_documents_rels_event_user_roles_fk": {
+          "name": "payload_locked_documents_rels_event_user_roles_fk",
+          "tableFrom": "payload_locked_documents_rels",
+          "tableTo": "event_user_roles",
+          "columnsFrom": [
+            "event_user_roles_id"
           ],
           "columnsTo": [
             "id"
@@ -5301,17 +5616,20 @@
         "EUR"
       ]
     },
-    "public.enum_seat_maps_sections_rows_seats_seat_type": {
-      "name": "enum_seat_maps_sections_rows_seats_seat_type",
+    "public.enum_seat_maps_config_seat_config_row_order": {
+      "name": "enum_seat_maps_config_seat_config_row_order",
       "schema": "public",
       "values": [
-        "standard",
-        "wheelchair",
-        "companion",
-        "restricted_view",
-        "premium",
-        "aisle_marker",
-        "unavailable"
+        "down",
+        "up"
+      ]
+    },
+    "public.enum_seat_maps_config_seat_config_seat_order": {
+      "name": "enum_seat_maps_config_seat_config_seat_order",
+      "schema": "public",
+      "values": [
+        "left",
+        "right"
       ]
     },
     "public.CheckInStatus": {
@@ -5347,14 +5665,43 @@
         "adj_debit"
       ]
     },
-    "public.UserRole": {
-      "name": "UserRole",
+    "public.enum_users_clerk_roles": {
+      "name": "enum_users_clerk_roles",
       "schema": "public",
       "values": [
         "admin",
         "organizer",
         "attendee",
         "check-in-staff"
+      ]
+    },
+    "public.enum_forms_form_builder_field_type": {
+      "name": "enum_forms_form_builder_field_type",
+      "schema": "public",
+      "values": [
+        "text",
+        "email",
+        "phone",
+        "number",
+        "date",
+        "time",
+        "multipleChoice",
+        "checkbox",
+        "dropdown",
+        "file",
+        "shortText",
+        "longText",
+        "region",
+        "city"
+      ]
+    },
+    "public.enum_event_user_roles_role": {
+      "name": "enum_event_user_roles_role",
+      "schema": "public",
+      "values": [
+        "manager",
+        "editor",
+        "viewer"
       ]
     }
   },
