@@ -14,7 +14,7 @@
 	import type { SeatConfig as SeatConfigType } from '$lib/types/seat-generator';
 	import { superForm } from 'sveltekit-superforms/client';
 	import DatePicker from '$lib/components/ui/DatePicker.svelte';
-	import PaymentToggle from '$lib/components/ui/PaymentToggle.svelte';
+	import Toggle from '$lib/components/ui/Toggle.svelte';
 	import SeatConfig from '$lib/components/seat-generator/SeatConfig.svelte';
 	import RenameControl from '$lib/components/seat-generator/RenameControl.svelte';
 	import SaveLayout from '$lib/components/seat-generator/SaveLayout.svelte';
@@ -101,7 +101,7 @@
 	let reserveSeatingEnabled = $derived(seatGeneratorState.reserveSeatingEnabled);
 
 	// Update the ticket list and voucher list types with proper mapping
-	const ticketList = $derived(data.ticketData ? data.ticketData.map(mapTicketTypeToProps) : []);
+	const ticketList: TicketProps[] = $derived(data.ticketData ? data.ticketData.map(mapTicketTypeToProps) : []);
 	const voucherList = $derived(data.voucherData as PromotionProps[]);
 
 	const {
@@ -171,12 +171,25 @@
 		}
 	});
 
-	voucherMessage.subscribe(async (msg) => {
-		if (msg && msg.success) {
-			voucherDrawer.open = false;
-			editVoucherDrawer.open = false;
-		}
-	});
+	  // Add a function to handle the toggle change
+    function handleActiveVoucherToggle(value: boolean) {
+        isActive = value;
+        if (selectedVoucher) {
+            selectedVoucher.status = value ? 'active' : 'inactive';
+        }
+    }
+
+	 // Update the voucherMessage subscription
+voucherMessage.subscribe((msg) => {
+    if (msg && msg.success) {
+        if (msg.status) {
+            isActive = msg.status === 'active';
+        }
+        // Close both drawers
+        voucherDrawer.open = false;
+        editVoucherDrawer.open = false; // Add this line
+    }
+});
 
 	const TicketdrawerState = $derived(ticketDrawer.open);
 	const VoucherdrawerState = $derived(voucherDrawer.open);
@@ -198,7 +211,7 @@
 	const colors = ['#0066FF', '#F7D002', '#0FBA81', '#4B7B3B', '#DF4D60'];
 	let selectedColor = $state('#0FBA81');
 
-	let isActive = $state(true);
+	let isActive = $state(false);
 	let isSingleUse = $state(false);
 
 	// Fix the state declarations
@@ -207,10 +220,7 @@
 	let selectedTicket = $state<TicketProps>();
 	let selectedVoucher = $state<PromotionProps>();
 
-	const handleEditVoucher = (voucher: PromotionProps) => {
-		selectedVoucher = voucher;
-		editVoucherDrawer.open = true;
-	};
+
 	// Add voucher toggle state
 	let voucherEnabled = $state(true);
 
@@ -234,13 +244,7 @@
 		selectedTicketStatus = event.detail as TicketStatus;
 	};
 
-	const handleTogglePayment = (value: boolean) => {
-		isActivePayment = value;
-		if (form) {
-			console.log('Updating paymentActive value:', value);
-			// If there's a hidden input for payment active, we could update it here
-		}
-	};
+
 
 	const getStatusColor = (status: string) => {
 		if (status === 'active') return 'bg-green-500';
@@ -260,6 +264,7 @@
 		selectedVoucherStatus = event.detail as VoucherStatus;
 	};
 
+		// When updating a ticket
 	const handleEditTicket = (ticket: TicketProps) => {
 		selectedTicket = ticket;
 		isActivePayment = ticket.status === 'active';
@@ -267,6 +272,12 @@
 		editTicketDrawer.open = true;
 	};
 
+		const handleEditVoucher = (voucher: PromotionProps) => {
+		selectedVoucher = voucher;
+		isActive = voucher.status === 'active';
+		editVoucherDrawer.open = true;
+	};
+	
 	const getTicketSelectionText = (selected: string[]) => {
 		if (selected.includes('all')) {
 			return 'All Tickets';
@@ -279,7 +290,6 @@
 	};
 
 	// Add this state for tracking reserve seating toggle
-	let seatMapId: string | null = $state(null);
 	let isActiveReserveSeating = $state(false);
 
 	// Add effect to keep the toggles synchronized
@@ -330,15 +340,9 @@
 		initialized = true;
 	});
 
-	// Add debug log for form submission
-	function logFormData() {
-		console.log('Submitting form with reserveSeating:', isActiveReserveSeating);
-	}
-
 	// Add state for seat map
 	let createdSeatMapId: string | null = $state(null);
 	let isReserveSeatingConfigured = $state(false);
-	let seatMapName = $state('Reserved Seating Layout');
 
 	// Handle seat map creation success
 	function handleSeatMapCreated(event: CustomEvent<{ seatMapId: string }>) {
@@ -346,30 +350,6 @@
 		isReserveSeatingConfigured = true;
 	}
 
-	// Define the ticket data interface
-	interface TicketData {
-		event: number;
-		name: FormDataEntryValue | null;
-		description: string;
-		price: number;
-		currency: string;
-		status: string;
-		quantityAvailable: number;
-		minOrderQuantity: number;
-		maxOrderQuantity: number;
-		salesStart: FormDataEntryValue | null;
-		salesEnd: FormDataEntryValue | null;
-		color: string;
-		paymentActive: boolean;
-		seatMap?: number;
-	}
-
-	const dispatch = createEventDispatcher();
-
-	// Debugging helper
-	function logDebug(message: string, data?: any) {
-		console.log(`[DEBUG] ${message}`, data || '');
-	}
 
 	async function handleSaveLayout() {
 		console.log('[DEBUG] handleSaveLayout called');
@@ -676,8 +656,8 @@
 
 									<div>
 										<label for="activePayment" class="mb-2 block text-sm">Active payment</label>
-										<PaymentToggle
-											value={isActivePayment}
+										<Toggle 
+											value={isActivePayment} 
 											name="status"
 											OnChange={(value) => {
 												isActivePayment = value;
@@ -685,7 +665,7 @@
 												if (selectedTicket) {
 													selectedTicket.status = value ? 'active' : 'inactive';
 												}
-											}}
+											}} 
 										/>
 									</div>
 
@@ -713,39 +693,39 @@
 							</div>
 						</div>
 
-						<div>
-							<label for="color" class="my-4 block text-sm">Label Color</label>
-							<div
-								class="mb-3 rounded-md p-3 text-center text-white"
-								style="background-color: {$form.color}"
-							>
-								{$form.color}
-							</div>
-							<div class="flex gap-2">
-								{#each colors as color}
-									<button
-										type="button"
-										class="h-8 w-8 rounded-full border-2 transition-all"
-										style="background-color: {color}; border-color: {$form.color === color
-											? 'black'
-											: 'transparent'}"
-										Onclick={() => ($form.color = color)}
-										aria-label="Select color {color}"
-									></button>
-								{/each}
+					<div>
+									<label for="Label-color" class="my-4 block text-sm">Label Color</label>
+									<div
+										class="mb-3 rounded-md p-3 text-center text-white"
+										style="background-color: {selectedColor}"
+									>
+										{selectedColor}
+									</div>
+									<div class="flex gap-2">
+										{#each colors as color}
+											<button
+												type="button"
+												class="h-8 w-8 rounded-full border-2 transition-all"
+												style="background-color: {color}; border-color: {selectedColor === color
+													? 'black'
+													: 'transparent'}"
+												onclick={() => (selectedColor = color)}
+												aria-label="Select color {color}"
+											></button>
+										{/each}
 
-								<label
-									class="relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-2 border-gray-500"
-								>
-									<input
-										class="absolute top-0 right-0 hidden"
-										type="color"
-										name="color"
-										value={$form.color}
-									/>
-									+
-								</label>
-							</div>
+										<label
+											class="relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-2 border-gray-500"
+										>
+											<input
+												class="absolute right-0 top-0 hidden"
+												type="color"
+												name="color"
+												bind:value={selectedColor}
+											/>
+											+
+										</label>
+									</div>
 
 							{#if $errors.color}
 								<p class="text-primary text-sm">
@@ -988,9 +968,18 @@
 										</div>
 									<div>
 										<label for="activePayment" class="mb-2 block text-sm">Active payment</label>
-										<PaymentToggle value={isActivePayment} OnChange={handleTogglePayment} />
-									</div>
-
+										<Toggle 
+													value={isActivePayment} 
+													name="status"
+													OnChange={(value) => {
+														isActivePayment = value;
+														// If you want to update the status immediately
+														if (selectedTicket) {
+															selectedTicket.status = value ? 'active' : 'inactive';
+														}
+													}} 
+												/>									
+											</div>
 									<div>
 										<label for="reserveSeating" class="mb-2 block text-sm"
 											>Enable Reserve Seating</label
@@ -1344,22 +1333,22 @@
 
 					<div>
 						<label for="select-ticket" class="mb-2 flex text-sm">Select Ticket</label>
-						<DropdownMenu
-							buttonText={getTicketSelectionText(selectedTickets)}
-							className="w-full justify-between rounded-md border border-gray-200 bg-white px-4 py-2 text-sm hover:border-[#DF4D60]"
-							items={['all', ...ticketList.map((ticket) => ticket.name)]}
-							multiple={true}
-							alignContent="start"
-							on:select={(event) => {
-								const selected = event.detail;
-								console.log('Selected tickets:', selected);
-								if (selected.includes('all')) {
-									selectedTickets = ['all'];
-								} else {
-									selectedTickets = selected.filter((ticket) => ticket !== 'all');
-								}
-							}}
-						/>
+					<DropdownMenu
+						buttonText={getTicketSelectionText(selectedTickets)}
+						className="w-full justify-between rounded-md border border-gray-200 bg-white px-4 py-2 text-sm hover:border-[#DF4D60]"
+						items={['all', ...ticketList.map((ticket) => ticket.name)]}
+						multiple={true}
+						alignContent="start"
+						on:select={(event) => {
+							const selected = event.detail;
+							console.log('Selected tickets:', selected);
+							if (selected.includes('all')) {
+								selectedTickets = ['all'];
+							} else {
+								selectedTickets = selected.filter((ticket) => ticket !== 'all');
+							}
+						}}
+					/>
 					</div>
 					<div class="sm:hidden">
 						<h3 class="text-lg font-medium">Preview</h3>
@@ -1413,7 +1402,7 @@
 								{/each}
 							{:else}
 								<!-- Show only the selected ticket -->
-								{#each ticketList.filter( (ticket) => selectedTickets.includes(ticket.name) ) as ticket, index}
+						{#each ticketList.filter((ticket: TicketProps) => selectedTickets.includes(ticket.name)) as ticket}
 									<div
 										class="min-w-[298px] flex-shrink-0 rounded-lg border border-l-10 border-gray-400"
 										style="border-left-color: {ticket.color};"
@@ -1469,45 +1458,25 @@
 						<div class="flex flex-col gap-4 sm:flex-row sm:gap-8">
 							<!-- Active Voucher -->
 							<div class="flex items-center justify-between sm:justify-start sm:space-x-4">
-								<label for="activevoucher" class="text-sm">Active Voucher</label>
-								<div class="relative inline-flex items-center">
-									<input
-										type="checkbox"
-										bind:checked={isActive}
-										class="peer sr-only"
-										id="active-toggle"
-									/>
-									<label
-										for="active-toggle"
-										class="peer h-6 w-11 cursor-pointer rounded-full bg-gray-200 transition-colors peer-checked:bg-[#DF4D60] hover:bg-gray-300 peer-checked:hover:bg-[#DF4D60]/90"
-									>
-										<span
-											class="absolute top-[2px] left-[2px] h-5 w-5 rounded-full bg-white transition-all peer-checked:left-[22px]"
-										></span>
-									</label>
-								</div>
-							</div>
-
-							<!-- Single Use -->
-							<div class="flex items-center justify-between sm:justify-start sm:space-x-4">
-								<label for="singleuse" class="text-sm">Single Use</label>
-								<div class="relative inline-flex items-center">
-									<input
-										type="checkbox"
-										bind:checked={isSingleUse}
-										class="peer sr-only"
-										id="single-use-toggle"
-									/>
-									<label
-										for="single-use-toggle"
-										class="peer h-6 w-11 cursor-pointer rounded-full bg-gray-200 transition-colors peer-checked:bg-[#DF4D60] hover:bg-gray-300 peer-checked:hover:bg-[#DF4D60]/90"
-									>
-										<span
-											class="absolute top-[2px] left-[2px] h-5 w-5 rounded-full bg-white transition-all peer-checked:left-[22px]"
-										></span>
-									</label>
-								</div>
-							</div>
+							<label for="activevoucher" class="text-sm">Active Voucher</label>
+							<Toggle 
+							name="status"
+							OnChange={(value) => {
+								isActive = value;
+							}}
+						/>
+					</div>
+								<!-- Single Use -->
+					<div class="flex items-center justify-between sm:justify-start sm:space-x-4">
+						<label for="singleuse" class="text-sm">Single Use</label>
+						<Toggle 
+							value={isSingleUse}
+							name="singleUse"
+							OnChange={(value) => {
+								isSingleUse = value;
+							}}
+						/>
+					</div>
 						</div>
 
 						<!-- Helper Text -->
@@ -1555,7 +1524,7 @@
 					<h3 class="text-lg font-medium">Preview</h3>
 					<div class="flex-wrap gap-4 sm:grid sm:grid-cols-2">
 						{#if selectedTickets.includes('all')}
-							{#each ticketList as ticket, index}
+							{#each ticketList as ticket}
 								<div
 									class="min-w-[298px] flex-shrink-0 rounded-lg border border-l-10 border-gray-400"
 									style="border-left-color: {ticket.color};"
@@ -1593,7 +1562,7 @@
 							{/each}
 						{:else}
 							<!-- Show only the selected ticket -->
-							{#each ticketList.filter( (ticket) => selectedTickets.includes(ticket.name) ) as ticket, index}
+						{#each ticketList.filter((ticket: TicketProps) => selectedTickets.includes(ticket.name)) as ticket}
 								<div
 									class="min-w-[298px] flex-shrink-0 rounded-lg border border-l-10 border-gray-400"
 									style="border-left-color: {ticket.color};"
@@ -1831,6 +1800,80 @@
 							{/if}
 						</div>
 
+						<!-- Add this inside the edit voucher form, before the action buttons -->
+						<div>
+							<label for="select-ticket" class="mb-2 flex text-sm">Select Ticket</label>
+							<DropdownMenu
+								buttonText={getTicketSelectionText(selectedTickets)}
+								className="w-full justify-between rounded-md border border-gray-200 bg-white px-4 py-2 text-sm hover:border-[#DF4D60]"
+								items={['all', ...ticketList.map((ticket) => ticket.name)]}
+								multiple={true}
+								alignContent="start"
+								on:select={(event) => {
+									const selected = event.detail;
+									if (selected.includes('all')) {
+										selectedTickets = ['all'];
+									} else {
+										selectedTickets = selected.filter((ticket) => ticket !== 'all');
+									}
+								}}
+							/>
+						</div>
+						<!-- Add preview section -->
+						<div class="mt-4 space-y-4">
+							<h3 class="text-lg font-medium">Preview</h3>
+							<div class="flex gap-4 overflow-x-auto pb-4">
+								{#if selectedTickets.includes('all')}
+									{#each ticketList as ticket}
+										<!-- Existing ticket preview card -->
+										<div class="min-w-[298px] flex-shrink-0 rounded-lg border border-l-10 border-gray-400"
+											style="border-left-color: {ticket.color};">
+											<!-- ... existing ticket card content ... -->
+										</div>
+									{/each}
+								{/if}
+							</div>
+						</div>
+
+						<!-- Add toggles and helper text -->
+						<div class="mt-4 space-y-4">
+							<div class="flex flex-col gap-4 sm:flex-row sm:gap-8">
+								<!-- Active Voucher -->
+								<div class="flex items-center justify-between sm:justify-start sm:space-x-4">
+									<label for="activevoucher" class="text-sm">Active Voucher</label>
+								<Toggle 
+								value={isActive}
+								name="status"
+								OnChange={handleActiveVoucherToggle}
+							/>
+								</div>
+								
+								<!-- Single Use -->
+								<div class="flex items-center justify-between sm:justify-start sm:space-x-4">
+									<label for="singleuse" class="text-sm">Single Use</label>
+									<Toggle 
+										value={isSingleUse}
+										name="singleUse"
+										OnChange={(value) => {
+											isSingleUse = value;
+										}}
+									/>
+								</div>
+							</div>
+
+						<!-- Helper Text -->
+						<div class="space-y-1">
+							<p class="text-xs text-gray-500">
+								Single use vouchers will generate a unique voucher that can only be used once.
+							</p>
+							<p class="text-xs text-gray-500">
+								If you disable "Single Use", the voucher can only be used based on your defined quantity.
+							</p>
+							<p class="text-xs text-gray-500">
+								Entering "100%" discount will give the voucher user zero payment of their ticket while other values will entail a minimum of 100PHP transaction, thus discounts will be adjusted.
+							</p>
+						</div>
+					</div>
 						<div class="mt-8 grid grid-cols-2 gap-4">
 							<Button
 								type="submit"
