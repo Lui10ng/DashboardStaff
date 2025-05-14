@@ -16,6 +16,8 @@ export const load: PageServerLoad = async (event: RequestEvent) => {
 	const { url, fetch: svelteKitFetch } = event;
 	const hostName = url.hostname;
 	const subdomain = hostName.split('.')[0];
+	const theme = url.searchParams.get('theme');
+	const mode = url.searchParams.get('mode');
 
 	const params = new URLSearchParams({
 		'where[slug][equals]': subdomain,
@@ -51,6 +53,8 @@ export const load: PageServerLoad = async (event: RequestEvent) => {
 			eventId = formData.docs[0].id;
 
 			return {
+				theme,
+				mode,
 				form,
 				buttonText,
 				eventDetails,
@@ -130,8 +134,8 @@ async function updateTicketQuantity(ticketId: number) {
 	} catch (err: unknown) {
 		const { statusCode, errorMessage } = handleSvelteError(
 			err,
-			'Registering for Event',
-			'Failed to Register for Event'
+			'Ticket quantity',
+			'Failed to update ticket quantity'
 		);
 
 		throw error(statusCode, errorMessage);

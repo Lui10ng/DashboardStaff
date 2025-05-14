@@ -6,9 +6,11 @@ import { error } from '@sveltejs/kit';
 import type { EventDetailsResponse } from '$lib/types/eventData';
 
 export const load: PageServerLoad = async (event: RequestEvent) => {
-	const { params: { eventId } } = event;
+	const {
+		params: { eventId }
+	} = event;
 
-	const paramContacts = new URLSearchParams({
+	const params = new URLSearchParams({
 		'select[title]': 'true',
 		'select[slug]': 'true',
 		'select[location]': 'true'
@@ -16,7 +18,7 @@ export const load: PageServerLoad = async (event: RequestEvent) => {
 
 	try {
 		const apiClient = createApiClient(event);
-		const eventDetails = await apiClient.get<EventDetailsResponse>(`events/${eventId}`, paramContacts);
+		const eventDetails = await apiClient.get<EventDetailsResponse>(`events/${eventId}`, params);
 
 		return {
 			eventDetails
