@@ -2,7 +2,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Drawer from '$lib/components/ui/Drawer.svelte';
 	import { themes } from '$lib/static/constant.js';
-	import { themeDrawer } from '$lib/stores/state.svelte';
+	import { themeDrawer, themeState } from '$lib/stores/state.svelte';
 	import { Switch } from '@skeletonlabs/skeleton-svelte';
 	import { superForm } from 'sveltekit-superforms';
 
@@ -14,8 +14,8 @@
 	let posterImgSrc: string | null = $state(null);
 	let backgroundImgSrc: string | null = $state(null);
 	const themeDrawerState = $derived(themeDrawer.open);
-	let theme = $derived(data.eventTheme.theme);
-	let themeMode = $state(data.eventTheme.light ?? false);
+
+	const themeStore = themeState();
 
 	const { form, errors, enhance, delayed, message } = superForm(data.form);
 
@@ -24,6 +24,17 @@
 			themeDrawer.open = false;
 		}
 	});
+
+	$effect(() => {
+		themeStore.themes = [
+			{
+				theme: data.eventTheme.theme,
+				themeMode: data.eventTheme.light
+			}
+		];
+	});
+
+	let selectedTheme = $derived(themeStore.themes);
 
 	function handleClick(inputClick: string) {
 		document.getElementById(inputClick)?.click();
@@ -58,7 +69,7 @@
 	}
 
 	const handleThemeSelection = (selectedTheme: string) => {
-		theme = selectedTheme;
+		themeStore.themes.theme = selectedTheme;
 	};
 
 	const handleCloseThemeDrawer = () => {
@@ -94,16 +105,16 @@
 					<div>
 						<div class="flex justify-between">
 							<div class="flex items-center gap-3">
-								<h2 class="text-sm">{themeMode ? 'Light' : 'Dark'} Mode</h2>
+								<h2 class="text-sm">{selectedTheme?.themeMode ? 'Light' : 'Dark'} Mode</h2>
 								<Switch
 									name="example"
-									checked={themeMode}
-									onCheckedChange={(e) => (themeMode = e.checked)}
+									checked={selectedTheme?.themeMode}
+									onCheckedChange={(e) => (themeStore.themes.themeMode = e.checked)}
 								/>
 							</div>
 							<form action="?/saveTheme" method="POST" use:enhance>
-								<input type="text" name="theme" value={theme} hidden />
-								<input type="text" name="modeTheme" value={themeMode} hidden />
+								<input type="text" name="theme" value={selectedTheme?.theme} hidden />
+								<input type="text" name="modeTheme" value={selectedTheme?.themeMode} hidden />
 								<div class="flex gap-3">
 									<button
 										type="button"
@@ -123,7 +134,8 @@
 								<div class="my-5 shrink-0 snap-start px-1 text-center">
 									<button
 										onclick={() => handleThemeSelection(themeOption)}
-										class="flex min-w-24 flex-col rounded-md border p-2 {themeOption == theme
+										class="flex min-w-24 flex-col rounded-md border p-2 {themeOption ==
+										selectedTheme?.theme
 											? 'border-primary'
 											: ''}"
 									>
@@ -135,7 +147,7 @@
 						<iframe
 							id="myIframe"
 							title="themeSelector"
-							src={`${data.siteUrl}/?theme=${theme}&mode=${themeMode ? 'light' : 'dark'}`}
+							src={`${data.siteUrl}/?theme=${selectedTheme?.theme}&mode=${selectedTheme?.themeMode ? 'light' : 'dark'}`}
 							class="h-[70svh] w-full"
 						></iframe>
 					</div>

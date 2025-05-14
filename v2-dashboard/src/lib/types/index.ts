@@ -165,3 +165,15 @@ export type PromotionProps = {
 	event: Event[];
 	applicableEvents: number[];
 };
+
+export type RegistrantProps = {
+	id: string;
+	status?: string;
+	createdAt: string;
+	submittedAnswers: any[];
+};
+
+export type themeProps = {
+	theme?: string;
+	themeMode?: string;
+};

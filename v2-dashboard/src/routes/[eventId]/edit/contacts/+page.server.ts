@@ -2,14 +2,16 @@ import { createApiClient } from '$lib/services/payload.server';
 import { superValidate } from 'sveltekit-superforms';
 import type { RequestEvent } from '@sveltejs/kit';
 import { zod } from 'sveltekit-superforms/adapters';
-import { contactSchema } from '$lib/schema';
+import { contactSchema } from '$lib/schema/index.js';
 import { handleSvelteError } from '$lib/utils/errorHandler.js';
 import type { PageServerLoad, Actions } from './$types';
 import { error } from '@sveltejs/kit';
 import type { EventContactsResponse } from '$lib/types/eventContacts';
 
 export const load: PageServerLoad = async (event: RequestEvent) => {
-	const { params: { eventId } } = event;
+	const {
+		params: { eventId }
+	} = event;
 
 	const paramContacts = new URLSearchParams({
 		'where[event][equals]': eventId!,
@@ -44,7 +46,10 @@ export const load: PageServerLoad = async (event: RequestEvent) => {
 
 export const actions: Actions = {
 	updateContacts: async (event: RequestEvent) => {
-		const { request, params: { eventId } } = event;
+		const {
+			request,
+			params: { eventId }
+		} = event;
 
 		const formData = await request.formData();
 
