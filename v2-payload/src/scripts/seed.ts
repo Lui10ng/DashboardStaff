@@ -39,11 +39,11 @@ const seedData = async (): Promise<void> => {
     })
     if (adminFind.docs.length === 0) {
       for (const user of users) {
-        await payload.create({
-          collection: 'users',
-          overrideAccess: true,
-          data: user,
-        })
+        // await payload.create({
+        //   collection: 'users',
+        //   overrideAccess: true,
+        //   data: user,
+        // })
       }
 
       console.log('  - Admin user created.')
