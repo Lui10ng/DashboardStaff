@@ -1,6 +1,8 @@
 <script lang="ts">
 	let quill: any;
 
+	let props = $props();
+
 	$effect(() => {
 		const editorContainer = document.getElementById('editor');
 		const contentInput = document.getElementById('quillContent') as HTMLInputElement;
@@ -10,9 +12,13 @@
 			return;
 		}
 
-		quill = new Quill(editorContainer, {
-			theme: 'snow'
-		});
+		if (!quill) {
+			quill = new Quill(editorContainer, {
+				theme: 'snow'
+			});
+		}
+
+		quill.root.innerHTML = props.description || '';
 
 		form.addEventListener('submit', () => {
 			const rawHTML = quill.root.innerHTML.trim();
@@ -28,8 +34,8 @@
 	});
 </script>
 
-<div id="editor" class="border border-gray-100 min-h-[20vh] rounded-b-lg"></div>
-<input type="hidden" name="richText" id="quillContent" />
+<div id="editor" class="min-h-[20vh] rounded-b-lg border border-gray-100"></div>
+<input type="hidden" name={props.name} id="quillContent" />
 
 <style>
 	#editor {

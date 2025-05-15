@@ -230,7 +230,11 @@ const Events: CollectionConfig = {
     {
       name: 'description',
       label: 'Event Description',
-      type: 'richText',
+      type: 'code',
+      required: true,
+      admin: {
+        language: 'html',
+      },
     },
 
     // --- Relationships ---

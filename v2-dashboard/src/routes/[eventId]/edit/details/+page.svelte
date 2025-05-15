@@ -26,6 +26,12 @@
 	// Initialize the form with SuperForm
 	const { form, errors, enhance, message } = superForm(data.form);
 
+	message.subscribe(async (msg) => {
+		if (msg && msg.success) {
+			//add toast here
+		}
+	});
+
 	function handleCancel() {
 		stateEditEvent.open = false;
 		goto(`/${data.eventId}/registrants`);
@@ -183,9 +189,10 @@
 			<label for="event-description" class="mb-2 block text-sm font-medium text-gray-700"
 				>Event description</label
 			>
-			<RichText name="richText" bind:value={$form.richText} />
-			{#if $errors.richText}
-				<p class="mt-1 text-sm text-red-500">{$errors.richText}</p>
+
+			<RichText name="description" description={event.description ?? ''} />
+			{#if $errors.description}
+				<p class="mt-1 text-sm text-red-500">{$errors.description}</p>
 			{/if}
 		</div>
 	</div>
@@ -194,7 +201,7 @@
 		<button
 			type="button"
 			class="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 sm:w-auto sm:text-base"
-			on:click={handleCancel}
+			onclick={handleCancel}
 		>
 			Cancel
 		</button>

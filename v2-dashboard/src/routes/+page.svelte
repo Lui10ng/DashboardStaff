@@ -492,7 +492,7 @@
 
 								<div class="space-y-2">
 									<label for="description" class="prose text-gray-700">Description</label>
-									<RichText />
+									<RichText name="description" />
 									{#if $errors.richText}
 										<p class="prose text-primary mt-2 text-sm">
 											{$errors.richText}

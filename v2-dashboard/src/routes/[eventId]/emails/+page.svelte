@@ -131,7 +131,7 @@
 							class="block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 sm:text-sm"
 						/>
 					</div>
-					<RichText />
+					<RichText name="email" />
 					<div class="mb-4 mt-3 flex flex-wrap gap-1">
 						{#each availableInputs as input}
 							<button
@@ -144,8 +144,8 @@
 					</div>
 					<div class="mt-5 flex gap-2">
 						<button
-							class="rounded-md bg-primary px-4 py-2 font-bold text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring focus:ring-red-200"
-							on:click={saveEmail}
+							class="bg-primary rounded-md px-4 py-2 font-bold text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring focus:ring-red-200"
+							onclick={saveEmail}
 						>
 							Save Email
 						</button>

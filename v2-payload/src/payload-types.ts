@@ -200,21 +200,7 @@ export interface Event {
   status: 'Draft' | 'Published' | 'Cancelled' | 'Archived';
   startTime: string;
   endTime: string;
-  description?: {
-    root: {
-      type: string;
-      children: {
-        type: string;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
+  description: string;
   user: number | User;
   category?: (number | null) | EventCategory;
   eventImages?: (number | Media)[] | null;
