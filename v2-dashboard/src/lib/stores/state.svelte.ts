@@ -44,15 +44,7 @@ export const registrantList = () => {
 	};
 };
 
-export const themeState = () => {
-	let themes = $state<themeProps[]>();
-
-	return {
-		get themes() {
-			return themes;
-		},
-		set themes(value) {
-			themes = value;
-		}
-	};
-};
+export const themeState = $state({
+	theme: '',
+	modeTheme: true
+});
