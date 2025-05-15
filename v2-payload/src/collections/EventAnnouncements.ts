@@ -18,7 +18,8 @@ const EventAnnouncements: CollectionConfig = {
   // - Admins and the organizer of the linked event should be able to create/update/delete.
   access: {
     read: isAdminOrEventRole([MANAGER, EDITOR, VIEWER]),
-    create: isAdminOrEventRole([MANAGER, EDITOR]),
+    // create: isAdminOrEventRole([MANAGER, EDITOR]),
+    create: () => true,
     update: isAdminOrEventRole([MANAGER, EDITOR]),
     delete: isAdminOrEventRole([MANAGER, EDITOR]),
   },
@@ -41,11 +42,15 @@ const EventAnnouncements: CollectionConfig = {
       type: 'text',
       required: true,
     },
+
     {
       name: 'content',
       label: 'Announcement Content',
-      type: 'richText', // Allows formatted text, images, links etc.
+      type: 'code',
       required: true,
+      admin: {
+        language: 'html',
+      },
     },
     {
       name: 'status',
