@@ -74,6 +74,7 @@ export type Event = {
 	slug: string;
 	title: string;
 	location: string;
+	description: string;
 	date: string;
 	startTime: string;
 	endTime: string;
@@ -184,6 +185,7 @@ export interface EventDetailsResponse {
 	title: string;
 	slug: string;
 	location: string;
+	description: string;
 	date: string;
 	startTime: string;
 	endTime: string;

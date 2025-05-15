@@ -6,6 +6,7 @@ const defaultEventValues: Event = {
 	title: '',
 	slug: '',
 	location: '',
+	description: '',
 	date: '',
 	startTime: '',
 	endTime: '',

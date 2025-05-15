@@ -80,18 +80,10 @@ export const actions: Actions = {
 			status: 'Published',
 			startTime: new Date(`${startDate}T${startTime}:00+08:00`).toISOString(),
 			endTime: new Date(`${endDate}T${endTime}:00+08:00`).toISOString(),
-			// description: form.data.richText,
+			description: form.data.description,
 			venue: { id: 1 },
 			seatingType: 'general_admission'
 		};
-
-		console.log('Form values:', {
-			startTime: new Date(`${startDate}T${startTime}:00+08:00`).toISOString(),
-			endTime: new Date(`${endDate}T${endTime}:00+08:00`).toISOString(),
-			location: form.data.location,
-			title: form.data.title,
-			slug: form.data.subdomain.toLowerCase()
-		});
 
 		try {
 			const apiClient = createApiClient(event);

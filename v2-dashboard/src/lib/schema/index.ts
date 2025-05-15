@@ -41,7 +41,7 @@ export const eventSchema = z.object({
 		.regex(/^[a-z0-9]+$/, 'Subdomain can only contain lowercase letters and numbers')
 		.transform((val) => val.toLowerCase()),
 	location: z.string().min(1, 'Location is required'),
-	richText: z.string().min(1, 'Description is required'),
+	description: z.string().min(1, 'Description is required'),
 	startDate: z.string().min(1, 'Start date is required'),
 	startTime: z.string().min(1, 'Start time is required'),
 	endDate: z.string().min(1, 'End date is required'),

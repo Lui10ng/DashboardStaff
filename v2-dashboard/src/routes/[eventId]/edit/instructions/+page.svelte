@@ -74,7 +74,7 @@
 				<label for="event-description" class="mb-2 block text-sm font-medium text-gray-700"
 					>Event description</label
 				>
-				<RichText />
+				<RichText name="instruction" />
 			</div>
 		</div>
 	</div>
@@ -87,7 +87,7 @@
 			Cancel
 		</button>
 		<button
-			class="w-full rounded-md bg-primary px-5 py-2 text-sm font-medium text-white hover:bg-red-700 sm:w-auto sm:text-base"
+			class="bg-primary w-full rounded-md px-5 py-2 text-sm font-medium text-white hover:bg-red-700 sm:w-auto sm:text-base"
 		>
 			Save changes
 		</button>

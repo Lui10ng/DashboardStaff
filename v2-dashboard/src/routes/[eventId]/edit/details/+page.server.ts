@@ -4,7 +4,7 @@ import type { RequestEvent } from '@sveltejs/kit';
 import { handleSvelteError } from '$lib/utils/errorHandler';
 import { error, fail } from '@sveltejs/kit';
 import type { EventDetailsResponse } from '$lib/types';
-import { superValidate } from 'sveltekit-superforms';
+import { message, superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { eventSchema } from '$lib/schema/index';
 
@@ -18,7 +18,8 @@ export const load: PageServerLoad = async (event: RequestEvent) => {
 		'select[slug]': 'true',
 		'select[location]': 'true',
 		'select[startTime]': 'true',
-		'select[endTime]': 'true'
+		'select[endTime]': 'true',
+		'select[description]': 'true'
 	});
 
 	try {
@@ -61,7 +62,8 @@ export const actions = {
 			return fail(400, { form });
 		}
 
-		const { startDate, endDate, startTime, endTime, location, title, subdomain } = form.data;
+		const { startDate, endDate, startTime, endTime, location, title, subdomain, description } =
+			form.data;
 
 		console.log('Form values:', {
 			startTime: new Date(`${startDate}T${startTime}:00+08:00`).toISOString(),
@@ -73,6 +75,7 @@ export const actions = {
 			title,
 			subdomain,
 			location,
+			description,
 			startTime: new Date(`${startDate}T${startTime}:00+08:00`).toISOString(),
 			endTime: new Date(`${endDate}T${endTime}:00+08:00`).toISOString()
 		};
@@ -81,8 +84,7 @@ export const actions = {
 			const apiClient = createApiClient(event);
 			await apiClient.patch(`events/${eventId}`, updateData);
 
-			// Return success and the validated form
-			return { form, success: true, message: 'Event updated successfully!' };
+			return message(form, { success: true, message: 'Event updated successfully!' });
 		} catch (err: unknown) {
 			// Handle errors
 			const { statusCode, errorMessage } = handleSvelteError(
