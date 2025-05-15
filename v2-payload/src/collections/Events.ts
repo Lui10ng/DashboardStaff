@@ -430,6 +430,12 @@ const Events: CollectionConfig = {
         readOnly: true,
       },
     },
+    {
+      name: 'eventInstructions',
+      type: 'join',
+      collection: 'event-instructions',
+      on: 'event',
+    },
   ],
   timestamps: true,
 }

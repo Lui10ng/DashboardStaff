@@ -85,6 +85,7 @@ export interface Config {
     venues: Venue;
     forms: Form;
     'event-user-roles': EventUserRole;
+    'event-instructions': EventInstruction;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -93,6 +94,7 @@ export interface Config {
     events: {
       form: 'forms';
       ticketType: 'ticket-types';
+      eventInstructions: 'event-instructions';
     };
     'ticket-types': {
       promotion: 'promotions';
@@ -117,6 +119,7 @@ export interface Config {
     venues: VenuesSelect<false> | VenuesSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'event-user-roles': EventUserRolesSelect<false> | EventUserRolesSelect<true>;
+    'event-instructions': EventInstructionsSelect<false> | EventInstructionsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -248,6 +251,11 @@ export interface Event {
   };
   theme?: string | null;
   light?: string | null;
+  eventInstructions?: {
+    docs?: (number | EventInstruction)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -534,6 +542,21 @@ export interface Promotion {
    */
   event?: (number | Event)[] | null;
   applicableTicketTypes?: (number | TicketType)[] | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Instructions related to specific events.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "event-instructions".
+ */
+export interface EventInstruction {
+  id: number;
+  event: number | Event;
+  title: string;
+  content: string;
+  status: 'draft' | 'published';
   updatedAt: string;
   createdAt: string;
 }
@@ -906,6 +929,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'event-user-roles';
         value: number | EventUserRole;
+      } | null)
+    | ({
+        relationTo: 'event-instructions';
+        value: number | EventInstruction;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1005,6 +1032,7 @@ export interface EventsSelect<T extends boolean = true> {
   ticketType?: T;
   theme?: T;
   light?: T;
+  eventInstructions?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1351,6 +1379,18 @@ export interface EventUserRolesSelect<T extends boolean = true> {
   event?: T;
   user?: T;
   role?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "event-instructions_select".
+ */
+export interface EventInstructionsSelect<T extends boolean = true> {
+  event?: T;
+  title?: T;
+  content?: T;
+  status?: T;
   updatedAt?: T;
   createdAt?: T;
 }
