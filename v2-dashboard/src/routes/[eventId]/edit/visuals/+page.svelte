@@ -15,8 +15,6 @@
 	let backgroundImgSrc: string | null = $state(null);
 	const themeDrawerState = $derived(themeDrawer.open);
 
-	const themeStore = themeState();
-
 	const { form, errors, enhance, delayed, message } = superForm(data.form);
 
 	message.subscribe(async (msg) => {
@@ -26,15 +24,12 @@
 	});
 
 	$effect(() => {
-		themeStore.themes = [
-			{
-				theme: data.eventTheme.theme,
-				themeMode: data.eventTheme.light
-			}
-		];
+		themeState.theme = data.eventTheme.theme;
+		themeState.modeTheme = data.eventTheme.light == 'true' ? true : false;
 	});
 
-	let selectedTheme = $derived(themeStore.themes);
+	let theme = $derived(themeState.theme);
+	let themeMode = $derived(themeState.modeTheme);
 
 	function handleClick(inputClick: string) {
 		document.getElementById(inputClick)?.click();
@@ -69,11 +64,15 @@
 	}
 
 	const handleThemeSelection = (selectedTheme: string) => {
-		themeStore.themes.theme = selectedTheme;
+		theme = selectedTheme;
 	};
 
 	const handleCloseThemeDrawer = () => {
 		themeDrawer.open = false;
+	};
+
+	const handleSwitchMode = (event: boolean) => {
+		themeState.modeTheme = event;
 	};
 </script>
 
@@ -105,16 +104,16 @@
 					<div>
 						<div class="flex justify-between">
 							<div class="flex items-center gap-3">
-								<h2 class="text-sm">{selectedTheme?.themeMode ? 'Light' : 'Dark'} Mode</h2>
+								<h2 class="text-sm">{themeMode ? 'Light' : 'Dark'} Mode</h2>
 								<Switch
 									name="example"
-									checked={selectedTheme?.themeMode}
-									onCheckedChange={(e) => (themeStore.themes.themeMode = e.checked)}
+									checked={themeMode}
+									onCheckedChange={(e) => handleSwitchMode(e.checked)}
 								/>
 							</div>
 							<form action="?/saveTheme" method="POST" use:enhance>
-								<input type="text" name="theme" value={selectedTheme?.theme} hidden />
-								<input type="text" name="modeTheme" value={selectedTheme?.themeMode} hidden />
+								<input type="text" name="theme" value={theme} hidden />
+								<input type="text" name="modeTheme" value={themeMode} hidden />
 								<div class="flex gap-3">
 									<button
 										type="button"
@@ -134,8 +133,7 @@
 								<div class="my-5 shrink-0 snap-start px-1 text-center">
 									<button
 										onclick={() => handleThemeSelection(themeOption)}
-										class="flex min-w-24 flex-col rounded-md border p-2 {themeOption ==
-										selectedTheme?.theme
+										class="flex min-w-24 flex-col rounded-md border p-2 {themeOption == theme
 											? 'border-primary'
 											: ''}"
 									>
@@ -147,7 +145,7 @@
 						<iframe
 							id="myIframe"
 							title="themeSelector"
-							src={`${data.siteUrl}/?theme=${selectedTheme?.theme}&mode=${selectedTheme?.themeMode ? 'light' : 'dark'}`}
+							src={`${data.siteUrl}/?theme=${theme}&mode=${themeMode ? 'light' : 'dark'}`}
 							class="h-[70svh] w-full"
 						></iframe>
 					</div>
