@@ -314,10 +314,10 @@ export const actions: Actions = {
 		}
 
 		const formData = {
+			status: data.get('status') || 'inactive',
 			event: parseInt(eventId),
 			code: form.data.code,
 			description: form.data.description,
-			status: 'active', // init
 			discountType: form.data.discountType,
 			discountValue: form.data.discountValue,
 			currency: form.data.currency || null,
@@ -339,9 +339,77 @@ export const actions: Actions = {
 		}
 	},
 
-	updateVoucher: async ({ request }) => {
+	updateVoucher: async (event: RequestEvent) => {
+		const { request } = event;
 		const data = await request.formData();
-		console.log(data);
+		const voucherId = data.get('id');
+
+		console.log('Updating voucher with ID:', voucherId);
+
+		// Extract date only from ISO string
+		const extractDateOnly = (isoString: string) => {
+			if (!isoString) return null;
+			return isoString.split('T')[0];
+		};
+
+		// Log the incoming form data
+		console.log('Form data:', Object.fromEntries(data.entries()));
+
+		const form = await superValidate(data, zod(voucherSchema));
+
+		if (!form.valid) {
+			console.log('Form validation failed:', form.errors);
+			return fail(400, { form });
+		}
+
+		try {
+			// Prepare the dates
+			const validFromDate = form.data.validFrom ? extractDateOnly(form.data.validFrom) : null;
+			const validToDate = form.data.validUntil ? extractDateOnly(form.data.validUntil) : null;
+
+			// Create ISO datetime strings with default time (00:00:00)
+			const validFrom = validFromDate ? new Date(`${validFromDate}T00:00:00Z`).toISOString() : null;
+			const validUntil = validToDate ? new Date(`${validToDate}T00:00:00Z`).toISOString() : null;
+
+			// Log the processed dates for debugging
+			console.log('Processed dates:', {
+				validFromDate,
+				validToDate,
+				validFrom,
+				validUntil
+			});
+
+			// Prepare update data
+			const formData: Record<string, any> = {
+				code: form.data.code,
+				description: form.data.description,
+				discountType: form.data.discountType,
+				discountValue: form.data.discountValue,
+				currency: form.data.currency || null,
+				usageLimit: form.data.quantity,
+				minimumOrderAmount: form.data.minOrderAmount,
+				status: data.get('status') || 'inactive',
+				appliesToAllEvents: false
+			};
+
+			// Only add dates if they are valid
+			if (validFrom) formData.validFrom = validFrom;
+			if (validUntil) formData.validUntil = validUntil;
+
+			const apiClient = createApiClient(event);
+			await apiClient.patch(`/promotions/${voucherId}`, formData);
+
+			return message(form, {
+				success: true,
+				message: 'Voucher updated successfully'
+			});
+		} catch (err) {
+			console.error('Error updating voucher:', err);
+			return message(form, {
+				success: false,
+				message: err instanceof Error ? err.message : 'Failed to update voucher'
+			});
+		}
 	},
 
 	saveLayout: async (event: RequestEvent) => {
