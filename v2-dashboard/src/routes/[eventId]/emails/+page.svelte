@@ -79,7 +79,7 @@
 				class="modal-content mt-4 flex max-h-[calc(90vh-120px)] flex-col space-y-5 overflow-y-auto"
 				action="?/createEmail"
 				method="POST"
-				on:submit={handleSubmit}
+				onsubmit={handleSubmit}
 			>
 				<div class="space-y-5 rounded-md border border-gray-300 p-5">
 					<div class="grid grid-cols-[80px_1fr] items-center gap-x-4 gap-y-2">
@@ -136,7 +136,7 @@
 						{#each availableInputs as input}
 							<button
 								class="rounded-md bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-800 shadow-sm hover:bg-gray-300"
-								on:click={() => insertInput(input.key)}
+								onclick={() => insertInput(input.key)}
 							>
 								{input.label}
 							</button>
