@@ -90,3 +90,12 @@ export const postSchema = z.object({
 		.refine((image) => image.size < 10 * 1024 * 1024, 'Max 10MB upload size.')
 		.optional()
 });
+
+export const instructionSchema = z.object({
+	title: z.string().min(1, 'Title is required'),
+	content: z.string().min(1, 'Content is required'),
+	image: z
+		.instanceof(File, { message: 'Please upload a file.' })
+		.refine((image) => image.size < 10 * 1024 * 1024, 'Max 10MB upload size.')
+		.optional()
+});

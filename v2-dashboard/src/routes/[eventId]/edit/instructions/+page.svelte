@@ -1,5 +1,10 @@
 <script lang="ts">
 	import RichText from '$lib/components/ui/RichText.svelte';
+	import { superForm } from 'sveltekit-superforms';
+
+	let { data } = $props();
+
+	const { form, errors, enhance, delayed, message } = superForm(data.form);
 
 	let selectedImage: string | null = $state(null);
 	let fileInput: string | HTMLInputElement = $state('');
@@ -17,25 +22,23 @@
 	}
 </script>
 
-<form enctype="multipart/form-data">
+<form action="?/createInstruction" method="POST" enctype="multipart/form-data" use:enhance>
 	<div>
-		<div class="mb-6">
-			<h2 class="mb-2 text-xl font-semibold text-gray-900">Registration instruction</h2>
-			<p class="mb-4 text-sm text-gray-500">
-				Edit your registration instructions below. Changes update automatically on your website.
-			</p>
-		</div>
 		<hr class="mb-6 border-t border-gray-300" />
 		<div class="flex flex-col gap-8 lg:flex-row">
 			<div class="w-full space-y-6 lg:w-2/5">
 				<div>
 					<h3 class="mb-1 text-sm font-medium">Heading</h3>
 					<input
-						name="Heading"
+						name="title"
 						type="text"
+						bind:value={$form.title}
 						placeholder="Add heading"
 						class="mt-1 w-full rounded-lg border border-gray-200 p-2 px-3 py-3 text-sm placeholder:text-gray-500"
 					/>
+					{#if $errors.title}
+						<p class="text-primary text-sm">{$errors.title}</p>
+					{/if}
 				</div>
 				<div>
 					<h3 class="mb-2 text-sm font-medium">Image</h3>
@@ -74,7 +77,13 @@
 				<label for="event-description" class="mb-2 block text-sm font-medium text-gray-700"
 					>Event description</label
 				>
-				<RichText name="instruction" />
+				<RichText name="content" />
+
+				{#if $errors.content}
+					<p class="prose text-primary mt-2 text-sm">
+						{$errors.content}
+					</p>
+				{/if}
 			</div>
 		</div>
 	</div>
