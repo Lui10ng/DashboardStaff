@@ -33,7 +33,7 @@ export const ticketSchema = z.object({
 });
 
 export const eventSchema = z.object({
-	event: z.string().min(1, 'Event name is required'),
+	title: z.string().min(1, 'Event name is required'),
 	subdomain: z
 		.string()
 		.min(3, 'Subdomain must be at least 3 characters')
@@ -63,4 +63,21 @@ export const eventSchema = z.object({
 export const themeSchema = z.object({
 	theme: z.string().min(1, 'Theme is required'),
 	modeTheme: z.string().min(1, 'Mode theme is required')
+});
+
+export const ticketTypeSchema = z.object({
+	name: z.string().min(1, 'Ticket name is required'),
+	description: z.string().optional(),
+	price: z.number().min(0, 'Price must be 0 or greater'),
+	currency: z.enum(['USD', 'PHP', 'EUR']),
+	quantityAvailable: z.number().int().min(1, 'Quantity must be at least 1'),
+	minOrderQuantity: z.number().int().min(1, 'Minimum order must be at least 1').default(1),
+	maxOrderQuantity: z.number().int().min(1, 'Maximum order must be at least 1').optional(),
+	color: z.string().default('#000000'),
+	status: z.enum(['active', 'inactive']).default('active'),
+	salesStart: z.string().optional(),
+	salesEnd: z.string().optional(),
+	event: z.number(),
+	seatMap: z.number().optional(),
+	paymentActive: z.boolean().default(true)
 });

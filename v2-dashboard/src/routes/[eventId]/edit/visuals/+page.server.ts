@@ -1,7 +1,7 @@
 import { error, type RequestEvent } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { createApiClient } from '$lib/services/payload.server';
-import type { EventDetailsResponse } from '$lib/types/eventData';
+import type { EventDetailsResponse } from '$lib/types';
 import { handleSvelteError } from '$lib/utils/errorHandler';
 import { fail, message, superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';

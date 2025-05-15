@@ -1,19 +1,17 @@
 import type { PageServerLoad, Actions } from './$types';
-import type { SeatLayoutData } from '$lib/types/seat-generator';
 import type { RequestEvent } from '@sveltejs/kit';
 import { handleSvelteError } from '$lib/utils/errorHandler';
 import { error, fail } from '@sveltejs/kit';
 import { createApiClient } from '$lib/services/payload.server';
-import { seatLayoutDataSchema, seatMapSchema } from '$lib/schema/seat-map';
+import { seatLayoutDataSchema } from '$lib/schema/seat-map';
 import { ZodError } from 'zod';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { ticketSchema } from '$lib/schema/ticket';
 import { voucherSchema } from '$lib/schema/voucher';
 import { message } from 'sveltekit-superforms/server';
-import type { TicketType, Promotion, SeatMap, Event } from '$lib/types/payload-types';
+import type { TicketType, Promotion } from '$lib/types/payload-types';
 import type { PayloadPaginatedResponse } from '$lib/types/payloadResponse';
-import { ticketTypeSchema } from '$lib/schema';
 
 // Helper for API response type guard
 function isApiResponseWithDoc(obj: unknown): obj is { doc: { id: number } } {
@@ -35,20 +33,6 @@ export const load: PageServerLoad = async (event: RequestEvent) => {
 
 	// Ensure eventId is always a string
 	const eventIdStr = eventId ?? '';
-
-	const initialConfig = {
-		ticketQuantity: 0,
-		reserveSeatingEnabled: false,
-		seatConfig: {
-			rows: 0,
-			seatsPerRow: 0,
-			rowStartChar: 'A',
-			seatStartNum: 1,
-			rowOrder: 'down' as const,
-			seatOrder: 'left' as const,
-			rowLabel: 'Show All'
-		}
-	};
 
 	const paramsTicket = new URLSearchParams({
 		'where[event][equals]': eventIdStr,
