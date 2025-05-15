@@ -70,7 +70,7 @@ export const isAdminOrEventRole =
     // --- Condition 3: Check for Event-Specific Role ---
     try {
 
-      let collection = req.routeParams?.collection;
+      const collection = req.routeParams?.collection;
 
       if (collection === 'events') {
         if (id !== undefined && id !== null) {
