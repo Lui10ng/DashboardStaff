@@ -1,13 +1,12 @@
-import { error, fail, redirect } from '@sveltejs/kit';
+import { error, fail } from '@sveltejs/kit';
 import type { ServerLoadEvent, RequestEvent } from '@sveltejs/kit';
 import { message, superValidate } from 'sveltekit-superforms/server';
 import { zod } from 'sveltekit-superforms/adapters';
-import { eventSchema } from '$lib/schema';
+import { eventSchema } from '$lib/schema/index';
 import { createApiClient } from '$lib/services/payload.server';
 import { handleSvelteError } from '$lib/utils/errorHandler';
 import type { PayloadPaginatedResponse } from '$lib/types/payloadResponse';
 import type { Event } from '$lib/types/eventData';
-import { PUBLIC_PAYLOAD_API_URL } from '$env/static/public';
 import type { Actions } from './$types';
 
 export async function load(event: ServerLoadEvent) {
@@ -75,16 +74,24 @@ export const actions: Actions = {
 
 		const formData = {
 			user: userId,
-			title: form.data.event,
+			title: form.data.title,
 			slug: form.data.subdomain.toLowerCase(),
 			location: form.data.location,
 			status: 'Published',
 			startTime: new Date(`${startDate}T${startTime}:00+08:00`).toISOString(),
 			endTime: new Date(`${endDate}T${endTime}:00+08:00`).toISOString(),
-			// description: form.data.richText, // use lexical richtext
+			// description: form.data.richText,
 			venue: { id: 1 },
 			seatingType: 'general_admission'
 		};
+
+		console.log('Form values:', {
+			startTime: new Date(`${startDate}T${startTime}:00+08:00`).toISOString(),
+			endTime: new Date(`${endDate}T${endTime}:00+08:00`).toISOString(),
+			location: form.data.location,
+			title: form.data.title,
+			slug: form.data.subdomain.toLowerCase()
+		});
 
 		try {
 			const apiClient = createApiClient(event);
@@ -139,10 +146,10 @@ export const actions: Actions = {
 	saveSeatMap: async ({ request, locals }) => {
 		try {
 			const formData = await request.formData();
-			
+
 			// Basic info
 			const name = formData.get('name') as string;
-			
+
 			// Config
 			const ticketQuantity = parseInt(formData.get('ticketQuantity') as string);
 			const rows = parseInt(formData.get('rows') as string);
@@ -152,16 +159,16 @@ export const actions: Actions = {
 			const rowOrder = formData.get('rowOrder') as 'down' | 'up';
 			const seatOrder = formData.get('seatOrder') as 'left' | 'right';
 			const rowLabel = formData.get('rowLabel') as string;
-			
+
 			// Seats and custom names
 			const seats = JSON.parse(formData.get('seats') as string);
-			const customSeatNames = formData.get('customSeatNames') ? 
-				JSON.parse(formData.get('customSeatNames') as string) : 
-				null;
-				
+			const customSeatNames = formData.get('customSeatNames')
+				? JSON.parse(formData.get('customSeatNames') as string)
+				: null;
+
 			// Venue image
 			const venueImage = formData.get('venueImage') as string | null;
-			
+
 			// Summary
 			const totalSeats = parseInt(formData.get('totalSeats') as string);
 			const availableSeats = parseInt(formData.get('availableSeats') as string);
@@ -169,10 +176,22 @@ export const actions: Actions = {
 			const soldSeats = parseInt(formData.get('soldSeats') as string);
 
 			// Validate required fields
-			if (!name || !ticketQuantity || !rows || !seatsPerRow || !rowStartChar || 
-				!seatStartNum || !rowOrder || !seatOrder || !rowLabel || !seats ||
-				!totalSeats || typeof availableSeats !== 'number' || 
-				typeof unavailableSeats !== 'number' || typeof soldSeats !== 'number') {
+			if (
+				!name ||
+				!ticketQuantity ||
+				!rows ||
+				!seatsPerRow ||
+				!rowStartChar ||
+				!seatStartNum ||
+				!rowOrder ||
+				!seatOrder ||
+				!rowLabel ||
+				!seats ||
+				!totalSeats ||
+				typeof availableSeats !== 'number' ||
+				typeof unavailableSeats !== 'number' ||
+				typeof soldSeats !== 'number'
+			) {
 				return fail(400, {
 					error: 'Missing required fields',
 					success: false

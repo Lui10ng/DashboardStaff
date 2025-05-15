@@ -35,7 +35,7 @@
 	import type { SeatMap as StoreSeatMap } from '$lib/stores/seat-map';
 	import type { PageData } from './$types';
 	import { ticketListStore } from '$lib/stores/ticketList.svelte';
-
+	import { formatDateMMDDYYYY } from '$lib/utils/formatTime';
 
 	const { data } = $props<{ data: PageData }>();
 
@@ -101,7 +101,9 @@
 	let reserveSeatingEnabled = $derived(seatGeneratorState.reserveSeatingEnabled);
 
 	// Update the ticket list and voucher list types with proper mapping
-	const ticketList: TicketProps[] = $derived(data.ticketData ? data.ticketData.map(mapTicketTypeToProps) : []);
+	const ticketList: TicketProps[] = $derived(
+		data.ticketData ? data.ticketData.map(mapTicketTypeToProps) : []
+	);
 	const voucherList = $derived(data.voucherData as PromotionProps[]);
 
 	const {
@@ -155,7 +157,7 @@
 			ticketListStore.setTickets(data.ticketData);
 		}
 	});
-	
+
 	// After successful update
 	ticketMessage.subscribe(async (msg) => {
 		if (msg && msg.success) {
@@ -171,25 +173,25 @@
 		}
 	});
 
-	  // Add a function to handle the toggle change
-    function handleActiveVoucherToggle(value: boolean) {
-        isActive = value;
-        if (selectedVoucher) {
-            selectedVoucher.status = value ? 'active' : 'inactive';
-        }
-    }
+	// Add a function to handle the toggle change
+	function handleActiveVoucherToggle(value: boolean) {
+		isActive = value;
+		if (selectedVoucher) {
+			selectedVoucher.status = value ? 'active' : 'inactive';
+		}
+	}
 
-	 // Update the voucherMessage subscription
-voucherMessage.subscribe((msg) => {
-    if (msg && msg.success) {
-        if (msg.status) {
-            isActive = msg.status === 'active';
-        }
-        // Close both drawers
-        voucherDrawer.open = false;
-        editVoucherDrawer.open = false; // Add this line
-    }
-});
+	// Update the voucherMessage subscription
+	voucherMessage.subscribe((msg) => {
+		if (msg && msg.success) {
+			if (msg.status) {
+				isActive = msg.status === 'active';
+			}
+			// Close both drawers
+			voucherDrawer.open = false;
+			editVoucherDrawer.open = false; // Add this line
+		}
+	});
 
 	const TicketdrawerState = $derived(ticketDrawer.open);
 	const VoucherdrawerState = $derived(voucherDrawer.open);
@@ -220,7 +222,6 @@ voucherMessage.subscribe((msg) => {
 	let selectedTicket = $state<TicketProps>();
 	let selectedVoucher = $state<PromotionProps>();
 
-
 	// Add voucher toggle state
 	let voucherEnabled = $state(true);
 
@@ -244,8 +245,6 @@ voucherMessage.subscribe((msg) => {
 		selectedTicketStatus = event.detail as TicketStatus;
 	};
 
-
-
 	const getStatusColor = (status: string) => {
 		if (status === 'active') return 'bg-green-500';
 		else if (status === 'expired') return 'bg-primary';
@@ -264,7 +263,7 @@ voucherMessage.subscribe((msg) => {
 		selectedVoucherStatus = event.detail as VoucherStatus;
 	};
 
-		// When updating a ticket
+	// When updating a ticket
 	const handleEditTicket = (ticket: TicketProps) => {
 		selectedTicket = ticket;
 		isActivePayment = ticket.status === 'active';
@@ -272,12 +271,12 @@ voucherMessage.subscribe((msg) => {
 		editTicketDrawer.open = true;
 	};
 
-		const handleEditVoucher = (voucher: PromotionProps) => {
+	const handleEditVoucher = (voucher: PromotionProps) => {
 		selectedVoucher = voucher;
 		isActive = voucher.status === 'active';
 		editVoucherDrawer.open = true;
 	};
-	
+
 	const getTicketSelectionText = (selected: string[]) => {
 		if (selected.includes('all')) {
 			return 'All Tickets';
@@ -349,7 +348,6 @@ voucherMessage.subscribe((msg) => {
 		createdSeatMapId = event.detail.seatMapId;
 		isReserveSeatingConfigured = true;
 	}
-
 
 	async function handleSaveLayout() {
 		console.log('[DEBUG] handleSaveLayout called');
@@ -489,7 +487,7 @@ voucherMessage.subscribe((msg) => {
 				<Tabs.List class="flex space-x-4 border-b border-gray-200">
 					<Tabs.Trigger
 						value="ticket"
-						class="border-b-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none data-[state=active]:border-[#DF4D60] data-[state=active]:text-[#DF4D60] data-[state=inactive]:border-transparent data-[state=inactive]:text-gray-500 data-[state=inactive]:hover:border-gray-300 data-[state=inactive]:hover:text-gray-700"
+						class="border-b-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none data-[state=active]:border-[#DF4D60] data-[state=inactive]:border-transparent data-[state=active]:text-[#DF4D60] data-[state=inactive]:text-gray-500 data-[state=inactive]:hover:border-gray-300 data-[state=inactive]:hover:text-gray-700"
 						aria-label="Switch to Ticket tab"
 						tabindex={0}
 					>
@@ -502,7 +500,7 @@ voucherMessage.subscribe((msg) => {
 					{#if reserveSeatingEnabled}
 						<Tabs.Trigger
 							value="reserve-seating"
-							class="border-b-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none data-[state=active]:border-[#DF4D60] data-[state=active]:text-[#DF4D60] data-[state=inactive]:border-transparent data-[state=inactive]:text-gray-500 data-[state=inactive]:hover:border-gray-300 data-[state=inactive]:hover:text-gray-700"
+							class="border-b-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none data-[state=active]:border-[#DF4D60] data-[state=inactive]:border-transparent data-[state=active]:text-[#DF4D60] data-[state=inactive]:text-gray-500 data-[state=inactive]:hover:border-gray-300 data-[state=inactive]:hover:text-gray-700"
 							aria-label="Switch to Reserve Seating tab"
 							tabindex={0}
 						>
@@ -518,7 +516,11 @@ voucherMessage.subscribe((msg) => {
 					<form method="POST" action="?/createTicket" use:enhance class="w-full space-y-8">
 						<input type="hidden" name="event" value={data.eventId} />
 						{#if isActiveReserveSeating}
-							<input type="hidden" name="seatMapStore" value={JSON.stringify($seatMapStore || {})} />
+							<input
+								type="hidden"
+								name="seatMapStore"
+								value={JSON.stringify($seatMapStore || {})}
+							/>
 						{/if}
 						<div class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
 							<div class="space-y-6">
@@ -562,13 +564,7 @@ voucherMessage.subscribe((msg) => {
 									{/if}
 								</div>
 								<div>
-									<label for="salesStart" class="mb-2 block text-sm">Sales Start (DD/MM/YYYY)</label
-									>
-									<DatePicker
-										name="salesStart"
-										value={$form.salesStart}
-										className="h-input rounded-input flex w-full select-none items-center border px-2 py-4 text-gray-500"
-									/>
+									<DatePicker name="salesStart" value={$form.salesStart} label="Sales Start" />
 									{#if $errors.salesStart}
 										<p class="text-primary text-sm">
 											{$errors.salesStart}
@@ -576,12 +572,7 @@ voucherMessage.subscribe((msg) => {
 									{/if}
 								</div>
 								<div>
-									<label for="salesEnd" class="mb-2 block text-sm">Sales End (DD/MM/YYYY)</label>
-									<DatePicker
-										name="salesEnd"
-										value={$form.salesEnd}
-										className="h-input rounded-input flex w-full select-none items-center border px-2 py-4 text-gray-500"
-									/>
+									<DatePicker name="salesEnd" value={$form.salesEnd} label="Sales End" />
 									{#if $errors.salesEnd}
 										<p class="text-primary text-sm">
 											{$errors.salesEnd}
@@ -653,21 +644,20 @@ voucherMessage.subscribe((msg) => {
 									</select>
 								</div>
 
-
-									<div>
-										<label for="activePayment" class="mb-2 block text-sm">Active payment</label>
-										<Toggle 
-											value={isActivePayment} 
-											name="status"
-											OnChange={(value) => {
-												isActivePayment = value;
-												// If you want to update the status immediately
-												if (selectedTicket) {
-													selectedTicket.status = value ? 'active' : 'inactive';
-												}
-											}} 
-										/>
-									</div>
+								<div>
+									<label for="activePayment" class="mb-2 block text-sm">Active payment</label>
+									<Toggle
+										value={isActivePayment}
+										name="status"
+										OnChange={(value) => {
+											isActivePayment = value;
+											// If you want to update the status immediately
+											if (selectedTicket) {
+												selectedTicket.status = value ? 'active' : 'inactive';
+											}
+										}}
+									/>
+								</div>
 
 								<div>
 									<label for="reserveSeating" class="mb-2 block text-sm"
@@ -693,39 +683,39 @@ voucherMessage.subscribe((msg) => {
 							</div>
 						</div>
 
-					<div>
-									<label for="Label-color" class="my-4 block text-sm">Label Color</label>
-									<div
-										class="mb-3 rounded-md p-3 text-center text-white"
-										style="background-color: {selectedColor}"
-									>
-										{selectedColor}
-									</div>
-									<div class="flex gap-2">
-										{#each colors as color}
-											<button
-												type="button"
-												class="h-8 w-8 rounded-full border-2 transition-all"
-												style="background-color: {color}; border-color: {selectedColor === color
-													? 'black'
-													: 'transparent'}"
-												onclick={() => (selectedColor = color)}
-												aria-label="Select color {color}"
-											></button>
-										{/each}
+						<div>
+							<label for="Label-color" class="my-4 block text-sm">Label Color</label>
+							<div
+								class="mb-3 rounded-md p-3 text-center text-white"
+								style="background-color: {selectedColor}"
+							>
+								{selectedColor}
+							</div>
+							<div class="flex gap-2">
+								{#each colors as color}
+									<button
+										type="button"
+										class="h-8 w-8 rounded-full border-2 transition-all"
+										style="background-color: {color}; border-color: {selectedColor === color
+											? 'black'
+											: 'transparent'}"
+										onclick={() => (selectedColor = color)}
+										aria-label="Select color {color}"
+									></button>
+								{/each}
 
-										<label
-											class="relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-2 border-gray-500"
-										>
-											<input
-												class="absolute right-0 top-0 hidden"
-												type="color"
-												name="color"
-												bind:value={selectedColor}
-											/>
-											+
-										</label>
-									</div>
+								<label
+									class="relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-2 border-gray-500"
+								>
+									<input
+										class="absolute right-0 top-0 hidden"
+										type="color"
+										name="color"
+										bind:value={selectedColor}
+									/>
+									+
+								</label>
+							</div>
 
 							{#if $errors.color}
 								<p class="text-primary text-sm">
@@ -791,7 +781,7 @@ voucherMessage.subscribe((msg) => {
 					<Tabs.List class="flex space-x-4 border-b border-gray-200">
 						<Tabs.Trigger
 							value="ticket"
-							class="border-b-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none data-[state=active]:border-[#DF4D60] data-[state=active]:text-[#DF4D60] data-[state=inactive]:border-transparent data-[state=inactive]:text-gray-500 data-[state=inactive]:hover:border-gray-300 data-[state=inactive]:hover:text-gray-700"
+							class="border-b-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none data-[state=active]:border-[#DF4D60] data-[state=inactive]:border-transparent data-[state=active]:text-[#DF4D60] data-[state=inactive]:text-gray-500 data-[state=inactive]:hover:border-gray-300 data-[state=inactive]:hover:text-gray-700"
 						>
 							<div class="flex items-center">
 								<i class="fa-solid fa-ticket-simple pe-2"></i>
@@ -802,7 +792,7 @@ voucherMessage.subscribe((msg) => {
 						{#if reserveSeatingEnabled}
 							<Tabs.Trigger
 								value="reserve-seating"
-								class="border-b-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none data-[state=active]:border-[#DF4D60] data-[state=active]:text-[#DF4D60] data-[state=inactive]:border-transparent data-[state=inactive]:text-gray-500 data-[state=inactive]:hover:border-gray-300 data-[state=inactive]:hover:text-gray-700"
+								class="border-b-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none data-[state=active]:border-[#DF4D60] data-[state=inactive]:border-transparent data-[state=active]:text-[#DF4D60] data-[state=inactive]:text-gray-500 data-[state=inactive]:hover:border-gray-300 data-[state=inactive]:hover:text-gray-700"
 							>
 								<div class="flex items-center">
 									<i class="fa-solid fa-chair pe-2"></i>
@@ -863,13 +853,10 @@ voucherMessage.subscribe((msg) => {
 										{/if}
 									</div>
 									<div>
-										<label for="salesStart" class="mb-2 block text-sm"
-											>Sales Start (DD/MM/YYYY)</label
-										>
 										<DatePicker
 											name="salesStart"
-											value={selectedTicket.salesStart}
-											className="h-input rounded-input flex w-full select-none items-center border px-2 py-4 text-gray-500"
+											value={formatDateMMDDYYYY(selectedTicket.salesStart)}
+											label="Sales Start"
 										/>
 										{#if $errors.salesStart}
 											<p class="text-primary text-sm">
@@ -878,11 +865,10 @@ voucherMessage.subscribe((msg) => {
 										{/if}
 									</div>
 									<div>
-										<label for="salesEnd" class="mb-2 block text-sm">Sales End (DD/MM/YYYY)</label>
 										<DatePicker
 											name="salesEnd"
-											value={selectedTicket.salesEnd}
-											className="h-input rounded-input flex w-full select-none items-center border px-2 py-4 text-gray-500"
+											value={formatDateMMDDYYYY(selectedTicket.salesEnd)}
+											label="Sales End"
 										/>
 										{#if $errors.salesEnd}
 											<p class="text-primary text-sm">
@@ -950,36 +936,36 @@ voucherMessage.subscribe((msg) => {
 										value={isActiveReserveSeating.toString()}
 									/>
 									<div>
-											<label for="currency" class="mb-2 block text-sm">Currency</label>
-											<select
-												name="currency"
-												value={selectedTicket.currency}
-												class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
-											>
-												<option value="PHP">PHP</option>
-												<option value="USD">USD</option>
-												<option value="EUR">EUR</option>
-											</select>
-											{#if $errors.currency}
-												<p class="text-primary text-sm">
-													{$errors.currency}
-												</p>
-											{/if}
-										</div>
+										<label for="currency" class="mb-2 block text-sm">Currency</label>
+										<select
+											name="currency"
+											value={selectedTicket.currency}
+											class="w-full rounded-md border-none bg-[#F8F9FC] p-3"
+										>
+											<option value="PHP">PHP</option>
+											<option value="USD">USD</option>
+											<option value="EUR">EUR</option>
+										</select>
+										{#if $errors.currency}
+											<p class="text-primary text-sm">
+												{$errors.currency}
+											</p>
+										{/if}
+									</div>
 									<div>
 										<label for="activePayment" class="mb-2 block text-sm">Active payment</label>
-										<Toggle 
-													value={isActivePayment} 
-													name="status"
-													OnChange={(value) => {
-														isActivePayment = value;
-														// If you want to update the status immediately
-														if (selectedTicket) {
-															selectedTicket.status = value ? 'active' : 'inactive';
-														}
-													}} 
-												/>									
-											</div>
+										<Toggle
+											value={isActivePayment}
+											name="status"
+											OnChange={(value) => {
+												isActivePayment = value;
+												// If you want to update the status immediately
+												if (selectedTicket) {
+													selectedTicket.status = value ? 'active' : 'inactive';
+												}
+											}}
+										/>
+									</div>
 									<div>
 										<label for="reserveSeating" class="mb-2 block text-sm"
 											>Enable Reserve Seating</label
@@ -1004,76 +990,75 @@ voucherMessage.subscribe((msg) => {
 									</div>
 								</div>
 							</div>
-                        <div>
-                            <label for="color" class="my-4 block text-sm">Label Color</label>
-                            <div
-                                class="mb-3 rounded-md p-3 text-center text-white"
-                                style="background-color: {selectedColor}"
-                            >
-                                {selectedColor}
-                            </div>
-                            <div class="flex gap-2">
-                                {#each colors as color}
-                                    <button
-                                        type="button"
-                                        class="h-8 w-8 rounded-full border-2 transition-all"
-                                        style="background-color: {color}; border-color: {selectedColor === color
-                                            ? 'black'
-                                            : 'transparent'}"
-                                        Onclick={() => {
-                                            selectedColor = color;
-                                            if (selectedTicket) {
-                                                selectedTicket.color = color;
-                                            }
-                                        }}
-                                        aria-label="Select color {color}"
-                                    ></button>
-                                {/each}
+							<div>
+								<label for="color" class="my-4 block text-sm">Label Color</label>
+								<div
+									class="mb-3 rounded-md p-3 text-center text-white"
+									style="background-color: {selectedColor}"
+								>
+									{selectedColor}
+								</div>
+								<div class="flex gap-2">
+									{#each colors as color}
+										<button
+											type="button"
+											class="h-8 w-8 rounded-full border-2 transition-all"
+											style="background-color: {color}; border-color: {selectedColor === color
+												? 'black'
+												: 'transparent'}"
+											Onclick={() => {
+												selectedColor = color;
+												if (selectedTicket) {
+													selectedTicket.color = color;
+												}
+											}}
+											aria-label="Select color {color}"
+										></button>
+									{/each}
 
-                                <label
-                                    class="relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-2 border-gray-500"
-                                >
-                                    <input
-                                        class="absolute top-0 right-0 hidden"
-                                        type="color"
-                                        name="color"
-                                        value={selectedColor}
-                                        Oninput={(e) => {
-                                            selectedColor = e.currentTarget.value;
-                                            if (selectedTicket) {
-                                                selectedTicket.color = e.currentTarget.value;
-                                            }
-                                        }}
-                                    />
-                                    +
-                                </label>
-                            </div>
+									<label
+										class="relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-2 border-gray-500"
+									>
+										<input
+											class="absolute right-0 top-0 hidden"
+											type="color"
+											name="color"
+											value={selectedColor}
+											Oninput={(e) => {
+												selectedColor = e.currentTarget.value;
+												if (selectedTicket) {
+													selectedTicket.color = e.currentTarget.value;
+												}
+											}}
+										/>
+										+
+									</label>
+								</div>
 
-                            <input type="hidden" name="color" value={selectedColor} />
-						{#if $errors.color}
-							<p class="text-primary text-sm">
-								{$errors.color}
-							</p>
-						{/if}
-                        </div>
-						<div class="mt-8 grid grid-cols-2 gap-4">
-											<Button
-												onClick={() => {}}
-												type="submit"
-												label="Save Ticket"
-												className="bg-[#DF4D60] text-white p-2 rounded-md"
-											/>
-											<Button
-												onClick={() => {
-													editTicketDrawer.open = false;
-												}}
-												label="Cancel"
-												className="border border-gray-300 text-gray-700 p-2 rounded-md"
-											/>
-										</div>
+								<input type="hidden" name="color" value={selectedColor} />
+								{#if $errors.color}
+									<p class="text-primary text-sm">
+										{$errors.color}
+									</p>
+								{/if}
+							</div>
+							<div class="mt-8 grid grid-cols-2 gap-4">
+								<Button
+									onClick={() => {}}
+									type="submit"
+									label="Save Ticket"
+									className="bg-[#DF4D60] text-white p-2 rounded-md"
+								/>
+								<Button
+									onClick={() => {
+										editTicketDrawer.open = false;
+									}}
+									label="Cancel"
+									className="border border-gray-300 text-gray-700 p-2 rounded-md"
+								/>
+							</div>
 						</form>
-						</Tabs.Content
-					>
+					</Tabs.Content>
 
 					<Tabs.Content value="reserve-seating">
 						<div class="space-y-4">
@@ -1097,7 +1082,7 @@ voucherMessage.subscribe((msg) => {
 		{#if ticketList && ticketList.length > 0}
 			{#each ticketList as ticket}
 				<div
-					class="min-w-[298px] flex-shrink-0 rounded-lg border border-l-10 border-gray-400"
+					class="border-l-10 min-w-[298px] flex-shrink-0 rounded-lg border border-gray-400"
 					style="border-left-color: {ticket.color};"
 				>
 					<div class="p-4">
@@ -1126,7 +1111,7 @@ voucherMessage.subscribe((msg) => {
 								/>
 							</div>
 						</div>
-						<div class="mt-2 mb-4 text-lg font-bold">₱{ticket.price}</div>
+						<div class="mb-4 mt-2 text-lg font-bold">₱{ticket.price}</div>
 						<div class="space-y-1">
 							<div class="flex justify-between text-xs">
 								<p>0/{ticket.quantityAvailable} Sold</p>
@@ -1153,7 +1138,7 @@ voucherMessage.subscribe((msg) => {
 	</div>
 
 	<!-- Voucher Toggle Section -->
-	<div class="mt-4 mb-4 flex items-center justify-between">
+	<div class="mb-4 mt-4 flex items-center justify-between">
 		<div class="flex items-center gap-4">
 			<h2 class="text-xl font-semibold">Vouchers</h2>
 			<VoucherToggle enabled={voucherEnabled} onChange={toggleVouchers} />
@@ -1249,7 +1234,7 @@ voucherMessage.subscribe((msg) => {
 								{#if discountType === 'fixed_amount'}
 									<select
 										name="currency"
-										class="absolute top-1/2 left-2 -translate-y-1/2 rounded-md bg-gray-100 py-1 pr-6 pl-1 text-sm font-medium"
+										class="absolute left-2 top-1/2 -translate-y-1/2 rounded-md bg-gray-100 py-1 pl-1 pr-6 text-sm font-medium"
 									>
 										<option value="PHP">PHP</option>
 										<option value="USD">USD</option>
@@ -1333,22 +1318,22 @@ voucherMessage.subscribe((msg) => {
 
 					<div>
 						<label for="select-ticket" class="mb-2 flex text-sm">Select Ticket</label>
-					<DropdownMenu
-						buttonText={getTicketSelectionText(selectedTickets)}
-						className="w-full justify-between rounded-md border border-gray-200 bg-white px-4 py-2 text-sm hover:border-[#DF4D60]"
-						items={['all', ...ticketList.map((ticket) => ticket.name)]}
-						multiple={true}
-						alignContent="start"
-						on:select={(event) => {
-							const selected = event.detail;
-							console.log('Selected tickets:', selected);
-							if (selected.includes('all')) {
-								selectedTickets = ['all'];
-							} else {
-								selectedTickets = selected.filter((ticket) => ticket !== 'all');
-							}
-						}}
-					/>
+						<DropdownMenu
+							buttonText={getTicketSelectionText(selectedTickets)}
+							className="w-full justify-between rounded-md border border-gray-200 bg-white px-4 py-2 text-sm hover:border-[#DF4D60]"
+							items={['all', ...ticketList.map((ticket) => ticket.name)]}
+							multiple={true}
+							alignContent="start"
+							on:select={(event) => {
+								const selected = event.detail;
+								console.log('Selected tickets:', selected);
+								if (selected.includes('all')) {
+									selectedTickets = ['all'];
+								} else {
+									selectedTickets = selected.filter((ticket) => ticket !== 'all');
+								}
+							}}
+						/>
 					</div>
 					<div class="sm:hidden">
 						<h3 class="text-lg font-medium">Preview</h3>
@@ -1356,7 +1341,7 @@ voucherMessage.subscribe((msg) => {
 							{#if selectedTickets.includes('all')}
 								{#each ticketList as ticket}
 									<div
-										class="min-w-[298px] flex-shrink-0 rounded-lg border border-l-10 border-gray-400"
+										class="border-l-10 min-w-[298px] flex-shrink-0 rounded-lg border border-gray-400"
 										style="border-left-color: {ticket.color};"
 									>
 										<div class="p-4">
@@ -1385,7 +1370,7 @@ voucherMessage.subscribe((msg) => {
 													/>
 												</div>
 											</div>
-											<div class="mt-2 mb-4 text-lg font-bold">₱{ticket.price}</div>
+											<div class="mb-4 mt-2 text-lg font-bold">₱{ticket.price}</div>
 											<div class="space-y-1">
 												<div class="flex justify-between text-xs">
 													<p>0/{ticket.quantityAvailable} Sold</p>
@@ -1402,9 +1387,9 @@ voucherMessage.subscribe((msg) => {
 								{/each}
 							{:else}
 								<!-- Show only the selected ticket -->
-						{#each ticketList.filter((ticket: TicketProps) => selectedTickets.includes(ticket.name)) as ticket}
+								{#each ticketList.filter( (ticket: TicketProps) => selectedTickets.includes(ticket.name) ) as ticket}
 									<div
-										class="min-w-[298px] flex-shrink-0 rounded-lg border border-l-10 border-gray-400"
+										class="border-l-10 min-w-[298px] flex-shrink-0 rounded-lg border border-gray-400"
 										style="border-left-color: {ticket.color};"
 									>
 										<div class="p-4">
@@ -1433,7 +1418,7 @@ voucherMessage.subscribe((msg) => {
 													/>
 												</div>
 											</div>
-											<div class="mt-2 mb-4 text-lg font-bold">₱{ticket.price}</div>
+											<div class="mb-4 mt-2 text-lg font-bold">₱{ticket.price}</div>
 											<div class="space-y-1">
 												<div class="flex justify-between text-xs">
 													<p>0/{ticket.quantityAvailable} Sold</p>
@@ -1458,25 +1443,25 @@ voucherMessage.subscribe((msg) => {
 						<div class="flex flex-col gap-4 sm:flex-row sm:gap-8">
 							<!-- Active Voucher -->
 							<div class="flex items-center justify-between sm:justify-start sm:space-x-4">
-							<label for="activevoucher" class="text-sm">Active Voucher</label>
-							<Toggle 
-							name="status"
-							OnChange={(value) => {
-								isActive = value;
-							}}
-						/>
-					</div>
-								<!-- Single Use -->
-					<div class="flex items-center justify-between sm:justify-start sm:space-x-4">
-						<label for="singleuse" class="text-sm">Single Use</label>
-						<Toggle 
-							value={isSingleUse}
-							name="singleUse"
-							OnChange={(value) => {
-								isSingleUse = value;
-							}}
-						/>
-					</div>
+								<label for="activevoucher" class="text-sm">Active Voucher</label>
+								<Toggle
+									name="status"
+									OnChange={(value) => {
+										isActive = value;
+									}}
+								/>
+							</div>
+							<!-- Single Use -->
+							<div class="flex items-center justify-between sm:justify-start sm:space-x-4">
+								<label for="singleuse" class="text-sm">Single Use</label>
+								<Toggle
+									value={isSingleUse}
+									name="singleUse"
+									OnChange={(value) => {
+										isSingleUse = value;
+									}}
+								/>
+							</div>
 						</div>
 
 						<!-- Helper Text -->
@@ -1526,7 +1511,7 @@ voucherMessage.subscribe((msg) => {
 						{#if selectedTickets.includes('all')}
 							{#each ticketList as ticket}
 								<div
-									class="min-w-[298px] flex-shrink-0 rounded-lg border border-l-10 border-gray-400"
+									class="border-l-10 min-w-[298px] flex-shrink-0 rounded-lg border border-gray-400"
 									style="border-left-color: {ticket.color};"
 								>
 									<div class="p-4">
@@ -1545,7 +1530,7 @@ voucherMessage.subscribe((msg) => {
 												</span>
 											</div>
 										</div>
-										<div class="mt-2 mb-4 text-lg font-bold">₱{ticket.price}</div>
+										<div class="mb-4 mt-2 text-lg font-bold">₱{ticket.price}</div>
 										<div class="space-y-1">
 											<div class="flex justify-between text-xs">
 												<p>0/{ticket.quantityAvailable} Sold</p>
@@ -1562,9 +1547,9 @@ voucherMessage.subscribe((msg) => {
 							{/each}
 						{:else}
 							<!-- Show only the selected ticket -->
-						{#each ticketList.filter((ticket: TicketProps) => selectedTickets.includes(ticket.name)) as ticket}
+							{#each ticketList.filter( (ticket: TicketProps) => selectedTickets.includes(ticket.name) ) as ticket}
 								<div
-									class="min-w-[298px] flex-shrink-0 rounded-lg border border-l-10 border-gray-400"
+									class="border-l-10 min-w-[298px] flex-shrink-0 rounded-lg border border-gray-400"
 									style="border-left-color: {ticket.color};"
 								>
 									<div class="p-4">
@@ -1593,7 +1578,7 @@ voucherMessage.subscribe((msg) => {
 												/>
 											</div>
 										</div>
-										<div class="mt-2 mb-4 text-lg font-bold">₱{ticket.price}</div>
+										<div class="mb-4 mt-2 text-lg font-bold">₱{ticket.price}</div>
 										<div class="space-y-1">
 											<div class="flex justify-between text-xs">
 												<p>0/{ticket.quantityAvailable} Sold</p>
@@ -1729,7 +1714,7 @@ voucherMessage.subscribe((msg) => {
 									{#if discountType === 'fixed_amount'}
 										<select
 											name="currency"
-											class="absolute top-1/2 left-2 -translate-y-1/2 rounded-md bg-gray-100 py-1 pr-6 pl-1 text-sm font-medium"
+											class="absolute left-2 top-1/2 -translate-y-1/2 rounded-md bg-gray-100 py-1 pl-1 pr-6 text-sm font-medium"
 											value={selectedVoucher.currency}
 										>
 											<option value="PHP">PHP</option>
@@ -1754,19 +1739,17 @@ voucherMessage.subscribe((msg) => {
 						<!-- Add date pickers -->
 						<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 							<div>
-								<label for="validFrom" class="mb-2 block text-sm">Valid From</label>
 								<DatePicker
 									name="validFrom"
-									value={selectedVoucher.validFrom}
-									className="h-input rounded-input flex w-full select-none items-center border px-2 py-4 text-gray-500"
+									value={formatDateMMDDYYYY(selectedVoucher.validFrom)}
+									label="Valid From"
 								/>
 							</div>
 							<div>
-								<label for="validUntil" class="mb-2 block text-sm">Valid Until</label>
 								<DatePicker
 									name="validUntil"
-									value={selectedVoucher.validUntil}
-									className="h-input rounded-input flex w-full select-none items-center border px-2 py-4 text-gray-500"
+									value={formatDateMMDDYYYY(selectedVoucher.validUntil)}
+									label="Valid Until"
 								/>
 							</div>
 						</div>
@@ -1826,8 +1809,10 @@ voucherMessage.subscribe((msg) => {
 								{#if selectedTickets.includes('all')}
 									{#each ticketList as ticket}
 										<!-- Existing ticket preview card -->
-										<div class="min-w-[298px] flex-shrink-0 rounded-lg border border-l-10 border-gray-400"
-											style="border-left-color: {ticket.color};">
+										<div
+											class="border-l-10 min-w-[298px] flex-shrink-0 rounded-lg border border-gray-400"
+											style="border-left-color: {ticket.color};"
+										>
 											<!-- ... existing ticket card content ... -->
 										</div>
 									{/each}
@@ -1841,17 +1826,13 @@ voucherMessage.subscribe((msg) => {
 								<!-- Active Voucher -->
 								<div class="flex items-center justify-between sm:justify-start sm:space-x-4">
 									<label for="activevoucher" class="text-sm">Active Voucher</label>
-								<Toggle 
-								value={isActive}
-								name="status"
-								OnChange={handleActiveVoucherToggle}
-							/>
+									<Toggle value={isActive} name="status" OnChange={handleActiveVoucherToggle} />
 								</div>
-								
+
 								<!-- Single Use -->
 								<div class="flex items-center justify-between sm:justify-start sm:space-x-4">
 									<label for="singleuse" class="text-sm">Single Use</label>
-									<Toggle 
+									<Toggle
 										value={isSingleUse}
 										name="singleUse"
 										OnChange={(value) => {
@@ -1861,19 +1842,22 @@ voucherMessage.subscribe((msg) => {
 								</div>
 							</div>
 
-						<!-- Helper Text -->
-						<div class="space-y-1">
-							<p class="text-xs text-gray-500">
-								Single use vouchers will generate a unique voucher that can only be used once.
-							</p>
-							<p class="text-xs text-gray-500">
-								If you disable "Single Use", the voucher can only be used based on your defined quantity.
-							</p>
-							<p class="text-xs text-gray-500">
-								Entering "100%" discount will give the voucher user zero payment of their ticket while other values will entail a minimum of 100PHP transaction, thus discounts will be adjusted.
-							</p>
+							<!-- Helper Text -->
+							<div class="space-y-1">
+								<p class="text-xs text-gray-500">
+									Single use vouchers will generate a unique voucher that can only be used once.
+								</p>
+								<p class="text-xs text-gray-500">
+									If you disable "Single Use", the voucher can only be used based on your defined
+									quantity.
+								</p>
+								<p class="text-xs text-gray-500">
+									Entering "100%" discount will give the voucher user zero payment of their ticket
+									while other values will entail a minimum of 100PHP transaction, thus discounts
+									will be adjusted.
+								</p>
+							</div>
 						</div>
-					</div>
 						<div class="mt-8 grid grid-cols-2 gap-4">
 							<Button
 								type="submit"

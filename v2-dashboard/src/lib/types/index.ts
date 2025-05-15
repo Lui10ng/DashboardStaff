@@ -71,6 +71,7 @@ export type WalletTransactionProps = {
 
 export type Event = {
 	id: number;
+	slug: string;
 	title: string;
 	location: string;
 	date: string;
@@ -177,3 +178,22 @@ export type themeProps = {
 	theme?: string;
 	themeMode?: string;
 };
+
+export interface EventDetailsResponse {
+	id: number;
+	title: string;
+	slug: string;
+	location: string;
+	date: string;
+	startTime: string;
+	endTime: string;
+	status: string;
+	tickets: {
+		sold: number;
+		total: number;
+	};
+	image: string;
+	eventImages: {
+		url: string;
+	}[];
+}
