@@ -7,10 +7,10 @@ const { MANAGER, EDITOR, VIEWER } = EVENT_ROLES
 const EventInstructions: CollectionConfig = {
   slug: 'event-instructions',
   admin: {
-    useAsTitle: 'title',
+    useAsTitle: 'event',
     description: 'Instructions related to specific events.',
-    defaultColumns: ['title', 'event', 'status', 'publishDate', 'updatedAt'],
-    listSearchableFields: ['title', 'content'], // Assuming 'content' is richText searchable
+    defaultColumns: ['event', 'status', 'updatedAt'],
+    listSearchableFields: ['event'], // Assuming 'content' is richText searchable
     group: 'Organizers & Events',
   },
 
@@ -35,22 +35,6 @@ const EventInstructions: CollectionConfig = {
       },
     },
     {
-      name: 'title',
-      label: 'Instruction Title',
-      type: 'text',
-      required: true,
-    },
-
-    {
-      name: 'content',
-      label: 'Instruction Content',
-      type: 'code',
-      required: true,
-      admin: {
-        language: 'html',
-      },
-    },
-    {
       name: 'status',
       label: 'Status',
       type: 'select',
@@ -66,7 +50,38 @@ const EventInstructions: CollectionConfig = {
         position: 'sidebar',
       },
     },
+    {
+      name: 'eventInstructions',
+      type: 'array',
+      label: 'Event Instruction',
+      admin: {
+        description: 'List specific Instruction for this event.',
+        initCollapsed: true,
+      },
+      fields: [
+        {
+          name: 'instructionImage',
+          type: 'text',
+          required: false,
+        },
+        {
+          name: 'title',
+          type: 'text',
+          required: true,
+        },
+        {
+          name: 'content',
+          label: 'Announcement Content',
+          type: 'code',
+          required: true,
+          admin: {
+            language: 'html',
+          },
+        },
+      ],
+    },
   ],
+
   timestamps: true, // Adds createdAt, updatedAt
 }
 

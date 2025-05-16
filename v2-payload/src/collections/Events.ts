@@ -329,14 +329,6 @@ const Events: CollectionConfig = {
         description: 'Select the registration form attendees must complete.',
       },
     },
-    {
-      name: 'registrationNotes',
-      label: 'Registration Notes / Instructions',
-      type: 'richText', // Allow formatted instructions
-      admin: {
-        description: 'Optional notes or instructions to display alongside the registration form.',
-      },
-    },
 
     // --- Event Specific Details ---
     {

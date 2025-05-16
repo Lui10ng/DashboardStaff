@@ -211,24 +211,6 @@ export interface Event {
    */
   registrationForm?: (number | null) | RegistrationFormTemplate;
   /**
-   * Optional notes or instructions to display alongside the registration form.
-   */
-  registrationNotes?: {
-    root: {
-      type: string;
-      children: {
-        type: string;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  /**
    * List specific contact persons for this event (if different from Organizer/Venue).
    */
   eventContacts?:
@@ -560,9 +542,18 @@ export interface Promotion {
 export interface EventInstruction {
   id: number;
   event: number | Event;
-  title: string;
-  content: string;
   status: 'draft' | 'published';
+  /**
+   * List specific Instruction for this event.
+   */
+  eventInstructions?:
+    | {
+        instructionImage?: string | null;
+        title: string;
+        content: string;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1024,7 +1015,6 @@ export interface EventsSelect<T extends boolean = true> {
   seatMap?: T;
   totalCapacity?: T;
   registrationForm?: T;
-  registrationNotes?: T;
   eventContacts?:
     | T
     | {
@@ -1395,9 +1385,15 @@ export interface EventUserRolesSelect<T extends boolean = true> {
  */
 export interface EventInstructionsSelect<T extends boolean = true> {
   event?: T;
-  title?: T;
-  content?: T;
   status?: T;
+  eventInstructions?:
+    | T
+    | {
+        instructionImage?: T;
+        title?: T;
+        content?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
