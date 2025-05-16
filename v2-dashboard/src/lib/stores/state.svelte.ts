@@ -1,4 +1,4 @@
-import type { RegistrantProps, themeProps } from '$lib/types';
+import type { EventAnnouncement, RegistrantProps } from '$lib/types';
 
 export const stateDrawer = $state({
 	open: false
@@ -48,3 +48,16 @@ export const themeState = $state({
 	theme: '',
 	modeTheme: true
 });
+
+export const postState = () => {
+	let postData = $state<EventAnnouncement[]>();
+
+	return {
+		get postData() {
+			return postData;
+		},
+		set postData(value) {
+			postData = value;
+		}
+	};
+};

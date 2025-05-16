@@ -199,3 +199,20 @@ export interface EventDetailsResponse {
 		url: string;
 	}[];
 }
+
+export interface EventAnnouncement {
+	id: number;
+	event: number | Event;
+	status: 'draft' | 'published';
+	publishDate?: string | null;
+	eventAnnouncement?:
+		| {
+				announcementImage?: string | null;
+				title: string;
+				content: string;
+				id?: string | null;
+		  }[]
+		| null;
+	updatedAt: string;
+	createdAt: string;
+}
