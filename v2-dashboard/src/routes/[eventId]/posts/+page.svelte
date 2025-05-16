@@ -7,9 +7,11 @@
 	import ImageUploader from '$lib/components/ui/ImageUploader.svelte';
 	import { awsURL } from '$lib/stores/data.js';
 	import { superForm } from 'sveltekit-superforms';
+	import { postState } from '$lib/stores/state.svelte.ts';
 
 	let { data } = $props();
 	let isOpen = $state(false);
+	const postStore = postState();
 
 	const { form, errors, enhance, delayed, message } = superForm(data.form);
 
@@ -19,7 +21,13 @@
 		}
 	});
 
-	let posts = data.posts && data.posts.docs && data.posts.docs.length > 0 ? data.posts.docs : [];
+	$effect(() => {
+		if (data.posts.docs.length > 0) {
+			postStore.postData = data.posts.docs[0].eventAnnouncement;
+		}
+	});
+
+	let posts = $derived(postStore.postData || []);
 
 	let isMoving = $state(false);
 	let movingIndex = $state<number | null>(null);
