@@ -7,10 +7,10 @@ const { MANAGER, EDITOR, VIEWER } = EVENT_ROLES
 const EventAnnouncements: CollectionConfig = {
   slug: 'event-announcements',
   admin: {
-    useAsTitle: 'title',
+    useAsTitle: 'event',
     description: 'Post updates or announcements related to specific events.',
-    defaultColumns: ['title', 'event', 'status', 'publishDate', 'updatedAt'],
-    listSearchableFields: ['title', 'content'], // Assuming 'content' is richText searchable
+    defaultColumns: ['event', 'status', 'eventAnnouncement', 'updatedAt'],
+    listSearchableFields: ['event'],
     group: 'Organizers & Events',
   },
   // FUTURE Access Control Notes:
@@ -31,25 +31,9 @@ const EventAnnouncements: CollectionConfig = {
       relationTo: 'events',
       required: true,
       hasMany: false,
-      index: true, // Useful for fetching all announcements for an event
+      index: true,
       admin: {
         position: 'sidebar',
-      },
-    },
-    {
-      name: 'title',
-      label: 'Announcement Title',
-      type: 'text',
-      required: true,
-    },
-
-    {
-      name: 'content',
-      label: 'Announcement Content',
-      type: 'code',
-      required: true,
-      admin: {
-        language: 'html',
       },
     },
     {
@@ -80,8 +64,36 @@ const EventAnnouncements: CollectionConfig = {
           'Optional: Set a specific time for when this announcement is considered published (can be used for sorting/filtering). Defaults to creation time if published immediately.',
         position: 'sidebar',
       },
-      // Optionally set default value using hooks if status is published
-      // hooks: { beforeChange: [...] }
+    },
+    {
+      name: 'eventAnnouncement',
+      type: 'array',
+      label: 'Event Announcement',
+      admin: {
+        description: 'List specific Announcement for this event.',
+        initCollapsed: true,
+      },
+      fields: [
+        {
+          name: 'announcementImage',
+          type: 'text',
+          required: false,
+        },
+        {
+          name: 'title',
+          type: 'text',
+          required: true,
+        },
+        {
+          name: 'content',
+          label: 'Announcement Content',
+          type: 'code',
+          required: true,
+          admin: {
+            language: 'html',
+          },
+        },
+      ],
     },
   ],
   timestamps: true, // Adds createdAt, updatedAt

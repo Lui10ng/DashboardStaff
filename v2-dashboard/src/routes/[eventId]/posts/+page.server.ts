@@ -9,20 +9,22 @@ import { message, superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { postSchema } from '$lib/schema';
 
+let postId = 0;
+let postData: { title: string; content: string }[] = [];
+
 export const load: PageServerLoad = async (event: RequestEvent) => {
 	const {
 		url,
 		params: { eventId }
 	} = event;
 	const page = Number(url.searchParams.get('page') || '1');
-	const limit = 1000000;
 
 	const form = await superValidate(zod(postSchema));
 
 	const params = new URLSearchParams({
 		'where[event][equals]': eventId!,
 		sort: 'order,createdBy',
-		limit: limit.toString(),
+		limit: '1',
 		page: page.toString(),
 		depth: '0'
 	});
@@ -33,6 +35,11 @@ export const load: PageServerLoad = async (event: RequestEvent) => {
 			'/event-announcements',
 			params
 		);
+
+		if (posts.docs.length > 0) {
+			postId = posts.docs[0].id;
+			postData = posts.docs[0].eventAnnouncement;
+		}
 
 		return {
 			form,
@@ -56,6 +63,8 @@ export const actions: Actions = {
 			params: { eventId }
 		} = post;
 
+		const getEventId = parseInt(eventId!);
+
 		const data = await request.formData();
 		const form = await superValidate(data, zod(postSchema));
 
@@ -63,11 +72,11 @@ export const actions: Actions = {
 			return fail(400, { form });
 		}
 
+		//Todo: add image
 		const formData = {
-			event: parseInt(eventId!),
-			title: form.data.title,
-			content: form.data.content,
-			status: 'published'
+			event: getEventId,
+			status: 'published',
+			eventAnnouncement: [form.data]
 		};
 
 		try {
@@ -86,9 +95,47 @@ export const actions: Actions = {
 		}
 	},
 
-	updatePost: async ({ request }) => {
+	updatePost: async (post: RequestEvent) => {
+		const {
+			request,
+			params: { eventId }
+		} = post;
+
+		const getEventId = parseInt(eventId!);
+
 		const data = await request.formData();
-		console.log(data);
+		const form = await superValidate(data, zod(postSchema));
+
+		if (!form.valid) {
+			return fail(400, { form });
+		}
+
+		//Todo: add image
+		postData.push({
+			title: form.data.title,
+			content: form.data.content
+		});
+
+		const formData = {
+			event: getEventId,
+			status: 'published',
+			eventAnnouncement: postData
+		};
+
+		try {
+			const apiClient = createApiClient(post);
+			const response = await apiClient.patch(`event-announcements/${postId}`, formData);
+			console.log(response);
+			return message(form, { success: true, message: 'Post updated successfully' });
+		} catch (err) {
+			const { statusCode, errorMessage } = handleSvelteError(
+				err,
+				'Update Post',
+				'Failed to Update Post'
+			);
+			console.log('errorMessage: ', errorMessage);
+			console.log('statusCode: ', statusCode);
+		}
 	},
 
 	uploadPostImage: async ({ request }) => {

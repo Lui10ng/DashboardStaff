@@ -166,13 +166,22 @@ export interface UserAuthOperations {
 export interface EventAnnouncement {
   id: number;
   event: number | Event;
-  title: string;
-  content: string;
   status: 'draft' | 'published';
   /**
    * Optional: Set a specific time for when this announcement is considered published (can be used for sorting/filtering). Defaults to creation time if published immediately.
    */
   publishDate?: string | null;
+  /**
+   * List specific Announcement for this event.
+   */
+  eventAnnouncement?:
+    | {
+        announcementImage?: string | null;
+        title: string;
+        content: string;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -979,10 +988,16 @@ export interface PayloadMigration {
  */
 export interface EventAnnouncementsSelect<T extends boolean = true> {
   event?: T;
-  title?: T;
-  content?: T;
   status?: T;
   publishDate?: T;
+  eventAnnouncement?:
+    | T
+    | {
+        announcementImage?: T;
+        title?: T;
+        content?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
