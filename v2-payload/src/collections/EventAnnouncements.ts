@@ -17,7 +17,7 @@ const EventAnnouncements: CollectionConfig = {
   // - Public might read 'published' announcements.
   // - Admins and the organizer of the linked event should be able to create/update/delete.
   access: {
-    read: isAdminOrEventRole([MANAGER, EDITOR, VIEWER]),
+    read: () => true,
     // create: isAdminOrEventRole([MANAGER, EDITOR]),
     create: () => true,
     update: isAdminOrEventRole([MANAGER, EDITOR]),

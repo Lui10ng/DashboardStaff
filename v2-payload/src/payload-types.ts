@@ -95,6 +95,7 @@ export interface Config {
       form: 'forms';
       ticketType: 'ticket-types';
       eventInstructions: 'event-instructions';
+      eventAnnouncement: 'event-announcements';
     };
     'ticket-types': {
       promotion: 'promotions';
@@ -253,6 +254,11 @@ export interface Event {
   light?: string | null;
   eventInstructions?: {
     docs?: (number | EventInstruction)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  eventAnnouncement?: {
+    docs?: (number | EventAnnouncement)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
@@ -1033,6 +1039,7 @@ export interface EventsSelect<T extends boolean = true> {
   theme?: T;
   light?: T;
   eventInstructions?: T;
+  eventAnnouncement?: T;
   updatedAt?: T;
   createdAt?: T;
 }
