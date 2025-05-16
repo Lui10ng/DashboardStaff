@@ -10,7 +10,7 @@ const EventInstructions: CollectionConfig = {
     useAsTitle: 'event',
     description: 'Instructions related to specific events.',
     defaultColumns: ['event', 'status', 'updatedAt'],
-    listSearchableFields: ['event'], // Assuming 'content' is richText searchable
+    listSearchableFields: ['event'],
     group: 'Organizers & Events',
   },
 
@@ -71,7 +71,7 @@ const EventInstructions: CollectionConfig = {
         },
         {
           name: 'content',
-          label: 'Announcement Content',
+          label: 'Instruction Content',
           type: 'code',
           required: true,
           admin: {

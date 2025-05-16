@@ -9,11 +9,13 @@
 	import { superForm } from 'sveltekit-superforms';
 
 	let { data } = $props();
+	let isOpen = $state(false);
 
 	const { form, errors, enhance, delayed, message } = superForm(data.form);
 
 	message.subscribe(async (msg) => {
 		if (msg && msg.success) {
+			isOpen = false;
 		}
 	});
 
@@ -59,7 +61,7 @@
 			(Create and publish posts to be displayed at https://aero.veent.co)
 		</p>
 	</div>
-	<Modal>
+	<Modal bind:open={isOpen}>
 		{#snippet button()}
 			<div class="bg-primary rounded-md px-5 py-2 text-white">
 				<i class="fa-solid fa-plus"></i>
@@ -73,7 +75,12 @@
 			</div>
 		{/snippet}
 		{#snippet content()}
-			<form class="mt-4 flex flex-col space-y-5" action="?/createPost" method="POST" use:enhance>
+			<form
+				class="mt-4 flex flex-col space-y-5"
+				action={`${data.posts.docs.length === 0 ? '?/createPost' : '?/updatePost'}`}
+				method="POST"
+				use:enhance
+			>
 				<!-- <ImageUploader /> -->
 				<!-- TODO: Add image uploader -->
 				<label for="" class="space-y-1">

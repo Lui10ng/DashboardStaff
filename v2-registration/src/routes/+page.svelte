@@ -309,9 +309,9 @@
 		</div>
 		<div class="mx-auto w-[90%] lg:w-[75%] 2xl:w-[60%]">
 			<p class="py-4 text-center text-2xl font-bold sm:text-3xl"></p>
-			{#if event.eventAnnouncement && event.eventAnnouncement.docs.length > 0}
+			{#if event.eventAnnouncement.docs.length > 0}
 				<section class="grid grid-cols-1 gap-4 md:grid-cols-2">
-					{#each event.eventAnnouncement.docs as announcementCards, index}
+					{#each event.eventAnnouncement.docs[0].eventAnnouncement as announcementCards, index}
 						<div class="grid gap-2">
 							{#if index % 2 === 0}
 								<div
