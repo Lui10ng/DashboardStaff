@@ -44,7 +44,15 @@ RUN \
     pnpm run build && \
     pnpm rebuild
 
-# Production image, copy all the files and run next
+# ---- Tools Stage ----
+# This stage inherits everything from the 'builder' stage.
+# It includes the source code, all node_modules (dev and prod),
+# and any build artifacts if 'pnpm run build' creates them in /app.
+FROM builder AS tools
+WORKDIR /app
+
+# ---- Runner Stage ----
+# Start from a clean, small image for the runner
 FROM base AS runner
 WORKDIR /app
 

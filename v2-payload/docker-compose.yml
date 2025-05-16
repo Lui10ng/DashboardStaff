@@ -47,6 +47,29 @@ services:
     restart: unless-stopped
 
   ####################
+  # CLI Tools Service
+  ####################
+  tools:
+    container_name: v2_payload_tools # Optional: Give the container a predictable name
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: tools # Explicitly target the 'tools' stage from your Dockerfile
+    env_file:
+      - .env.tools # Load variables from .env file, scripts might need them (e.g., DATABASE_URI)
+    volumes:
+      # Mount source code so CLI tools operate on your current code
+      - .:/app
+      # Use an anonymous volume to ensure node_modules from the image are used.
+      # This prevents issues if your local node_modules are different or missing,
+      # and uses the consistent 'node_modules' from the 'tools' image build.
+      - /app/node_modules
+      - ./ca-certificate.crt:/app/ca-certificate.crt:ro # Mount the CA cert read-only
+    # 'stdin_open' and 'tty' are useful if any of your CLI tools are interactive.
+    stdin_open: true
+    tty: true
+
+  ####################
   # PostgreSQL Database Service
   ####################
   postgres:
@@ -112,7 +135,7 @@ services:
       - payload
     restart: unless-stopped
 
-# Define named volumes used by the servicesF
+# Define named volumes used by the services
 volumes:
   postgres_data:
   redis_data:
