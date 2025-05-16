@@ -436,6 +436,12 @@ const Events: CollectionConfig = {
       collection: 'event-instructions',
       on: 'event',
     },
+    {
+      name: 'eventAnnouncement',
+      type: 'join',
+      collection: 'event-announcements',
+      on: 'event',
+    },
   ],
   timestamps: true,
 }

@@ -15,7 +15,7 @@ const EventInstructions: CollectionConfig = {
   },
 
   access: {
-    read: isAdminOrEventRole([MANAGER, EDITOR, VIEWER]),
+    read: () => true,
     // create: isAdminOrEventRole([MANAGER, EDITOR]),
     create: () => true,
     update: isAdminOrEventRole([MANAGER, EDITOR]),

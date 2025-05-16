@@ -307,6 +307,58 @@
 				</div>
 			</div>
 		</div>
+		<div class="mx-auto w-[90%] lg:w-[75%] 2xl:w-[60%]">
+			<p class="py-4 text-center text-2xl font-bold sm:text-3xl"></p>
+			{#if event.eventAnnouncement && event.eventAnnouncement.docs.length > 0}
+				<section class="grid grid-cols-1 gap-4 md:grid-cols-2">
+					{#each event.eventAnnouncement.docs as announcementCards, index}
+						<div class="grid gap-2">
+							{#if index % 2 === 0}
+								<div
+									class="bg-primary-500 {event.light == 'true'
+										? ''
+										: 'text-primary-50'} mb-5 rounded-xl p-5"
+								>
+									{#if announcementCards.image}
+										<!-- image here -->
+									{/if}
+									<p class="py-4 text-2xl font-bold">{@html announcementCards.title}</p>
+									{#if announcementCards.content}
+										<p class="text-md font-medium">
+											{@html announcementCards.content}
+										</p>
+									{/if}
+								</div>
+							{:else}
+								<div
+									class="bg-[#FDFDFD] {event.light == 'true'
+										? ''
+										: 'text-primary-50'} text-surface-900 mb-5 rounded-xl p-5"
+								>
+									{#if announcementCards.image}
+										<!-- image here -->
+									{/if}
+									<p class="py-4 text-2xl font-bold">{@html announcementCards.title}</p>
+									{#if announcementCards.content}
+										<p class="text-md font-medium">
+											{@html announcementCards.content}
+										</p>
+									{/if}
+								</div>
+							{/if}
+						</div>
+					{/each}
+				</section>
+			{:else}
+				<div class="grid gap-2">
+					<div class="mx-auto w-full pb-4 text-center sm:w-[35rem]">
+						<div class="card m-12 rounded-xl px-5 py-8 shadow-sm">
+							<p class="pb-2 text-2xl font-bold">No posts yet!</p>
+						</div>
+					</div>
+				</div>
+			{/if}
+		</div>
 		<div id="registration" class="min-h-svh">
 			<p class="pb-[3rem] text-center text-3xl font-bold">Register</p>
 			<form
