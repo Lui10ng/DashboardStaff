@@ -57,6 +57,8 @@ services:
       target: tools # Explicitly target the 'tools' stage from your Dockerfile
     env_file:
       - .env.tools # Load variables from .env file, scripts might need them (e.g., DATABASE_URI)
+    environment:
+      DATABASE_URI: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-payload}
     volumes:
       # Mount source code so CLI tools operate on your current code
       - .:/app

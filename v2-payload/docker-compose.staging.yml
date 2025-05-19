@@ -4,7 +4,7 @@ services:
   # CLI Tools Service
   ####################
   tools:
-    container_name: v2_payload_tools_prod # Optional: Give the container a predictable name
+    container_name: v2_payload_tools_staging # Optional: Give the container a predictable name
     build:
       context: .
       dockerfile: Dockerfile
@@ -12,7 +12,7 @@ services:
     env_file:
       - .env.tools # Load variables from .env file, scripts might need them (e.g., DATABASE_URI)
     environment:
-      NODE_ENV: production
+      NODE_ENV: staging
       DATABASE_URI: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-payload}
       PAYLOAD_SECRET: ${PAYLOAD_SECRET:-DEFAULT_PAYLOAD_SECRET_CHANGE_ME}
     volumes:
@@ -22,7 +22,7 @@ services:
       # This prevents issues if your local node_modules are different or missing,
       # and uses the consistent 'node_modules' from the 'tools' image build.
       - /app/node_modules
-      - ./ca-prod-certificate.crt:/app/ca-certificate.crt:ro # Mount the CA cert read-only
+      - ./ca-staging-certificate.crt:/app/ca-certificate.crt:ro # Mount the CA cert read-only
     # 'stdin_open' and 'tty' are useful if any of your CLI tools are interactive.
     stdin_open: true
     tty: true
