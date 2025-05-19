@@ -14,7 +14,7 @@ export const load: PageServerLoad = async (event: RequestEvent) => {
 
 	const params = new URLSearchParams({
 		'select[theme]': 'true',
-		'select[light]': 'true'
+		'select[themeMode]': 'true'
 	});
 
 	try {
@@ -57,7 +57,7 @@ export const actions = {
 
 		const formData = {
 			theme: theme,
-			light: modeTheme
+			themeMode: modeTheme
 		};
 
 		try {

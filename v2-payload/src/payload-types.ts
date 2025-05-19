@@ -242,7 +242,7 @@ export interface Event {
     totalDocs?: number;
   };
   theme?: string | null;
-  light?: string | null;
+  themeMode?: boolean | null;
   eventInstructions?: {
     docs?: (number | EventInstruction)[];
     hasNextPage?: boolean;
@@ -1042,7 +1042,7 @@ export interface EventsSelect<T extends boolean = true> {
   form?: T;
   ticketType?: T;
   theme?: T;
-  light?: T;
+  themeMode?: T;
   eventInstructions?: T;
   eventAnnouncement?: T;
   updatedAt?: T;
