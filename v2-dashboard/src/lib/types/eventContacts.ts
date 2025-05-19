@@ -10,3 +10,10 @@ interface Contact {
 export interface EventContactsResponse {
 	eventContacts: Contact[];
 }
+
+export interface ContactData {
+	contactName: string;
+	contactEmail: string | null;
+	contactPhone: string | null;
+	contactRole: string | null;
+}

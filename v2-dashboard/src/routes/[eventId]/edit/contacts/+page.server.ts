@@ -1,13 +1,14 @@
 import { createApiClient } from '$lib/services/payload.server';
-import { superValidate } from 'sveltekit-superforms';
+import { fail, message, superValidate } from 'sveltekit-superforms';
 import type { RequestEvent } from '@sveltejs/kit';
 import { zod } from 'sveltekit-superforms/adapters';
 import { contactSchema } from '$lib/schema/index.js';
 import { handleSvelteError } from '$lib/utils/errorHandler.js';
 import type { PageServerLoad, Actions } from './$types';
 import { error } from '@sveltejs/kit';
-import type { EventContactsResponse } from '$lib/types/eventContacts';
+import type { ContactData, EventContactsResponse } from '$lib/types/eventContacts';
 
+let contactData: ContactData[] = [];
 export const load: PageServerLoad = async (event: RequestEvent) => {
 	const {
 		params: { eventId }
@@ -28,6 +29,7 @@ export const load: PageServerLoad = async (event: RequestEvent) => {
 		);
 
 		const contacts = respContact.eventContacts;
+		contactData = contacts as ContactData[];
 
 		return {
 			contacts,
@@ -45,7 +47,7 @@ export const load: PageServerLoad = async (event: RequestEvent) => {
 };
 
 export const actions: Actions = {
-	updateContacts: async (event: RequestEvent) => {
+	updateContact: async (event: RequestEvent) => {
 		const {
 			request,
 			params: { eventId }
@@ -53,35 +55,30 @@ export const actions: Actions = {
 
 		const formData = await request.formData();
 
-		const contactData = formData.get('formData') as string;
+		const form = await superValidate(formData, zod(contactSchema));
 
-		const parsed = JSON.parse(contactData);
+		if (!form.valid) {
+			return fail(400, { form });
+		}
 
-		const validContacts = parsed.eventContacts
-			.filter(
-				(contact: any) =>
-					contact.contactName && contact.contactEmail && contact.contactRole && contact.contactPhone
-			)
-			.map((contact: any) => ({
-				...contact,
-				id: contact.id || crypto.randomUUID()
-			}));
+		//concatenate contact data
+		contactData.push(form.data);
 
 		const formDataSantized = {
-			eventContacts: validContacts
+			eventContacts: contactData
 		};
 
 		try {
 			const apiClient = createApiClient(event);
 			const response = await apiClient.patch(`events/${eventId}`, formDataSantized);
 			console.log('response: ', response);
+			return message(form, { success: true, message: 'Contact created successfully!' });
 		} catch (err: unknown) {
 			const { statusCode, errorMessage } = handleSvelteError(
 				err,
 				'Updating Event Contact',
 				'Failed to Update Event Contacts'
 			);
-
 			throw error(statusCode, errorMessage);
 		}
 	}

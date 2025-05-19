@@ -1,4 +1,5 @@
 import type { EventAnnouncement, RegistrantProps } from '$lib/types';
+import type { ContactData } from '$lib/types/eventContacts';
 
 export const stateDrawer = $state({
 	open: false
@@ -31,6 +32,10 @@ export const stateEditEvent = $state({
 	open: false
 });
 
+export const contactDrawer = $state({
+	open: false
+});
+
 export const registrantList = () => {
 	let registrantData = $state<RegistrantProps[]>();
 
@@ -58,6 +63,19 @@ export const postState = () => {
 		},
 		set postData(value) {
 			postData = value;
+		}
+	};
+};
+
+export const contacts = () => {
+	let contactData = $state<ContactData[]>();
+
+	return {
+		get contactData() {
+			return contactData;
+		},
+		set contactData(value) {
+			contactData = value;
 		}
 	};
 };

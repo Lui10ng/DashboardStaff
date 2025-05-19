@@ -1,6 +1,15 @@
 <script lang="ts">
 	import { Modal } from '@skeletonlabs/skeleton-svelte';
-	import { stateDrawer, staffDrawer, ticketDrawer, themeDrawer, editTicketDrawer, voucherDrawer, editVoucherDrawer } from '$lib/stores/state.svelte.ts';
+	import {
+		stateDrawer,
+		staffDrawer,
+		ticketDrawer,
+		themeDrawer,
+		editTicketDrawer,
+		voucherDrawer,
+		editVoucherDrawer,
+		contactDrawer
+	} from '$lib/stores/state.svelte.ts';
 
 	let {
 		isOpen,
@@ -21,6 +30,7 @@
 		editTicketDrawer.open = false;
 		voucherDrawer.open = false;
 		editVoucherDrawer.open = false;
+		contactDrawer.open = false;
 	};
 </script>
 
