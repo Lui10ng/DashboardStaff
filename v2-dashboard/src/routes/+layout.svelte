@@ -9,6 +9,8 @@
 	import { ClerkProvider } from 'svelte-clerk/client';
 	import { PUBLIC_CLERK_PUBLISHABLE_KEY } from '$env/static/public';
 	import { SignedIn, SignedOut, SignInButton, SignOutButton, UserButton } from 'svelte-clerk';
+	import { Toaster } from '@skeletonlabs/skeleton-svelte';
+	import { toaster } from '$lib/utils/toaster-svelte.ts';
 
 	const { children }: { children: Snippet } = $props();
 	const push = (to: string) => goto(to);
@@ -76,6 +78,8 @@
 
 	<div class="bg-white">
 		<div class="mx-auto max-w-7xl px-5 pb-8 pt-6">
+			<Toaster classes="text-white" stateSuccess="bg-success" stateError="bg-danger" {toaster}
+			></Toaster>
 			<Tooltip.Provider>
 				{@render children()}
 			</Tooltip.Provider>

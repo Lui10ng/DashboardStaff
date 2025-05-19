@@ -5,6 +5,7 @@
 	import { themeDrawer, themeState } from '$lib/stores/state.svelte';
 	import { Switch } from '@skeletonlabs/skeleton-svelte';
 	import { superForm } from 'sveltekit-superforms';
+	import { toaster } from '$lib/utils/toaster-svelte.ts';
 
 	let { data } = $props();
 
@@ -20,6 +21,11 @@
 	message.subscribe(async (msg) => {
 		if (msg && msg.success) {
 			themeDrawer.open = false;
+			toaster.create({
+				type: 'success',
+				title: 'Success',
+				description: msg.message
+			});
 		}
 	});
 

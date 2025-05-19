@@ -90,7 +90,7 @@ export const actions: Actions = {
 			const response = await apiClient.post('/events', formData);
 			console.log('response: ', response);
 
-			return message(form, { success: true, message: 'Event created successfully' });
+			return message(form, { success: true, message: 'Event created successfully!' });
 		} catch (err: unknown) {
 			const { statusCode, errorMessage } = handleSvelteError(
 				err,

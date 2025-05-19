@@ -8,6 +8,7 @@
 	import { awsURL } from '$lib/stores/data.js';
 	import { superForm } from 'sveltekit-superforms';
 	import { postState } from '$lib/stores/state.svelte.ts';
+	import { toaster } from '$lib/utils/toaster-svelte.ts';
 
 	let { data } = $props();
 	let isOpen = $state(false);
@@ -18,6 +19,11 @@
 	message.subscribe(async (msg) => {
 		if (msg && msg.success) {
 			isOpen = false;
+			toaster.create({
+				type: 'success',
+				title: 'Success',
+				description: msg.message
+			});
 		}
 	});
 
