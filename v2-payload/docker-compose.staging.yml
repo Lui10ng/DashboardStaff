@@ -1,6 +1,35 @@
 # docker-compose.prod.yml (for Production Deployment)
 services:
   ####################
+  # Payload CMS App (Development Mode)
+  ####################
+  payload:
+    container_name: v2_payload # Optional: Give the container a predictable name
+    build:
+      context: .
+      dockerfile: Dockerfile # Use your project's Dockerfile
+      target:
+        runner # Optional: Target an earlier stage (like 'deps') from your multi-stage Dockerfile
+        # This stage should have all node_modules including devDependencies
+    ports:
+      # - '3000:3000' # Map host port 3000 to container port 3000
+      - '0.0.0.0:3000:3000' # Allow access from all IPs (useful for local network access)
+    env_file:
+      - .env.staging # Load variables from .env file
+    environment:
+      NODE_ENV: staging
+      FORCE_COLOR: 1
+      # Use Docker service names for database and redis hostnames
+      # Reads from .env first, uses defaults 'postgres:password@postgres:5432/payload' if not set
+      DATABASE_URI: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+      # Reads from .env first, uses default 'redis://redis:6379' if not set
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      PAYLOAD_SECRET: ${PAYLOAD_SECRET:-DEFAULT_PAYLOAD_SECRET_CHANGE_ME}
+      NEXT_PUBLIC_SERVER_URL: http://${STAGING_DOMAIN}:3000 # For client-side fetches back to Payload
+      NEXT_PUBLIC_SHARE_SERVER_URL: http://${STAGING_DOMAIN}:3000 # For other developers to share with
+    restart: unless-stopped
+
+  ####################
   # CLI Tools Service
   ####################
   tools:
@@ -13,7 +42,7 @@ services:
       - .env.tools # Load variables from .env file, scripts might need them (e.g., DATABASE_URI)
     environment:
       NODE_ENV: staging
-      DATABASE_URI: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-payload}
+      DATABASE_URI: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
       PAYLOAD_SECRET: ${PAYLOAD_SECRET:-DEFAULT_PAYLOAD_SECRET_CHANGE_ME}
     volumes:
       # Mount source code so CLI tools operate on your current code
