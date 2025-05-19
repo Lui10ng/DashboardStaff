@@ -42,5 +42,9 @@ next-env.d.ts
 .env
 .env.tools
 !.env.tools.example
+.env.staging
+!.env.staging.example
+.env.production
+!.env.production.example
 
 /media
