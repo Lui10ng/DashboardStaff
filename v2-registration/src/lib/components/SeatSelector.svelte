@@ -160,6 +160,7 @@
 			<!-- Controls -->
 			<div class="flex items-center space-x-2">
 				<button
+					type="button"
 					on:click={() => (showLegend = !showLegend)}
 					class="flex items-center rounded-md border border-gray-300 bg-white px-3 py-1 text-sm text-gray-700 hover:bg-gray-50"
 				>
@@ -168,6 +169,7 @@
 				</button>
 
 				<button
+					type="button"
 					on:click={zoomOut}
 					class="flex h-8 w-8 items-center justify-center rounded-md border border-gray-300 bg-gray-500 text-gray-700 hover:bg-gray-50"
 					aria-label="Zoom out"
@@ -176,11 +178,12 @@
 				</button>
 
 				<button
+					type="button"
 					on:click={zoomIn}
 					class="flex h-8 w-8 items-center justify-center rounded-md border border-gray-300 bg-gray-500 text-gray-700 hover:bg-gray-50"
 					aria-label="Zoom in"
 				>
-        <span class="text-white">+</span>
+					<span class="text-white">+</span>
 				</button>
 			</div>
 		</div>
@@ -229,6 +232,7 @@
 							<div class="flex space-x-1">
 								{#each row.seats as seat}
 									<button
+										type="button"
 										class={`flex h-8 w-8 items-center justify-center rounded-md border text-sm font-medium select-none ${getSeatColor(seat.status, seat.id)}`}
 										disabled={seat.status !== 'available'}
 										on:click={() => toggleSeat(seat.id, seat.status)}
@@ -255,6 +259,7 @@
 						<div class="flex items-center rounded-md bg-green-100 px-2 py-1 text-sm text-green-800">
 							<span>{seatId}</span>
 							<button
+								type="button"
 								class="ml-1 text-green-600 hover:text-green-800"
 								on:click={() => toggleSeat(seatId, 'available')}
 								aria-label={`Remove seat ${seatId}`}
