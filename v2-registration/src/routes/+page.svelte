@@ -8,6 +8,7 @@
 	import { formatDateTime, getTimeRemaining } from '$lib/utils';
 	import Tooltip from '$lib/components/Tooltip.svelte';
 	import type { TicketDetail } from '$lib/types';
+	import SeatSelector from '$lib/components/SeatSelector.svelte';
 
 	let { data } = $props();
 
@@ -147,6 +148,10 @@
 		if (newQuantity) {
 			quantity = newQuantity;
 		}
+	};
+
+	const handleSeatSelected = (event: CustomEvent<{ seats: string[] }>) => {
+		const selectedSeats = event.detail.seats;
 	};
 </script>
 
@@ -660,6 +665,16 @@
 																>₱ {ticketDetails[i].price * quantity - convenienceFee}</span
 															>
 														</div>
+
+														{#if ticketDetails[i].seatMapData}
+															<div class="mt-4">
+																<SeatSelector 
+																	seatMapData={ticketDetails[i].seatMapData}
+																	maxSelections={quantity}
+																	on:seatSelected={handleSeatSelected}
+																/>
+															</div>
+														{/if}
 													</div>
 												{/if}
 											{:else}
