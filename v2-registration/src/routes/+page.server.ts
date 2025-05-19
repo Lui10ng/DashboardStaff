@@ -34,6 +34,28 @@ export const load: PageServerLoad = async (event: RequestEvent) => {
 			const formBuilder = formData.docs[0].form.docs[0].formBuilder;
 
 			if (formData.docs[0].ticketType.docs.length > 0) {
+				const ticketsWithSeatMaps = formData.docs[0].ticketType.docs.filter(ticket => ticket.seatMap);
+				
+				if (ticketsWithSeatMaps.length > 0) {
+					const seatMapPromises = ticketsWithSeatMaps.map(async ticket => {
+						const seatMapResponse = await apiClient.get(`/seat-maps/${ticket.seatMap}`);
+						return {
+							ticketId: ticket.id,
+							seatMap: seatMapResponse
+						};
+					});
+					
+					const seatMaps = await Promise.all(seatMapPromises);
+					
+					formData.docs[0].ticketType.docs = formData.docs[0].ticketType.docs.map(ticket => {
+						const seatMapData = seatMaps.find(sm => sm.ticketId === ticket.id);
+						return {
+							...ticket,
+							seatMapData: seatMapData?.seatMap
+						};
+					});
+				}
+
 				formBuilder.push({
 					id: 'ticketType',
 					name: 'ticketType',
