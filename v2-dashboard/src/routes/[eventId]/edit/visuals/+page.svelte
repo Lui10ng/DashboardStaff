@@ -25,7 +25,7 @@
 
 	$effect(() => {
 		themeState.theme = data.eventTheme.theme;
-		themeState.modeTheme = data.eventTheme.light == 'true' ? true : false;
+		themeState.modeTheme = data.eventTheme.themeMode;
 	});
 
 	let theme = $derived(themeState.theme);

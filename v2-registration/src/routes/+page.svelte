@@ -42,7 +42,7 @@
 		document.documentElement.setAttribute('data-theme', data.theme ?? event.theme);
 		document.documentElement.setAttribute(
 			'data-mode',
-			data.mode || (event.light === 'false' ? 'dark' : 'light')
+			data.mode || (event.themeMode ? 'light' : 'dark')
 		);
 	});
 
