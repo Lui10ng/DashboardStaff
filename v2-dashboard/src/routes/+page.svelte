@@ -44,6 +44,7 @@
 	import Modal from '$lib/components/ui/Modal.svelte';
 	import { format } from 'date-fns';
 	import ImageUploader from '$lib/components/ui/ImageUploader.svelte';
+	import { toaster } from '$lib/utils/toaster-svelte.ts';
 
 	const ctx = useClerkContext();
 	const fullName = $derived(ctx.user?.fullName);
@@ -75,6 +76,11 @@
 	message.subscribe(async (msg) => {
 		if (msg && msg.success) {
 			stateDrawer.open = false;
+			toaster.create({
+				type: 'success',
+				title: 'Success',
+				description: msg.message
+			});
 		}
 	});
 

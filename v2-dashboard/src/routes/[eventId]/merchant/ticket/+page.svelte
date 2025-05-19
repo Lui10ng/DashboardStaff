@@ -36,6 +36,7 @@
 	import type { PageData } from './$types';
 	import { ticketListStore } from '$lib/stores/ticketList.svelte';
 	import { formatDateMMDDYYYY } from '$lib/utils/formatTime';
+	import { toaster } from '$lib/utils/toaster-svelte.ts';
 
 	const { data } = $props<{ data: PageData }>();
 
@@ -190,6 +191,12 @@
 			// Close both drawers
 			voucherDrawer.open = false;
 			editVoucherDrawer.open = false; // Add this line
+
+			toaster.create({
+				type: 'success',
+				title: 'Success',
+				description: msg.message
+			});
 		}
 	});
 
@@ -200,8 +207,6 @@
 
 	// Update the selectedTickets state declaration
 	let selectedTickets: string[] = $state([]);
-
-	$inspect('selectedTickets: , ', selectedTickets);
 
 	// Add the arrays here
 	const ticketFilterItems = ['active', 'disabled'] as const;

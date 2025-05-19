@@ -317,7 +317,7 @@ export const actions: Actions = {
 			const response = await apiClient.post('/promotions', formData);
 			console.log('response: ', response);
 
-			return message(form, { success: true, message: 'Voucher created successfully' });
+			return message(form, { success: true, message: 'Voucher created successfully!' });
 		} catch (err) {
 			return message(form, { success: false, message: 'Error creating voucher' });
 		}
@@ -385,7 +385,7 @@ export const actions: Actions = {
 
 			return message(form, {
 				success: true,
-				message: 'Voucher updated successfully'
+				message: 'Voucher updated successfully!'
 			});
 		} catch (err) {
 			console.error('Error updating voucher:', err);

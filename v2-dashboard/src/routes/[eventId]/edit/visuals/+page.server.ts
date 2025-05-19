@@ -63,7 +63,7 @@ export const actions = {
 		try {
 			const apiClient = createApiClient(event);
 			const response = await apiClient.patch(`events/${eventId}`, formData);
-			return message(form, { success: true, message: 'Theme saved successfully' });
+			return message(form, { success: true, message: 'Theme saved successfully!' });
 		} catch (err: unknown) {
 			const { statusCode, errorMessage } = handleSvelteError(
 				err,
