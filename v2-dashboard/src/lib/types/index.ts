@@ -216,3 +216,34 @@ export interface EventAnnouncement {
 	updatedAt: string;
 	createdAt: string;
 }
+
+export interface EventInstruction {
+	id: number;
+	event: number | Event;
+	status: 'draft' | 'published';
+	/**
+	 * List specific Instruction for this event.
+	 */
+	eventInstructions?:
+		| {
+				instructionImage?: string | null;
+				title: string;
+				content: string;
+				id?: string | null;
+		  }[]
+		| null;
+	updatedAt: string;
+	createdAt: string;
+}
+
+export interface InstructionData {
+	instructionImage?: string | null;
+	title: string;
+	content: string;
+}
+
+export interface postsData {
+	instructionImage?: string | null;
+	title: string;
+	content: string;
+}
