@@ -8,7 +8,10 @@ import { handleSvelteError } from '$lib/utils/errorHandler';
 
 export const load: LayoutServerLoad = async (event: RequestEvent) => {
 	try {
-		const { url: eventUrl, params: { eventId } } = event;
+		const {
+			url: eventUrl,
+			params: { eventId }
+		} = event;
 		const pathname = eventUrl.pathname;
 
 		const paramsEvent = new URLSearchParams({
@@ -30,7 +33,12 @@ export const load: LayoutServerLoad = async (event: RequestEvent) => {
 
 		// Determine siteUrl based on environment (local vs production)
 		const isLocal = eventUrl.origin.includes('localhost');
-		const siteUrl = isLocal ? `http://${slug}.localhost:${PORT}` : `https://${slug}.veent.co/`;
+		const isStaging = eventUrl.origin.includes('vercel.app');
+		const siteUrl = isLocal
+			? `http://${slug}.localhost:${PORT}/?`
+			: isStaging
+				? `https://v2-veent-registration-veent-team.vercel.app/?event=${slug}&`
+				: `https://${slug}.veent.co/`;
 
 		const dateFormatter = new Intl.DateTimeFormat('en-US', {
 			weekday: 'short',

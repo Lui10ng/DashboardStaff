@@ -151,7 +151,7 @@
 						<iframe
 							id="myIframe"
 							title="themeSelector"
-							src={`${data.siteUrl}/?theme=${theme}&mode=${themeMode ? 'light' : 'dark'}`}
+							src={`${data.siteUrl}theme=${theme}&mode=${themeMode ? 'light' : 'dark'}`}
 							class="h-[70svh] w-full"
 						></iframe>
 					</div>
