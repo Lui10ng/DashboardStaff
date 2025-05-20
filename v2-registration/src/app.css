@@ -30,6 +30,11 @@
 
 @custom-variant dark (&:where([data-mode="dark"], [data-mode="dark"] *));
 
+@theme {
+	--color-primary: #df4d60;
+	--color-black: #180414;
+}
+
 .hide-scrollbar {
 	scrollbar-width: none;
 }
