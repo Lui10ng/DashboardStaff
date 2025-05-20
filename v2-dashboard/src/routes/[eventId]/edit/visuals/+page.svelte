@@ -20,7 +20,7 @@
 
 	message.subscribe(async (msg) => {
 		if (msg && msg.success) {
-			themeDrawer.open = false;
+			handleCloseThemeDrawer();
 			toaster.create({
 				type: 'success',
 				title: 'Success',
