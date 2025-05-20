@@ -212,7 +212,7 @@
 								{event.title}
 							</h2>
 
-							<p class="text-xl">
+							<p>
 								{#if event.description}
 									{@html event.description}
 								{:else}
@@ -222,9 +222,7 @@
 							<div class="flex max-w-[500px] items-center justify-between gap-3 py-5"></div>
 						</div>
 
-						<div
-							class="card bg-secondary-100 w-full px-5 py-5 text-base sm:px-10 sm:py-7 dark:bg-black"
-						>
+						<div class="card bg-secondary-100 w-full px-5 py-5 sm:px-10 sm:py-7 dark:bg-black">
 							<h6>Date</h6>
 							<h4>
 								{formatDateTime(event.startTime, event.endTime).date}
