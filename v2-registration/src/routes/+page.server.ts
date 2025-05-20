@@ -14,10 +14,18 @@ let eventId = '';
 
 export const load: PageServerLoad = async (event: RequestEvent) => {
 	const { url, fetch: svelteKitFetch } = event;
+
+	let subdomain = '';
 	const hostName = url.hostname;
-	const subdomain = hostName.split('.')[0];
+	subdomain = hostName.split('.')[0];
 	const theme = url.searchParams.get('theme');
 	const mode = url.searchParams.get('mode');
+
+	const searchparamsEvent = url.searchParams.get('event');
+
+	if (searchparamsEvent) {
+		subdomain = searchparamsEvent;
+	}
 
 	const params = new URLSearchParams({
 		'where[slug][equals]': subdomain,
@@ -34,21 +42,23 @@ export const load: PageServerLoad = async (event: RequestEvent) => {
 			const formBuilder = formData.docs[0].form.docs[0].formBuilder;
 
 			if (formData.docs[0].ticketType.docs.length > 0) {
-				const ticketsWithSeatMaps = formData.docs[0].ticketType.docs.filter(ticket => ticket.seatMap);
-				
+				const ticketsWithSeatMaps = formData.docs[0].ticketType.docs.filter(
+					(ticket) => ticket.seatMap
+				);
+
 				if (ticketsWithSeatMaps.length > 0) {
-					const seatMapPromises = ticketsWithSeatMaps.map(async ticket => {
+					const seatMapPromises = ticketsWithSeatMaps.map(async (ticket) => {
 						const seatMapResponse = await apiClient.get(`/seat-maps/${ticket.seatMap}`);
 						return {
 							ticketId: ticket.id,
 							seatMap: seatMapResponse
 						};
 					});
-					
+
 					const seatMaps = await Promise.all(seatMapPromises);
-					
-					formData.docs[0].ticketType.docs = formData.docs[0].ticketType.docs.map(ticket => {
-						const seatMapData = seatMaps.find(sm => sm.ticketId === ticket.id);
+
+					formData.docs[0].ticketType.docs = formData.docs[0].ticketType.docs.map((ticket) => {
+						const seatMapData = seatMaps.find((sm) => sm.ticketId === ticket.id);
 						return {
 							...ticket,
 							seatMapData: seatMapData?.seatMap
