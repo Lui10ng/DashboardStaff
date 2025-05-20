@@ -253,7 +253,7 @@
 					<div class="grid grid-cols-12">
 						{#if timeRemaining['days'] == 0 && timeRemaining['hours'] == 0 && timeRemaining['minutes'] == 0 && timeRemaining['seconds'] == 0}
 							<div
-								class="card bg-secondary-100 dark:bg-tertiary-950 col-span-12 mx-auto inline-flex w-[90%] justify-between rounded-md p-5 px-[10%] text-center text-lg font-bold shadow-2xl sm:py-10 lg:w-[75%] 2xl:w-[60%]"
+								class="card bg-secondary-100 col-span-12 mx-auto inline-flex w-[90%] justify-between rounded-md p-5 px-[10%] text-center text-lg font-bold shadow-2xl sm:py-10 lg:w-[75%] 2xl:w-[60%] dark:bg-black"
 							>
 								<h2 class="h2 w-full">Event has started!</h2>
 							</div>
