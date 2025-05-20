@@ -23,7 +23,7 @@
 		seconds: 0
 	});
 
-	let bgImage = $state('/images/defaultBg.webp');
+	let bgImage = $state('/images/defaultImage.webp');
 
 	let cities: string[] = $state([]);
 	let ticketDetails = $state<TicketDetail[]>([]);
@@ -164,7 +164,11 @@
 				<div class="mx-auto flex w-[90%] items-center justify-between py-5 lg:w-[75%] 2xl:w-[60%]">
 					<div class="flex items-center">
 						<a href="/" class="text-xl font-semibold"
-							><img class="max-h-[50px] max-w-[80px]" src="/images/defaultBg.webp" alt="logo" /></a
+							><img
+								class="max-h-[50px] max-w-[80px]"
+								src="/images/defaultImage.webp"
+								alt="logo"
+							/></a
 						>
 					</div>
 					<div class="">
@@ -242,7 +246,7 @@
 								alt={event.poster.alt}
 							/>
 						{:else}
-							<img class="min-w-[100%]" src="/images/defaultBg.webp" alt="bg" />
+							<img class="min-w-[100%]" src="/images/defaultImage.webp" alt="bg" />
 						{/if}
 					</div>
 				</div>
@@ -310,7 +314,7 @@
 				</div>
 			</div>
 		</div>
-		<div class="py-8 sm:py-36 dark:bg-black">
+		<div id="announcement" class="py-8 sm:py-36 dark:bg-black">
 			<div class="mx-auto w-[90%] space-y-10 lg:w-[75%] 2xl:w-[60%]">
 				<p class="text-center text-2xl font-semibold sm:text-3xl">POSTS</p>
 				{#if event.eventAnnouncement.docs.length > 0}
@@ -366,8 +370,8 @@
 				{/if}
 			</div>
 		</div>
-		<div id="registration" class="min-h-svh py-8 sm:py-16">
-			<p class="pb-[3rem] text-center text-3xl font-bold">Register</p>
+		<div id="registration" class="preset-gradient-one min-h-svh py-8 sm:py-16">
+			<p class="text-surface-50 pb-[3rem] text-center text-3xl font-bold">Register</p>
 			<form
 				class="bg-secondary-300 mx-auto max-w-lg space-y-5 rounded-xl p-5 text-white sm:p-10 dark:bg-black"
 				action="?/register"
@@ -803,12 +807,12 @@
 				</div>
 			{/if}
 		</div>
-		<footer class="bg-secondary-200 dark:bg-surface-900 py-10">
+		<footer class="bg-secondary-200 preset-gradient-one py-10">
 			<div class="flex justify-center gap-[5%] font-bold sm:gap-[10%]">
 				<div
 					class="animated-footer
 		
-					 text-center transition-transform delay-100 duration-500 ease-in-out"
+					 text-surface-50 text-center transition-transform delay-100 duration-500 ease-in-out"
 				>
 					Powered by
 					<div class="mx-auto mt-2 max-w-[6rem]">
