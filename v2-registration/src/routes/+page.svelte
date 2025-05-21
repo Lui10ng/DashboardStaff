@@ -159,7 +159,7 @@
 <!-- prevent hydration browser -->
 {#if browser}
 	<div class="">
-		<header class="bg-secondary-200 sticky left-0 right-0 top-0 z-10 dark:bg-black">
+		<header class="bg-secondary-50 sticky left-0 right-0 top-0 z-10 dark:bg-black">
 			<nav class="shadow-xl">
 				<div class="mx-auto flex w-[90%] items-center justify-between py-5 lg:w-[75%] 2xl:w-[60%]">
 					<div class="flex items-center">
@@ -185,7 +185,10 @@
 							</li>
 
 							<li>
-								<a href="#registration" class="btn bg-primary rounded-md p-2 font-bold uppercase">
+								<a
+									href="#registration"
+									class="btn bg-primary text-surface-50 rounded-md p-2 font-bold uppercase"
+								>
 									REGISTER
 								</a>
 							</li>
@@ -194,20 +197,19 @@
 				</div>
 			</nav>
 		</header>
-		<div class="relative min-h-screen pt-20">
+		<div class="relative min-h-svh pt-20">
 			<div
 				class="absolute inset-0 bg-cover bg-center bg-no-repeat blur-[2px]"
 				style="background-image: url({bgImage}); ;"
 			>
-				<div class="absolute inset-0 bg-[#000000]/80"></div>
+				<div class="bg-secondary-50/50 absolute inset-0 dark:bg-black/85"></div>
 			</div>
 			<div class="relative mt-7">
 				<div class="mx-auto grid w-[90%] grid-cols-12 gap-y-8 sm:gap-x-14 lg:w-[75%] 2xl:w-[60%]">
 					<div
-						class="animated-poster order-last col-span-12 flex flex-col justify-between transition-transform
-								delay-100 duration-500 ease-in-out lg:order-first lg:col-span-6"
+						class="order-last col-span-12 flex flex-col justify-between lg:order-first lg:col-span-6"
 					>
-						<div class="text-surface-100">
+						<div class="text-surface-950 dark:text-surface-100">
 							<h2 class="h2 mb-8 text-3xl capitalize 2xl:text-4xl">
 								{event.title}
 							</h2>
@@ -222,7 +224,7 @@
 							<div class="flex max-w-[500px] items-center justify-between gap-3 py-5"></div>
 						</div>
 
-						<div class="card bg-secondary-100 w-full px-5 py-5 sm:px-10 sm:py-7 dark:bg-black">
+						<div class="card bg-secondary-50 w-full px-5 py-5 sm:px-10 sm:py-7 dark:bg-black">
 							<h6>Date</h6>
 							<h4>
 								{formatDateTime(event.startTime, event.endTime).date}
@@ -253,13 +255,13 @@
 					<div class="grid grid-cols-12">
 						{#if timeRemaining['days'] == 0 && timeRemaining['hours'] == 0 && timeRemaining['minutes'] == 0 && timeRemaining['seconds'] == 0}
 							<div
-								class="card bg-secondary-100 col-span-12 mx-auto inline-flex w-[90%] justify-between rounded-md p-5 px-[10%] text-center text-lg font-bold shadow-2xl sm:py-10 lg:w-[75%] 2xl:w-[60%] dark:bg-black"
+								class="card bg-secondary-50 col-span-12 mx-auto inline-flex w-[90%] justify-between rounded-md p-5 px-[10%] text-center text-lg font-bold shadow-2xl sm:py-10 lg:w-[75%] 2xl:w-[60%] dark:bg-black"
 							>
 								<h2 class="h2 w-full">Event has started!</h2>
 							</div>
 						{:else}
 							<div
-								class="bg-secondary-100 card col-span-12 mx-auto inline-flex w-[90%] justify-between p-5 text-center text-lg font-bold shadow-2xl transition-transform delay-100 duration-500 ease-in-out sm:py-10
+								class="bg-secondary-50 card col-span-12 mx-auto inline-flex w-[90%] justify-between p-5 text-center text-lg font-bold shadow-2xl transition-transform delay-100 duration-500 ease-in-out sm:py-10
 										md:px-[10%] lg:w-[75%] 2xl:w-[60%] 2xl:px-[5%] dark:bg-black"
 							>
 								<div class="col-span-4 hidden self-center sm:block">Event starts in</div>
@@ -312,7 +314,7 @@
 				</div>
 			</div>
 		</div>
-		<div id="announcement" class="py-8 sm:py-36 dark:bg-black">
+		<div id="announcement" class="bg-secondary-50 py-8 sm:py-36 dark:bg-black">
 			<div class="mx-auto w-[90%] space-y-10 lg:w-[75%] 2xl:w-[60%]">
 				<p class="text-center text-2xl font-semibold sm:text-3xl">POSTS</p>
 				{#if event.eventAnnouncement.docs.length > 0}
@@ -321,9 +323,7 @@
 							<div class="grid gap-2">
 								{#if index % 2 === 0}
 									<div
-										class="bg-primary-500 {event.light == 'true'
-											? ''
-											: 'text-primary-50'} mb-5 rounded-xl p-5"
+										class="border-tertiary-700 dark:border-tertiary-950 mb-5 rounded-xl border p-5"
 									>
 										{#if announcementCards.image}
 											<!-- image here -->
@@ -337,9 +337,7 @@
 									</div>
 								{:else}
 									<div
-										class="bg-[#FDFDFD] {event.light == 'true'
-											? ''
-											: 'text-primary-50'} text-surface-900 mb-5 rounded-xl p-5"
+										class="border-tertiary-700 dark:border-tertiary-950 mb-5 rounded-xl border p-5"
 									>
 										{#if announcementCards.image}
 											<!-- image here -->
@@ -358,7 +356,7 @@
 				{:else}
 					<div class="grid gap-2">
 						<div
-							class="mx-auto w-full rounded-md border py-10 text-center sm:w-[25rem] dark:border-gray-600"
+							class="dark:border-tertiary-950 mx-auto w-full rounded-md border py-10 text-center sm:w-[25rem]"
 						>
 							<div class="card rounded-xl shadow-sm">
 								<p class="text-2xl font-medium">No posts yet!</p>
@@ -387,7 +385,7 @@
 						{#each $form.tabs as _, i}
 							<Tabs.Control
 								value={`tab-${i}`}
-								stateLabelActive="bg-primary-500 dark:bg-surface-900 rounded-b-none"
+								stateLabelActive="bg-secondary-700 dark:bg-surface-900 rounded-b-none"
 								stateLabelInactive="w-[4rem] border-none"
 								padding="p-0"
 							>
@@ -744,23 +742,18 @@
 				</div>
 			</form>
 		</div>
-		<div id="contact" class="contactPage py-8 sm:py-36 dark:bg-black">
+		<div id="contact" class="bg-secondary-50 py-8 sm:py-36 dark:bg-black">
 			<p class="mb-[3rem] text-center text-2xl font-bold sm:text-3xl">NEED HELP? CONTACT US</p>
 			{#if event.eventContacts.length}
 				<div class="mx-auto grid w-[75%] grid-cols-12 gap-y-5 sm:gap-5 lg:w-[75%] 2xl:w-[60%]">
 					{#each event.eventContacts as contactCard, index}
 						<div
-							class="bg-secondary-100 dark:bg-tertiary-950 contact col-span-12 rounded-xl p-5 {event
+							class="contact border-tertiary-700 dark:border-tertiary-950 col-span-12 rounded-xl border p-5 {event
 								.eventContacts.length == 1
 								? 'mx-auto w-full sm:w-[22rem]'
 								: event.eventContacts.length == 2
 									? 'sm:col-span-6'
-									: 'sm:col-span-6 lg:col-span-4'} 
-					
-					 delay-{index == 0
-								? '100'
-								: index *
-									500} animated-contact overflow-auto transition-opacity duration-500 ease-in-out"
+									: 'sm:col-span-6 lg:col-span-4'}"
 						>
 							<div>
 								{#if contactCard.contactName}
@@ -796,7 +789,7 @@
 				</div>
 			{:else}
 				<div
-					class="mx-auto w-full rounded-md border py-10 text-center sm:w-[25rem] dark:border-gray-600"
+					class="dark:border-tertiary-950 mx-auto w-full rounded-md border py-10 text-center sm:w-[25rem]"
 				>
 					<div class="card rounded-xl shadow-sm">
 						<p class="text-xl">You have no Contact Cards Yet!</p>
@@ -805,12 +798,11 @@
 				</div>
 			{/if}
 		</div>
-		<footer class="bg-secondary-200 preset-gradient-one py-10">
+		<!-- class={`${data.mode == 'light' ? 'preset-gradient-two' : 'preset-gradient-one'}  py-10`} light and dark -->
+		<footer class="preset-gradient-one py-10">
 			<div class="flex justify-center gap-[5%] font-bold sm:gap-[10%]">
 				<div
-					class="animated-footer
-		
-					 text-surface-50 text-center transition-transform delay-100 duration-500 ease-in-out"
+					class="text-surface-50 text-center transition-transform delay-100 duration-500 ease-in-out"
 				>
 					Powered by
 					<div class="mx-auto mt-2 max-w-[6rem]">
