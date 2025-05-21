@@ -8,7 +8,8 @@
 		editTicketDrawer,
 		voucherDrawer,
 		editVoucherDrawer,
-		contactDrawer
+		contactDrawer,
+		instructionDrawer
 	} from '$lib/stores/state.svelte.ts';
 
 	let {
@@ -31,6 +32,7 @@
 		voucherDrawer.open = false;
 		editVoucherDrawer.open = false;
 		contactDrawer.open = false;
+		instructionDrawer.open = false;
 	};
 </script>
 

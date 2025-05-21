@@ -1,6 +1,5 @@
 import { createApiClient } from '$lib/services/payload.server.js';
 import type { LayoutServerLoad } from './$types';
-import { PORT } from '$env/static/private';
 import type { EventType } from '$lib/types/eventData';
 import { error } from '@sveltejs/kit';
 import type { RequestEvent } from '@sveltejs/kit';
@@ -8,7 +7,10 @@ import { handleSvelteError } from '$lib/utils/errorHandler';
 
 export const load: LayoutServerLoad = async (event: RequestEvent) => {
 	try {
-		const { url: eventUrl, params: { eventId } } = event;
+		const {
+			url: eventUrl,
+			params: { eventId }
+		} = event;
 		const pathname = eventUrl.pathname;
 
 		const paramsEvent = new URLSearchParams({
@@ -24,13 +26,7 @@ export const load: LayoutServerLoad = async (event: RequestEvent) => {
 		const apiClient = createApiClient(event);
 		const response = await apiClient.get<EventType>(`events/${eventId}`, paramsEvent);
 
-		const { eventContacts, poster, slug, title, location, startTime, endTime, id } = response;
-
-		const contactDetails = eventContacts;
-
-		// Determine siteUrl based on environment (local vs production)
-		const isLocal = eventUrl.origin.includes('localhost');
-		const siteUrl = isLocal ? `http://${slug}.localhost:${PORT}` : `https://${slug}.veent.co/`;
+		const { poster, slug, title, location, startTime, endTime, id } = response;
 
 		const dateFormatter = new Intl.DateTimeFormat('en-US', {
 			weekday: 'short',
@@ -54,7 +50,7 @@ export const load: LayoutServerLoad = async (event: RequestEvent) => {
 
 		return {
 			eventId,
-			siteUrl,
+
 			pathname,
 			currentEvent: {
 				id,

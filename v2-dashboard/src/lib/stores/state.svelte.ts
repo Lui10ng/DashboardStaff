@@ -1,4 +1,4 @@
-import type { EventAnnouncement, RegistrantProps } from '$lib/types';
+import type { EventAnnouncement, InstructionData, RegistrantProps } from '$lib/types';
 import type { ContactData } from '$lib/types/eventContacts';
 
 export const stateDrawer = $state({
@@ -33,6 +33,10 @@ export const stateEditEvent = $state({
 });
 
 export const contactDrawer = $state({
+	open: false
+});
+
+export const instructionDrawer = $state({
 	open: false
 });
 
@@ -76,6 +80,19 @@ export const contacts = () => {
 		},
 		set contactData(value) {
 			contactData = value;
+		}
+	};
+};
+
+export const instructionState = () => {
+	let instructionData = $state<InstructionData[] | null>();
+
+	return {
+		get instructionData() {
+			return instructionData;
+		},
+		set instructionData(value) {
+			instructionData = value;
 		}
 	};
 };

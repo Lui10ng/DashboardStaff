@@ -23,7 +23,7 @@
 		seconds: 0
 	});
 
-	let bgImage = $state('/images/dummy-bg1.jpg');
+	let bgImage = $state('/images/defaultImage.webp');
 
 	let cities: string[] = $state([]);
 	let ticketDetails = $state<TicketDetail[]>([]);
@@ -40,6 +40,7 @@
 
 	$effect(() => {
 		document.title = event.title;
+
 		document.documentElement.setAttribute('data-theme', data.theme ?? event.theme);
 		document.documentElement.setAttribute(
 			'data-mode',
@@ -158,12 +159,16 @@
 <!-- prevent hydration browser -->
 {#if browser}
 	<div class="">
-		<header class="bg-secondary-200 dark:bg-surface-900 sticky left-0 right-0 top-0 z-10">
+		<header class="bg-secondary-50 sticky left-0 right-0 top-0 z-10 dark:bg-black">
 			<nav class="shadow-xl">
 				<div class="mx-auto flex w-[90%] items-center justify-between py-5 lg:w-[75%] 2xl:w-[60%]">
 					<div class="flex items-center">
 						<a href="/" class="text-xl font-semibold"
-							><img class="max-h-[50px] max-w-[80px]" src="/favicon.png" alt="logo" /></a
+							><img
+								class="max-h-[50px] max-w-[80px]"
+								src="/images/defaultImage.webp"
+								alt="logo"
+							/></a
 						>
 					</div>
 					<div class="">
@@ -182,7 +187,7 @@
 							<li>
 								<a
 									href="#registration"
-									class="btn bg-primary-500 rounded-md p-2 font-bold uppercase"
+									class="btn bg-primary text-surface-50 rounded-md p-2 font-bold uppercase"
 								>
 									REGISTER
 								</a>
@@ -192,25 +197,24 @@
 				</div>
 			</nav>
 		</header>
-		<div class="relative min-h-screen pt-20">
+		<div class="relative min-h-svh pt-20">
 			<div
 				class="absolute inset-0 bg-cover bg-center bg-no-repeat blur-[2px]"
 				style="background-image: url({bgImage}); ;"
 			>
-				<div class="absolute inset-0 bg-[#000000]/80"></div>
+				<div class="bg-secondary-50/50 absolute inset-0 dark:bg-black/85"></div>
 			</div>
-			<div class="relative mb-5 mt-7 sm:mb-12">
-				<div class="mx-auto grid w-[90%] grid-cols-12 gap-y-8 sm:gap-x-8 lg:w-[75%] 2xl:w-[60%]">
+			<div class="relative mt-7">
+				<div class="mx-auto grid w-[90%] grid-cols-12 gap-y-8 sm:gap-x-14 lg:w-[75%] 2xl:w-[60%]">
 					<div
-						class="animated-poster order-last col-span-12 flex flex-col justify-between transition-transform
-								delay-100 duration-500 ease-in-out lg:order-first lg:col-span-6"
+						class="order-last col-span-12 flex flex-col justify-between lg:order-first lg:col-span-6"
 					>
-						<div class="text-surface-100">
+						<div class="text-surface-950 dark:text-surface-100">
 							<h2 class="h2 mb-8 text-3xl capitalize 2xl:text-4xl">
 								{event.title}
 							</h2>
 
-							<p class="text-xl">
+							<p>
 								{#if event.description}
 									{@html event.description}
 								{:else}
@@ -220,20 +224,18 @@
 							<div class="flex max-w-[500px] items-center justify-between gap-3 py-5"></div>
 						</div>
 
-						<div
-							class="card bg-secondary-100 dark:bg-surface-900 w-full px-5 py-5 sm:px-10 sm:py-7"
-						>
-							<h6 class="font-medium">Date</h6>
-							<h4 class="h4">
+						<div class="card bg-secondary-50 w-full px-5 py-5 sm:px-10 sm:py-7 dark:bg-black">
+							<h6>Date</h6>
+							<h4>
 								{formatDateTime(event.startTime, event.endTime).date}
 							</h4>
-							<h6 class="font-medium">Time</h6>
-							<h4 class="h4">
+							<h6>Time</h6>
+							<h4>
 								{formatDateTime(event.startTime, event.endTime).time}
 							</h4>
 
-							<h6 class="font-medium">Venue</h6>
-							<h4 class="h4">{event.location}</h4>
+							<h6>Venue</h6>
+							<h4>{event.location}</h4>
 						</div>
 					</div>
 					<div class="col-span-12 lg:col-span-6">
@@ -244,7 +246,7 @@
 								alt={event.poster.alt}
 							/>
 						{:else}
-							<img class="min-w-[100%]" src="/defaultPoster.jpg" alt="bg" />
+							<img class="min-w-[100%]" src="/images/defaultImage.webp" alt="bg" />
 						{/if}
 					</div>
 				</div>
@@ -253,20 +255,20 @@
 					<div class="grid grid-cols-12">
 						{#if timeRemaining['days'] == 0 && timeRemaining['hours'] == 0 && timeRemaining['minutes'] == 0 && timeRemaining['seconds'] == 0}
 							<div
-								class="card bg-secondary-100 dark:bg-tertiary-950 col-span-12 mx-auto inline-flex w-[90%] justify-between rounded-md p-5 px-[10%] text-center text-lg font-bold shadow-2xl sm:py-10 lg:w-[75%] 2xl:w-[60%]"
+								class="card bg-secondary-50 col-span-12 mx-auto inline-flex w-[90%] justify-between rounded-md p-5 px-[10%] text-center text-lg font-bold shadow-2xl sm:py-10 lg:w-[75%] 2xl:w-[60%] dark:bg-black"
 							>
 								<h2 class="h2 w-full">Event has started!</h2>
 							</div>
 						{:else}
 							<div
-								class="bg-secondary-100 dark:bg-tertiary-950 card animated-countdown col-span-12 mx-auto inline-flex w-[90%] justify-between p-5 text-center text-lg font-bold shadow-2xl transition-transform delay-100 duration-500 ease-in-out
-										sm:py-10 md:px-[10%] lg:w-[75%] 2xl:w-[60%] 2xl:px-[5%]"
+								class="bg-secondary-50 card col-span-12 mx-auto inline-flex w-[90%] justify-between p-5 text-center text-lg font-bold shadow-2xl transition-transform delay-100 duration-500 ease-in-out sm:py-10
+										md:px-[10%] lg:w-[75%] 2xl:w-[60%] 2xl:px-[5%] dark:bg-black"
 							>
 								<div class="col-span-4 hidden self-center sm:block">Event starts in</div>
 								<div class="col-span-2">
 									DAYS
 									<div
-										class="bg-primary-500 text-surface-50 mx-auto mt-1 w-[60px] rounded-md px-2 py-2 text-4xl"
+										class="bg-primary text-surface-50 mx-auto mt-1 w-[60px] rounded-md px-2 py-2 text-4xl"
 									>
 										{timeRemaining['days']}
 									</div>
@@ -274,7 +276,7 @@
 								<div class="col-span-2">
 									HOURS
 									<div
-										class="bg-primary-500 text-surface-50 mx-auto mt-1 w-[60px] rounded-md px-2 py-2 text-4xl"
+										class="bg-primary text-surface-50 mx-auto mt-1 w-[60px] rounded-md px-2 py-2 text-4xl"
 									>
 										{timeRemaining['hours']}
 									</div>
@@ -282,7 +284,7 @@
 								<div class="col-span-2">
 									MINUTES
 									<div
-										class="bg-primary-500 text-surface-50 mx-auto mt-1 w-[60px] rounded-md px-2 py-2 text-4xl"
+										class="bg-primary text-surface-50 mx-auto mt-1 w-[60px] rounded-md px-2 py-2 text-4xl"
 									>
 										{timeRemaining['minutes']}
 									</div>
@@ -290,7 +292,7 @@
 								<div class="col-span-2">
 									SECONDS
 									<div
-										class="bg-primary-500 text-surface-50 mx-auto mt-1 w-[60px] rounded-md px-2 py-2 text-4xl"
+										class="bg-primary text-surface-50 mx-auto mt-1 w-[60px] rounded-md px-2 py-2 text-4xl"
 									>
 										{timeRemaining['seconds']}
 									</div>
@@ -312,62 +314,62 @@
 				</div>
 			</div>
 		</div>
-		<div class="mx-auto w-[90%] lg:w-[75%] 2xl:w-[60%]">
-			<p class="py-4 text-center text-2xl font-bold sm:text-3xl"></p>
-			{#if event.eventAnnouncement.docs.length > 0}
-				<section class="grid grid-cols-1 gap-4 md:grid-cols-2">
-					{#each event.eventAnnouncement.docs[0].eventAnnouncement as announcementCards, index}
-						<div class="grid gap-2">
-							{#if index % 2 === 0}
-								<div
-									class="bg-primary-500 {event.light == 'true'
-										? ''
-										: 'text-primary-50'} mb-5 rounded-xl p-5"
-								>
-									{#if announcementCards.image}
-										<!-- image here -->
-									{/if}
-									<p class="py-4 text-2xl font-bold">{@html announcementCards.title}</p>
-									{#if announcementCards.content}
-										<p class="text-md font-medium">
-											{@html announcementCards.content}
-										</p>
-									{/if}
-								</div>
-							{:else}
-								<div
-									class="bg-[#FDFDFD] {event.light == 'true'
-										? ''
-										: 'text-primary-50'} text-surface-900 mb-5 rounded-xl p-5"
-								>
-									{#if announcementCards.image}
-										<!-- image here -->
-									{/if}
-									<p class="py-4 text-2xl font-bold">{@html announcementCards.title}</p>
-									{#if announcementCards.content}
-										<p class="text-md font-medium">
-											{@html announcementCards.content}
-										</p>
-									{/if}
-								</div>
-							{/if}
-						</div>
-					{/each}
-				</section>
-			{:else}
-				<div class="grid gap-2">
-					<div class="mx-auto w-full pb-4 text-center sm:w-[35rem]">
-						<div class="card m-12 rounded-xl px-5 py-8 shadow-sm">
-							<p class="pb-2 text-2xl font-bold">No posts yet!</p>
+		<div id="announcement" class="bg-secondary-50 py-8 sm:py-36 dark:bg-black">
+			<div class="mx-auto w-[90%] space-y-10 lg:w-[75%] 2xl:w-[60%]">
+				<p class="text-center text-2xl font-semibold sm:text-3xl">POSTS</p>
+				{#if event.eventAnnouncement.docs.length > 0}
+					<section class="grid grid-cols-1 gap-4 md:grid-cols-2">
+						{#each event.eventAnnouncement.docs[0].eventAnnouncement as announcementCards, index}
+							<div class="grid gap-2">
+								{#if index % 2 === 0}
+									<div
+										class="border-tertiary-700 dark:border-tertiary-950 mb-5 rounded-xl border p-5"
+									>
+										{#if announcementCards.image}
+											<!-- image here -->
+										{/if}
+										<p class="py-4 text-2xl font-bold">{@html announcementCards.title}</p>
+										{#if announcementCards.content}
+											<p class="text-md font-medium">
+												{@html announcementCards.content}
+											</p>
+										{/if}
+									</div>
+								{:else}
+									<div
+										class="border-tertiary-700 dark:border-tertiary-950 mb-5 rounded-xl border p-5"
+									>
+										{#if announcementCards.image}
+											<!-- image here -->
+										{/if}
+										<p class="py-4 text-2xl font-bold">{@html announcementCards.title}</p>
+										{#if announcementCards.content}
+											<p class="text-md font-medium">
+												{@html announcementCards.content}
+											</p>
+										{/if}
+									</div>
+								{/if}
+							</div>
+						{/each}
+					</section>
+				{:else}
+					<div class="grid gap-2">
+						<div
+							class="dark:border-tertiary-950 mx-auto w-full rounded-md border py-10 text-center sm:w-[25rem]"
+						>
+							<div class="card rounded-xl shadow-sm">
+								<p class="text-2xl font-medium">No posts yet!</p>
+							</div>
 						</div>
 					</div>
-				</div>
-			{/if}
+				{/if}
+			</div>
 		</div>
-		<div id="registration" class="min-h-svh">
-			<p class="pb-[3rem] text-center text-3xl font-bold">Register</p>
+		<div id="registration" class="preset-gradient-one min-h-svh py-8 sm:py-16">
+			<p class="text-surface-50 pb-[3rem] text-center text-3xl font-bold">Register</p>
 			<form
-				class="bg-secondary-300 dark:bg-surface-700 mx-auto max-w-lg space-y-5 rounded-xl p-5 text-white sm:p-10"
+				class="bg-secondary-300 mx-auto max-w-lg space-y-5 rounded-xl p-5 text-white sm:p-10 dark:bg-black"
 				action="?/register"
 				method="POST"
 				use:enhance
@@ -383,7 +385,7 @@
 						{#each $form.tabs as _, i}
 							<Tabs.Control
 								value={`tab-${i}`}
-								stateLabelActive="bg-primary-500 rounded-b-none"
+								stateLabelActive="bg-secondary-700 dark:bg-surface-900 rounded-b-none"
 								stateLabelInactive="w-[4rem] border-none"
 								padding="p-0"
 							>
@@ -668,7 +670,7 @@
 
 														{#if ticketDetails[i].seatMapData}
 															<div class="mt-4">
-																<SeatSelector 
+																<SeatSelector
 																	seatMapData={ticketDetails[i].seatMapData}
 																	maxSelections={quantity}
 																	on:seatSelected={handleSeatSelected}
@@ -708,7 +710,7 @@
 
 				<button
 					type="submit"
-					class="bg-primary-500 flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-white"
+					class="bg-primary flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-white"
 					>{#if $delayed}
 						<ProgressRing
 							size="size-4"
@@ -740,23 +742,18 @@
 				</div>
 			</form>
 		</div>
-		<div id="contact" class="contactPage py-10">
+		<div id="contact" class="bg-secondary-50 py-8 sm:py-36 dark:bg-black">
 			<p class="mb-[3rem] text-center text-2xl font-bold sm:text-3xl">NEED HELP? CONTACT US</p>
 			{#if event.eventContacts.length}
 				<div class="mx-auto grid w-[75%] grid-cols-12 gap-y-5 sm:gap-5 lg:w-[75%] 2xl:w-[60%]">
 					{#each event.eventContacts as contactCard, index}
 						<div
-							class="bg-secondary-100 dark:bg-tertiary-950 contact col-span-12 rounded-xl p-5 {event
+							class="contact border-tertiary-700 dark:border-tertiary-950 col-span-12 rounded-xl border p-5 {event
 								.eventContacts.length == 1
 								? 'mx-auto w-full sm:w-[22rem]'
 								: event.eventContacts.length == 2
 									? 'sm:col-span-6'
-									: 'sm:col-span-6 lg:col-span-4'} 
-					
-					 delay-{index == 0
-								? '100'
-								: index *
-									500} animated-contact overflow-auto transition-opacity duration-500 ease-in-out"
+									: 'sm:col-span-6 lg:col-span-4'}"
 						>
 							<div>
 								{#if contactCard.contactName}
@@ -791,20 +788,21 @@
 					{/each}
 				</div>
 			{:else}
-				<div class="mx-auto w-full text-center sm:w-[35rem]">
-					<div class="card m-12 rounded-xl px-5 py-8 shadow-sm">
-						<p class="pb-2 text-xl font-medium">You have no Contact Cards Yet!</p>
-						<p class="text-md">Go to your dashboard and add contact info</p>
+				<div
+					class="dark:border-tertiary-950 mx-auto w-full rounded-md border py-10 text-center sm:w-[25rem]"
+				>
+					<div class="card rounded-xl shadow-sm">
+						<p class="text-xl">You have no Contact Cards Yet!</p>
+						<p class="text-sm">Go to your dashboard and add contact info</p>
 					</div>
 				</div>
 			{/if}
 		</div>
-		<footer class="bg-secondary-200 dark:bg-surface-900 py-10">
+		<!-- class={`${data.mode == 'light' ? 'preset-gradient-two' : 'preset-gradient-one'}  py-10`} light and dark -->
+		<footer class="preset-gradient-one py-10">
 			<div class="flex justify-center gap-[5%] font-bold sm:gap-[10%]">
 				<div
-					class="animated-footer
-		
-					 text-center transition-transform delay-100 duration-500 ease-in-out"
+					class="text-surface-50 text-center transition-transform delay-100 duration-500 ease-in-out"
 				>
 					Powered by
 					<div class="mx-auto mt-2 max-w-[6rem]">

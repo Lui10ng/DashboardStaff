@@ -436,7 +436,7 @@
 								<div class="space-y-2">
 									<div class="grid grid-cols-2 gap-4">
 										<DatePicker name="startDate" label="Start Date" />
-										<div class="relative">
+										<div class="relative flex items-end">
 											<label for="startTime" class="prose sr-only">Start Time</label>
 											<input
 												id="startTime"
@@ -444,7 +444,7 @@
 												name="startTime"
 												value="08:00"
 												placeholder="Select end time"
-												class="w-full appearance-none rounded-xl border border-gray-200 px-4 py-4 text-gray-500 outline-none"
+												class="h-input w-full appearance-none rounded-xl border border-gray-200 px-4 text-gray-500 outline-none"
 											/>
 										</div>
 									</div>
@@ -457,7 +457,7 @@
 								<div class="space-y-2">
 									<div class="grid grid-cols-2 gap-4">
 										<DatePicker name="endDate" label="End Date" />
-										<div class="relative">
+										<div class="relative flex items-end">
 											<label for="endTime" class="prose sr-only">End Time</label>
 											<input
 												id="endTime"
@@ -465,7 +465,7 @@
 												name="endTime"
 												value="17:00"
 												placeholder="Select end time"
-												class="w-full appearance-none rounded-xl border border-gray-200 px-4 py-4 text-gray-500 outline-none"
+												class="h-input w-full appearance-none rounded-xl border border-gray-200 px-4 text-gray-500 outline-none"
 											/>
 										</div>
 									</div>

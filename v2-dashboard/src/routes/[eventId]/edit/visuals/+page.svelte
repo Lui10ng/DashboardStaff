@@ -20,7 +20,7 @@
 
 	message.subscribe(async (msg) => {
 		if (msg && msg.success) {
-			themeDrawer.open = false;
+			handleCloseThemeDrawer();
 			toaster.create({
 				type: 'success',
 				title: 'Success',
@@ -151,7 +151,7 @@
 						<iframe
 							id="myIframe"
 							title="themeSelector"
-							src={`${data.siteUrl}/?theme=${theme}&mode=${themeMode ? 'light' : 'dark'}`}
+							src={`${data.siteUrl}theme=${theme}&mode=${themeMode ? 'light' : 'dark'}`}
 							class="h-[70svh] w-full"
 						></iframe>
 					</div>

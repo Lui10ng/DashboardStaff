@@ -8,9 +8,10 @@ import type { EventAnnouncement } from '$lib/types/payload-types';
 import { message, superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { postSchema } from '$lib/schema';
+import type { postsData } from '$lib/types';
 
 let postId = 0;
-let postData: { title: string; content: string }[] = [];
+let postData: postsData[] = [];
 
 export const load: PageServerLoad = async (event: RequestEvent) => {
 	const {
