@@ -6,15 +6,18 @@ import { handleSvelteError } from '$lib/utils/errorHandler';
 import { fail, message, superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { themeSchema } from '$lib/schema/index.js';
+import { PORT } from '$env/static/private';
 
 export const load: PageServerLoad = async (event: RequestEvent) => {
 	const {
+		url: eventUrl,
 		params: { eventId }
 	} = event;
 
 	const params = new URLSearchParams({
 		'select[theme]': 'true',
-		'select[themeMode]': 'true'
+		'select[themeMode]': 'true',
+		'select[slug]': 'true'
 	});
 
 	try {
@@ -23,9 +26,21 @@ export const load: PageServerLoad = async (event: RequestEvent) => {
 		const apiClient = createApiClient(event);
 		const eventTheme = await apiClient.get<EventDetailsResponse>(`events/${eventId}`, params);
 
+		const { slug } = eventTheme;
+
+		// Determine siteUrl based on environment (local vs production)
+		const isLocal = eventUrl.origin.includes('localhost');
+		const isStaging = eventUrl.origin.includes('vercel.app');
+		const siteUrl = isLocal
+			? `http://${slug}.localhost:${PORT}/?`
+			: isStaging
+				? `https://v2-veent-registration-veent-team.vercel.app/?event=${slug}&`
+				: `https://${slug}.veent.co/`;
+
 		return {
 			form,
-			eventTheme
+			eventTheme,
+			siteUrl
 		};
 	} catch (err: unknown) {
 		const { statusCode, errorMessage } = handleSvelteError(
