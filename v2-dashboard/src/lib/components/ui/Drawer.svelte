@@ -47,18 +47,10 @@
 >
 	{#snippet content()}
 		<header class="flex items-center justify-between px-4">
-			<button
-				type="button"
-				class="text-gray-500 hover:text-gray-700"
-				onclick={handleCloseDrawer}
-				aria-label="Close drawer"
-			>
-				<i class="fa-solid fa-xmark text-2xl"></i>
-			</button>
+			<div class="mx-auto max-w-7xl px-5">
+				<h1 class="text-2xl font-bold">{title}</h1>
+				{@render children()}
+			</div>
 		</header>
-		<div class="mx-auto max-w-7xl px-5">
-			<h1 class="text-2xl font-bold">{title}</h1>
-			{@render children()}
-		</div>
 	{/snippet}
 </Modal>
